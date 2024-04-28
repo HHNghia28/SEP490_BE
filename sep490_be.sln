@@ -9,11 +9,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2. Business Layer", "2. Bus
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. DataAccess Layer", "3. DataAccess Layer", "{85F4B218-1D33-4A0C-AD93-3480A410C7C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{6A30C38A-69FF-41D6-9B6A-EE06DCCB2418}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\DataAccess.csproj", "{6A30C38A-69FF-41D6-9B6A-EE06DCCB2418}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessObject", "BusinessObject\BusinessObject.csproj", "{306FAFA8-049C-4407-87F9-4F4F6645B930}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BusinessObject", "BusinessObject\BusinessObject.csproj", "{306FAFA8-049C-4407-87F9-4F4F6645B930}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SEP490_API", "SEP490_API\SEP490_API.csproj", "{02B9EC30-1E65-4B30-BCB6-BA147AC3A87E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SEP490_API", "SEP490_API\SEP490_API.csproj", "{02B9EC30-1E65-4B30-BCB6-BA147AC3A87E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0D9B8038-6C42-4B24-BBC2-A18DB2ACE14A}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
