@@ -68,7 +68,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
         sqlServerOptionsAction: sqlOptions =>
         {
-            sqlOptions.MigrationsAssembly("IIT_WebsiteIIT");
+            sqlOptions.MigrationsAssembly("SEP490_API");
         });
 });
 

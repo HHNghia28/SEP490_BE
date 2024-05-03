@@ -83,11 +83,11 @@ namespace SEP490_API.Middlewares
             var roles = await _context.Accounts
                 .Where(a => a.ID.ToString().ToLower() == accountId.ToLower() && a.IsActive)
                 .Include(a => a.User)
-                .Include(a => a.Permissions)
+                .Include(a => a.AccountPermissions)
                 .ThenInclude(a => a.Permission)
-                .Include(a => a.Roles)
+                .Include(a => a.AccountRoles)
                 .ThenInclude(a => a.Role)
-                .SelectMany(a => a.Roles.Select(r => r.Role.Name).Concat(a.Permissions.SelectMany(g => g.Permission.GroupRoles.Select(gr => gr.Role.Name))))
+                .SelectMany(a => a.AccountRoles.Select(r => r.Role.Name).Concat(a.AccountPermissions.SelectMany(g => g.Permission.RolePermissions.Select(gr => gr.Role.Name))))
                 .Distinct()
                 .ToListAsync();
 

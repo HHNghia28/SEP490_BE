@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,20 +13,36 @@ namespace BusinessObject.Entities
         [Key]
         public Guid ID { get; set; }
 
-        [StringLength(50)]
+        [MaxLength(250)]
         public string Fullname { get; set; }
 
-        [StringLength(100)]
-        public string Address { get; set; }
-
-        [StringLength(50)]
-        [EmailAddress]
+        [MaxLength(50)]
         public string Email { get; set; }
 
-        [StringLength(10)]
-        [Phone]
+        [MaxLength(10)]
         public string Phone { get; set; }
-        [Required]
+
+        [MaxLength(250)]
+        public string Address { get; set; }
+
+        [MaxLength(10)]
+        public string Gender { get; set; }
+
+        public DateTime? Birthday { get; set; }
+
+        [MaxLength(10)]
+        public string Nation { get; set; }
+
         public string Avatar { get; set; }
+
+        public bool? IsBachelor { get; set; }
+
+        public bool? IsMaster { get; set; }
+
+        public bool? IsDoctor { get; set; }
+
+        public bool? IsProfessor { get; set; }
+
+        public Account Account { get; set; }
     }
 }

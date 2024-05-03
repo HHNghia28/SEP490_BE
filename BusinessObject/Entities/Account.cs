@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace BusinessObject.Entities
@@ -13,22 +13,40 @@ namespace BusinessObject.Entities
         public Guid ID { get; set; }
 
         [Required]
-        [StringLength(50)]
+        [MaxLength(50)]
         public string Username { get; set; }
 
         [Required]
+        [MaxLength(50)]
         public string Password { get; set; }
+
+        [Required]
+        public bool IsActive { get; set; }
+
+        public Guid UserID { get; set; }
+        [ForeignKey(nameof(UserID))]
         public User User { get; set; }
-        public bool IsActive { get; set; } = true;
-        public string? RefreshToken { get; set; }
-        public DateTime? RefreshTokenExpires {  get; set; }
+
+        [MaxLength(100)]
+        public string RefreshToken { get; set; }
+
+        public DateTime? RefreshTokenExpires { get; set; }
 
         [Required]
-        public DateTime CreateAt { get; set; } = DateTime.Now;
+        [MaxLength(50)]
+        public string CreateBy { get; set; }
 
         [Required]
-        public DateTime UpdateAt { get; set; } = DateTime.Now;
-        public ICollection<AccountPermission> Permissions { get; set; }
-        public ICollection<AccountRole> Roles { get; set; }
+        [MaxLength(50)]
+        public string UpdateBy { get; set; }
+
+        [Required]
+        public DateTime CreateAt { get; set; }
+
+        [Required]
+        public DateTime UpdateAt { get; set; }
+
+        public ICollection<AccountRole> AccountRoles { get; set; }
+        public ICollection<AccountPermission> AccountPermissions { get; set; }
     }
 }
