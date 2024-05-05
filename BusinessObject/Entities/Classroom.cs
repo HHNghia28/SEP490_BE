@@ -32,9 +32,9 @@ namespace BusinessObject.Entities
         public string UpdateBy { get; set; }
 
         [Required]
-        public DateTime CreateAt { get; set; }
+        public DateTime CreateAt { get; set; } = DateTime.Now;
 
         [Required]
-        public DateTime UpdateAt { get; set; }
+        public DateTime UpdateAt { get; set; } = DateTime.Now;
     }
 }

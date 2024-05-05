@@ -17,7 +17,7 @@ namespace BusinessObject.Entities
         public Role Role { get; set; }
 
         [Key, Column(Order = 1)]
-        public Guid AccountID { get; set; }
+        public string AccountID { get; set; }
 
         [ForeignKey("AccountID")]
         public Account Account { get; set; }

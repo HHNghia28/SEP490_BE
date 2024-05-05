@@ -62,6 +62,46 @@ namespace DataAccess.Context
                 .HasForeignKey(s => s.SubjectID) // khóa ngoại là ClassID
                 .OnDelete(DeleteBehavior.NoAction);
 
+            Guid userID = Guid.NewGuid();
+
+            modelBuilder.Entity<User>()
+                .HasData
+                (
+                    new User()
+                    {
+                        ID = userID,
+                        Address = "600 Nguyễn Văn Cừ",
+                        Avatar = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png",
+                        Birthday = DateTime.Now,
+                        Email = "admin@fpt.edu.vn",
+                        Fullname = "Lê Văn Admin",
+                        Gender = "Nam",
+                        Nation = "Kinh",
+                        Phone = "0987654321",
+                        IsBachelor = false,
+                        IsDoctor = false,
+                        IsMaster = false,
+                        IsProfessor = false,
+                    }
+                );
+
+            modelBuilder.Entity<Account>()
+                .HasData
+                (
+                    new Account()
+                    {
+                        ID = "GV0001",
+                        IsActive = true,
+                        Username = "Admin",
+                        Password = BCrypt.Net.BCrypt.HashPassword("aA@123"),
+                        CreateBy = "GV0001",
+                        UpdateBy = "GV0001",
+                        RefreshToken = "",
+                        RefreshTokenExpires = DateTime.Now,
+                        UserID = userID,
+                    }
+                );
+
             base.OnModelCreating(modelBuilder);
         }
 

@@ -9,7 +9,7 @@ namespace BusinessObject.DTOs
 {
     public class RegisterResponse
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         [Required]
         [StringLength(50)]
         public string Username { get; set; }

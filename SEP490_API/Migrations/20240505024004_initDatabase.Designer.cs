@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SEP490_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240505020807_initDatabase")]
+    [Migration("20240505024004_initDatabase")]
     partial class initDatabase
     {
         /// <inheritdoc />
@@ -27,9 +27,9 @@ namespace SEP490_API.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.Account", b =>
                 {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("ID")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
@@ -44,8 +44,8 @@ namespace SEP490_API.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("RefreshToken")
                         .IsRequired()
@@ -85,8 +85,8 @@ namespace SEP490_API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnOrder(0);
 
-                    b.Property<Guid>("AccountID")
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<string>("AccountID")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnOrder(1);
 
                     b.HasKey("PermissionID", "AccountID");
@@ -102,8 +102,8 @@ namespace SEP490_API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnOrder(0);
 
-                    b.Property<Guid>("AccountID")
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<string>("AccountID")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnOrder(1);
 
                     b.HasKey("RoleID", "AccountID");
@@ -177,8 +177,9 @@ namespace SEP490_API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AccountID")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("AccountID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
@@ -210,6 +211,9 @@ namespace SEP490_API.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("Present")
                         .HasColumnType("bit");
@@ -248,8 +252,9 @@ namespace SEP490_API.Migrations
                     b.Property<Guid>("SchoolYearID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("TeacherID")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("TeacherID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("UpdateAt")
                         .HasColumnType("datetime2");
@@ -474,6 +479,14 @@ namespace SEP490_API.Migrations
                     b.Property<Guid>("ClassroomID")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreateBy")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
 
@@ -496,8 +509,17 @@ namespace SEP490_API.Migrations
                     b.Property<Guid>("SubjectID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("TeacherID")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("TeacherID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("UpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdateBy")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("ID");
 
@@ -582,10 +604,16 @@ namespace SEP490_API.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<DateTime>("FromDate")
+                        .HasColumnType("date");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("ToDate")
+                        .HasColumnType("date");
 
                     b.Property<DateTime>("UpdateAt")
                         .HasColumnType("datetime2");

@@ -31,6 +31,106 @@ namespace DataAccess.Repository
             _context = context;
         }
 
+        public async Task<LoginResponse> Login(LoginRequest request)
+        {
+            Account accountExist = await _context.Accounts
+                .Include(a => a.User)
+                //.Include(a => a.Groups)
+                //.ThenInclude(a => a.Group)
+                //.Include(a => a.Roles)
+                //.ThenInclude(a => a.Role)
+                .FirstOrDefaultAsync(a => a.Username.ToLower()
+                .Equals(request.Username.ToLower()))
+                ?? throw new ArgumentException("Tên đăng nhập hoặc tài khoản không chính xác");
+
+            if (!accountExist.IsActive)
+            {
+                throw new ArgumentException("Tài khoản chờ xác nhận");
+            }
+
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, accountExist.Password))
+            {
+                throw new ArgumentException("Tên đăng nhập hoặc tài khoản không chính xác");
+            }
+
+            string refreshToken = GenerateRefreshToken();
+
+            accountExist.RefreshToken = refreshToken;
+            accountExist.RefreshTokenExpires = DateTime.Now.AddDays(30);
+
+            await _context.SaveChangesAsync();
+
+            LoginResponse loginResponse = new LoginResponse()
+            {
+                User = new RegisterResponse()
+                {
+                    Id = accountExist.ID,
+                    Username = accountExist.Username,
+                    Address = accountExist.User.Address,
+                    Email = accountExist.User.Email,
+                    Fullname = accountExist.User.Fullname,
+                    Phone = accountExist.User.Phone,
+                    Avatar = accountExist.User.Avatar
+                }
+            };
+
+            loginResponse.AccessToken = CreateToken(loginResponse, 60 * 60 * 24);
+            loginResponse.RefreshToken = refreshToken;
+
+            return loginResponse;
+        }
+
+        public async Task<LoginResponse> RefreshToken(string accessToken, string refreshToken)
+        {
+            string accountID = GetIdFromExpiredToken(accessToken);
+
+            Account accountExist = await _context.Accounts
+                .Include(a => a.User)
+                //.Include(a => a.Groups)
+                //.ThenInclude(a => a.Group)
+                //.Include(a => a.Roles)
+                //.ThenInclude(a => a.Role)
+                .FirstOrDefaultAsync(a => a.ID.Equals(accountID) && a.IsActive)
+                ?? throw new ArgumentException("AccessToken không chính xác");
+
+            if (accountExist.RefreshToken == null)
+            {
+                throw new ArgumentException("RefreshToken quá hạn");
+            }
+
+            string newRefreshToken = GenerateRefreshToken();
+
+            TimeSpan? timeSpan = accountExist.RefreshTokenExpires - DateTime.Now;
+            if (accountExist.RefreshToken.Equals(refreshToken) && timeSpan.HasValue && timeSpan.Value.TotalDays < 30)
+            {
+                accountExist.RefreshToken = newRefreshToken;
+                accountExist.RefreshTokenExpires = DateTime.Now.AddDays(30);
+
+                await _context.SaveChangesAsync();
+
+                LoginResponse loginResponse = new LoginResponse()
+                {
+                    User = new RegisterResponse()
+                    {
+                        Id = accountExist.ID,
+                        Username = accountExist.Username,
+                        Address = accountExist.User.Address,
+                        Email = accountExist.User.Email,
+                        Fullname = accountExist.User.Fullname,
+                        Phone = accountExist.User.Phone,
+                        Avatar = accountExist.User.Avatar
+                    }
+                };
+
+                loginResponse.AccessToken = CreateToken(loginResponse, 60 * 60 * 8);
+                loginResponse.RefreshToken = newRefreshToken;
+
+                return loginResponse;
+            }
+
+            throw new ArgumentException("RefreshToken quá hạn");
+        }
+
         private string CreateToken(LoginResponse user, int seconds)
         {
             string issuer = _configuration["AppSettings:Issuer"];
@@ -69,6 +169,7 @@ namespace DataAccess.Repository
                 return Base64UrlEncode(randomNumber);
             }
         }
+
         private string Base64UrlEncode(byte[] input)
         {
             var output = Convert.ToBase64String(input);
@@ -77,7 +178,6 @@ namespace DataAccess.Repository
             output = output.Replace('/', '_'); 
             return output;
         }
-
 
         private string GetIdFromExpiredToken(string token)
         {

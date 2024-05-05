@@ -9,5 +9,7 @@ namespace BusinessObject.Interfaces
 {
     public interface IAccountRepository
     {
+        Task<LoginResponse> Login(LoginRequest request);
+        Task<LoginResponse> RefreshToken(string accessToken, string refreshToken);
     }
 }

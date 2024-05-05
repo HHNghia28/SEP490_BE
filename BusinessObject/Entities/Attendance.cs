@@ -20,6 +20,9 @@ namespace BusinessObject.Entities
 
         public bool Present { get; set; } = false;
 
+        [Required]
+        public DateTime Date { get; set; } = DateTime.Now;
+
         // Navigation properties
         [ForeignKey("ScheduleID")]
         public virtual Schedule Schedule { get; set; }

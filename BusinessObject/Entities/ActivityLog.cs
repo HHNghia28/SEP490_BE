@@ -14,7 +14,7 @@ namespace BusinessObject.Entities
         public Guid ID { get; set; }
 
         [ForeignKey("Account")]
-        public Guid AccountID { get; set; }
+        public string AccountID { get; set; }
 
         [Required]
         [MaxLength(50)]
@@ -29,7 +29,7 @@ namespace BusinessObject.Entities
         public string Note { get; set; }
 
         [Required]
-        public DateTime Date { get; set; }
+        public DateTime Date { get; set; } = DateTime.Now;
 
         [ForeignKey("AccountID")]
         public virtual Account Account { get; set; }

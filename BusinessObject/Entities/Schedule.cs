@@ -16,7 +16,7 @@ namespace BusinessObject.Entities
         public Guid ClassroomID { get; set; }
         public Guid ClassID { get; set; }
         public Guid SubjectID { get; set; }
-        public Guid TeacherID { get; set; }
+        public string TeacherID { get; set; }
 
         [Column(TypeName = "date")]
         public DateTime Date { get; set; }
@@ -31,6 +31,20 @@ namespace BusinessObject.Entities
         [Required]
         [MaxLength(250)]
         public string Note { get; set; }
+
+        [Required]
+        [MaxLength(50)]
+        public string CreateBy { get; set; }
+
+        [Required]
+        [MaxLength(50)]
+        public string UpdateBy { get; set; }
+
+        [Required]
+        public DateTime CreateAt { get; set; } = DateTime.Now;
+
+        [Required]
+        public DateTime UpdateAt { get; set; } = DateTime.Now;
 
         // Navigation properties
         [ForeignKey("ClassroomID")]
