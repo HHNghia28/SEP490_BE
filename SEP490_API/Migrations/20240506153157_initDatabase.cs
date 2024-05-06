@@ -12,42 +12,6 @@ namespace SEP490_API.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Classrooms",
-                columns: table => new
-                {
-                    ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    UpdateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Classrooms", x => x.ID);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Notifications",
-                columns: table => new
-                {
-                    ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Thumbnail = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    UpdateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notifications", x => x.ID);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Permissions",
                 columns: table => new
                 {
@@ -72,55 +36,17 @@ namespace SEP490_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SchoolSettings",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    SchoolName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    SchoolAddress = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    SchoolPhone = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    SchoolEmail = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    SchoolLevel = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    UpdateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SchoolSettings", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "SchoolYears",
                 columns: table => new
                 {
                     ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     FromDate = table.Column<DateTime>(type: "date", nullable: false),
-                    ToDate = table.Column<DateTime>(type: "date", nullable: false),
-                    CreateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    UpdateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ToDate = table.Column<DateTime>(type: "date", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SchoolYears", x => x.ID);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Slots",
-                columns: table => new
-                {
-                    ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SlotNumber = table.Column<int>(type: "int", nullable: false),
-                    Detail = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Slots", x => x.ID);
                 });
 
             migrationBuilder.CreateTable(
@@ -159,11 +85,7 @@ namespace SEP490_API.Migrations
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     Grade = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    UpdateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -228,11 +150,7 @@ namespace SEP490_API.Migrations
                     UserID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     RoleID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RefreshToken = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    RefreshTokenExpires = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    UpdateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    RefreshTokenExpires = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -304,11 +222,7 @@ namespace SEP490_API.Migrations
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     UserID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RefreshToken = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    RefreshTokenExpires = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    UpdateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    RefreshTokenExpires = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -329,11 +243,7 @@ namespace SEP490_API.Migrations
                     ComponentScoreID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StudentID = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     SchoolYearID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Score = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    CreateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    UpdateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Score = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -434,11 +344,7 @@ namespace SEP490_API.Migrations
                 {
                     ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TeacherID = table.Column<string>(type: "nvarchar(50)", nullable: false),
-                    SchoolYearID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    UpdateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    SchoolYearID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -458,23 +364,63 @@ namespace SEP490_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Thumbnail = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreateBy = table.Column<string>(type: "nvarchar(50)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Accounts_CreateBy",
+                        column: x => x.CreateBy,
+                        principalTable: "Accounts",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SchoolSettings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SchoolName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    SchoolAddress = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    SchoolPhone = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    SchoolEmail = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    SchoolLevel = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CreateBy = table.Column<string>(type: "nvarchar(50)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SchoolSettings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SchoolSettings_Accounts_CreateBy",
+                        column: x => x.CreateBy,
+                        principalTable: "Accounts",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Schedules",
                 columns: table => new
                 {
                     ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClassroomID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ClassID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SubjectID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TeacherID = table.Column<string>(type: "nvarchar(50)", nullable: false),
                     Date = table.Column<DateTime>(type: "date", nullable: false),
-                    SlotByDateID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SlotByDate = table.Column<int>(type: "int", nullable: false),
                     SlotByLessonPlans = table.Column<int>(type: "int", nullable: false),
                     Rank = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    CreateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    UpdateBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Note = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -490,18 +436,6 @@ namespace SEP490_API.Migrations
                         column: x => x.ClassID,
                         principalTable: "Classes",
                         principalColumn: "ID");
-                    table.ForeignKey(
-                        name: "FK_Schedules_Classrooms_ClassroomID",
-                        column: x => x.ClassroomID,
-                        principalTable: "Classrooms",
-                        principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Schedules_Slots_SlotByDateID",
-                        column: x => x.SlotByDateID,
-                        principalTable: "Slots",
-                        principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Schedules_Subjects_SubjectID",
                         column: x => x.SubjectID,
@@ -559,6 +493,16 @@ namespace SEP490_API.Migrations
                         principalColumn: "ID",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "ID", "Address", "Avatar", "Birthday", "Email", "Fullname", "Gender", "IsBachelor", "IsDoctor", "IsMaster", "IsProfessor", "Nation", "Phone" },
+                values: new object[] { new Guid("a2470b0d-aa58-404d-9972-508197314c71"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 5, 6, 22, 31, 57, 282, DateTimeKind.Local).AddTicks(6483), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" });
+
+            migrationBuilder.InsertData(
+                table: "Accounts",
+                columns: new[] { "ID", "IsActive", "Password", "RefreshToken", "RefreshTokenExpires", "UserID", "Username" },
+                values: new object[] { "GV0001", true, "$2a$11$hKCnspfXmT8JnF2XKlC4o./dW2jcusw/Avta0WSpIzmVwiCG/RElu", "", new DateTime(2024, 5, 6, 22, 31, 57, 464, DateTimeKind.Local).AddTicks(6923), new Guid("a2470b0d-aa58-404d-9972-508197314c71"), "Admin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AccountPermissions_AccountID",
@@ -622,6 +566,11 @@ namespace SEP490_API.Migrations
                 column: "SubjectID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Notifications_CreateBy",
+                table: "Notifications",
+                column: "CreateBy");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RolePermissions_RoleID",
                 table: "RolePermissions",
                 column: "RoleID");
@@ -632,16 +581,6 @@ namespace SEP490_API.Migrations
                 column: "ClassID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Schedules_ClassroomID",
-                table: "Schedules",
-                column: "ClassroomID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Schedules_SlotByDateID",
-                table: "Schedules",
-                column: "SlotByDateID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Schedules_SubjectID",
                 table: "Schedules",
                 column: "SubjectID");
@@ -650,6 +589,11 @@ namespace SEP490_API.Migrations
                 name: "IX_Schedules_TeacherID",
                 table: "Schedules",
                 column: "TeacherID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SchoolSettings_CreateBy",
+                table: "SchoolSettings",
+                column: "CreateBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StudentClasses_ClassID",
@@ -719,12 +663,6 @@ namespace SEP490_API.Migrations
 
             migrationBuilder.DropTable(
                 name: "Classes");
-
-            migrationBuilder.DropTable(
-                name: "Classrooms");
-
-            migrationBuilder.DropTable(
-                name: "Slots");
 
             migrationBuilder.DropTable(
                 name: "Roles");

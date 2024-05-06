@@ -26,14 +26,12 @@ namespace DataAccess.Context
         public DbSet<ActivityLog> ActivityLogs { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
         public DbSet<Classes> Classes { get; set; }
-        public DbSet<Classroom> Classrooms { get; set; }
         public DbSet<ComponentScore> ComponentScores { get; set; }
         public DbSet<LessonPlans> LessonsPlans { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
         public DbSet<SchoolSetting> SchoolSettings { get; set; }
         public DbSet<SchoolYear> SchoolYears { get; set; }
-        public DbSet<Slot> Slots { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<StudentClasses> StudentClasses { get; set; }
         public DbSet<StudentScores> StudentScores { get; set; }
@@ -94,8 +92,6 @@ namespace DataAccess.Context
                         IsActive = true,
                         Username = "Admin",
                         Password = BCrypt.Net.BCrypt.HashPassword("aA@123"),
-                        CreateBy = "GV0001",
-                        UpdateBy = "GV0001",
                         RefreshToken = "",
                         RefreshTokenExpires = DateTime.Now,
                         UserID = userID,

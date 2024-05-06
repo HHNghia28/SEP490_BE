@@ -12,8 +12,6 @@ namespace BusinessObject.Entities
     {
         [Key]
         public Guid ID { get; set; }
-
-        public Guid ClassroomID { get; set; }
         public Guid ClassID { get; set; }
         public Guid SubjectID { get; set; }
         public string TeacherID { get; set; }
@@ -21,7 +19,7 @@ namespace BusinessObject.Entities
         [Column(TypeName = "date")]
         public DateTime Date { get; set; }
 
-        public Guid SlotByDateID { get; set; }
+        public int SlotByDate { get; set; }
         public int SlotByLessonPlans { get; set; }
 
         [Required]
@@ -32,24 +30,6 @@ namespace BusinessObject.Entities
         [MaxLength(250)]
         public string Note { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string CreateBy { get; set; }
-
-        [Required]
-        [MaxLength(50)]
-        public string UpdateBy { get; set; }
-
-        [Required]
-        public DateTime CreateAt { get; set; } = DateTime.Now;
-
-        [Required]
-        public DateTime UpdateAt { get; set; } = DateTime.Now;
-
-        // Navigation properties
-        [ForeignKey("ClassroomID")]
-        public virtual Classroom Classroom { get; set; }
-
         [ForeignKey("ClassID")]
         public virtual Classes Classes { get; set; }
 
@@ -58,8 +38,5 @@ namespace BusinessObject.Entities
 
         [ForeignKey("TeacherID")]
         public virtual Account Teacher { get; set; }
-
-        [ForeignKey("SlotByDateID")]
-        public virtual Slot SlotByDate { get; set; }
     }
 }

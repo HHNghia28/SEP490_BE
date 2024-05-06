@@ -19,7 +19,7 @@ namespace BusinessObject.Entities
         public string SchoolName { get; set; }
 
         [Required]
-        [MaxLength(100)]
+        [MaxLength(250)]
         public string SchoolAddress { get; set; }
 
         [Required]
@@ -34,18 +34,10 @@ namespace BusinessObject.Entities
         [MaxLength(50)]
         public string SchoolLevel { get; set; }
 
-        [Required]
-        [MaxLength(50)]
+        [ForeignKey("Account")]
         public string CreateBy { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string UpdateBy { get; set; }
-
-        [Required]
-        public DateTime CreateAt { get; set; } = DateTime.Now;
-
-        [Required]
-        public DateTime UpdateAt { get; set; } = DateTime.Now;
+        [ForeignKey("CreateBy")]
+        public virtual Account Account { get; set; }
     }
 }

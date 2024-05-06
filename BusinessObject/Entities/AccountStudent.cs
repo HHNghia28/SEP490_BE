@@ -36,20 +36,6 @@ namespace BusinessObject.Entities
 
         public DateTime? RefreshTokenExpires { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string CreateBy { get; set; }
-
-        [Required]
-        [MaxLength(50)]
-        public string UpdateBy { get; set; }
-
-        [Required]
-        public DateTime CreateAt { get; set; } = DateTime.Now;
-
-        [Required]
-        public DateTime UpdateAt { get; set; } = DateTime.Now;
-
         // Navigation properties
         [ForeignKey("UserID")]
         public virtual Student Student { get; set; }

@@ -8,12 +8,8 @@ using System.Threading.Tasks;
 
 namespace BusinessObject.DTOs
 {
-    public class SchoolYearDTO
+    public class SchoolYearRequest
     {
-        [Required]
-        [MaxLength(50)]
-        public string Name { get; set; }
-
         [Column(TypeName = "date")]
         public DateTime FromDate { get; set; }
 

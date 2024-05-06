@@ -28,14 +28,6 @@ namespace SEP490_API.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -51,14 +43,6 @@ namespace SEP490_API.Migrations
 
                     b.Property<DateTime?>("RefreshTokenExpires")
                         .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<Guid>("UserID")
                         .HasColumnType("uniqueidentifier");
@@ -79,15 +63,11 @@ namespace SEP490_API.Migrations
                         new
                         {
                             ID = "GV0001",
-                            CreateAt = new DateTime(2024, 5, 5, 10, 15, 3, 725, DateTimeKind.Local).AddTicks(8261),
-                            CreateBy = "GV0001",
                             IsActive = true,
-                            Password = "$2a$11$jp.Yl0PovlDZizEI9r8BIeBGr4pufkEmfekWlTn4W8ycMOSidTHee",
+                            Password = "$2a$11$hKCnspfXmT8JnF2XKlC4o./dW2jcusw/Avta0WSpIzmVwiCG/RElu",
                             RefreshToken = "",
-                            RefreshTokenExpires = new DateTime(2024, 5, 5, 10, 15, 3, 927, DateTimeKind.Local).AddTicks(2835),
-                            UpdateAt = new DateTime(2024, 5, 5, 10, 15, 3, 725, DateTimeKind.Local).AddTicks(8262),
-                            UpdateBy = "GV0001",
-                            UserID = new Guid("551b2cec-eaf0-4856-b892-f8ee4af4d3a3"),
+                            RefreshTokenExpires = new DateTime(2024, 5, 6, 22, 31, 57, 464, DateTimeKind.Local).AddTicks(6923),
+                            UserID = new Guid("a2470b0d-aa58-404d-9972-508197314c71"),
                             Username = "Admin"
                         });
                 });
@@ -132,14 +112,6 @@ namespace SEP490_API.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -158,14 +130,6 @@ namespace SEP490_API.Migrations
 
                     b.Property<Guid>("RoleID")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<Guid?>("UserID")
                         .HasColumnType("uniqueidentifier");
@@ -254,27 +218,11 @@ namespace SEP490_API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<Guid>("SchoolYearID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("TeacherID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("ID");
@@ -284,46 +232,6 @@ namespace SEP490_API.Migrations
                     b.HasIndex("TeacherID");
 
                     b.ToTable("Classes");
-                });
-
-            modelBuilder.Entity("BusinessObject.Entities.Classroom", b =>
-                {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("Classrooms");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.ComponentScore", b =>
@@ -402,12 +310,8 @@ namespace SEP490_API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("CreateBy")
                         .IsRequired()
-                        .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Thumbnail")
@@ -418,15 +322,9 @@ namespace SEP490_API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.HasKey("ID");
+
+                    b.HasIndex("CreateBy");
 
                     b.ToTable("Notifications");
                 });
@@ -489,17 +387,6 @@ namespace SEP490_API.Migrations
                     b.Property<Guid>("ClassID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ClassroomID")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
 
@@ -513,8 +400,8 @@ namespace SEP490_API.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<Guid>("SlotByDateID")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("SlotByDate")
+                        .HasColumnType("int");
 
                     b.Property<int>("SlotByLessonPlans")
                         .HasColumnType("int");
@@ -526,21 +413,9 @@ namespace SEP490_API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.HasKey("ID");
 
                     b.HasIndex("ClassID");
-
-                    b.HasIndex("ClassroomID");
-
-                    b.HasIndex("SlotByDateID");
 
                     b.HasIndex("SubjectID");
 
@@ -557,18 +432,14 @@ namespace SEP490_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("CreateBy")
                         .IsRequired()
-                        .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("SchoolAddress")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("SchoolEmail")
                         .IsRequired()
@@ -590,15 +461,9 @@ namespace SEP490_API.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("CreateBy");
 
                     b.ToTable("SchoolSettings");
                 });
@@ -608,14 +473,6 @@ namespace SEP490_API.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("FromDate")
                         .HasColumnType("date");
@@ -628,36 +485,9 @@ namespace SEP490_API.Migrations
                     b.Property<DateTime>("ToDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.HasKey("ID");
 
                     b.ToTable("SchoolYears");
-                });
-
-            modelBuilder.Entity("BusinessObject.Entities.Slot", b =>
-                {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Detail")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("SlotNumber")
-                        .HasColumnType("int");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("Slots");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Student", b =>
@@ -779,14 +609,6 @@ namespace SEP490_API.Migrations
                     b.Property<Guid>("ComponentScoreID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<Guid>("SchoolYearID")
                         .HasColumnType("uniqueidentifier");
 
@@ -796,14 +618,6 @@ namespace SEP490_API.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("StudentID")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdateBy")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -825,14 +639,6 @@ namespace SEP490_API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreateBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(250)
@@ -847,14 +653,6 @@ namespace SEP490_API.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdateBy")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -926,10 +724,10 @@ namespace SEP490_API.Migrations
                     b.HasData(
                         new
                         {
-                            ID = new Guid("551b2cec-eaf0-4856-b892-f8ee4af4d3a3"),
+                            ID = new Guid("a2470b0d-aa58-404d-9972-508197314c71"),
                             Address = "600 Nguyễn Văn Cừ",
                             Avatar = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png",
-                            Birthday = new DateTime(2024, 5, 5, 10, 15, 3, 725, DateTimeKind.Local).AddTicks(7981),
+                            Birthday = new DateTime(2024, 5, 6, 22, 31, 57, 282, DateTimeKind.Local).AddTicks(6483),
                             Email = "admin@fpt.edu.vn",
                             Fullname = "Lê Văn Admin",
                             Gender = "Nam",
@@ -1079,6 +877,17 @@ namespace SEP490_API.Migrations
                     b.Navigation("Subject");
                 });
 
+            modelBuilder.Entity("BusinessObject.Entities.Notification", b =>
+                {
+                    b.HasOne("BusinessObject.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("CreateBy")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("BusinessObject.Entities.RolePermission", b =>
                 {
                     b.HasOne("BusinessObject.Entities.Permission", "Permission")
@@ -1106,18 +915,6 @@ namespace SEP490_API.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("BusinessObject.Entities.Classroom", "Classroom")
-                        .WithMany()
-                        .HasForeignKey("ClassroomID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BusinessObject.Entities.Slot", "SlotByDate")
-                        .WithMany()
-                        .HasForeignKey("SlotByDateID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("BusinessObject.Entities.Subject", "Subject")
                         .WithMany("Schedules")
                         .HasForeignKey("SubjectID")
@@ -1132,13 +929,20 @@ namespace SEP490_API.Migrations
 
                     b.Navigation("Classes");
 
-                    b.Navigation("Classroom");
-
-                    b.Navigation("SlotByDate");
-
                     b.Navigation("Subject");
 
                     b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("BusinessObject.Entities.SchoolSetting", b =>
+                {
+                    b.HasOne("BusinessObject.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("CreateBy")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.StudentClasses", b =>

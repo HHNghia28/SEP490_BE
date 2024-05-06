@@ -19,20 +19,6 @@ namespace BusinessObject.Entities
         [Required]
         public Guid SchoolYearID { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string CreateBy { get; set; }
-
-        [Required]
-        [MaxLength(50)]
-        public string UpdateBy { get; set; }
-
-        [Required]
-        public DateTime CreateAt { get; set; } = DateTime.Now;
-
-        [Required]
-        public DateTime UpdateAt { get; set; } = DateTime.Now;
-
         // Navigation properties
         public virtual Account Teacher { get; set; }
         public virtual SchoolYear SchoolYear { get; set; }

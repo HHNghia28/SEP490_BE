@@ -56,42 +56,9 @@ namespace SEP490_API.Middlewares
                 }
 
                 var userIdClaim = principal?.Claims.FirstOrDefault(c => c.Type == "ID" || c.Type == ClaimTypes.NameIdentifier);
-
-                if (userIdClaim != null)
-                {
-                    using (var scope = serviceScopeFactory.CreateScope())
-                    {
-                        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                        var roles = await GetRolesByAccountIdAsync(dbContext, userIdClaim.Value);
-
-                        var claimsIdentity = new ClaimsIdentity(principal.Identity);
-                        foreach (var role in roles)
-                        {
-                            claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, role));
-                        }
-
-                        context.User.AddIdentity(claimsIdentity);
-                    }
-                }
             }
 
             await _next(context);
-        }
-
-        private async Task<IEnumerable<string>> GetRolesByAccountIdAsync(ApplicationDbContext _context, string accountId)
-        {
-            var roles = await _context.Accounts
-                .Where(a => a.ID.ToString().ToLower() == accountId.ToLower() && a.IsActive)
-                .Include(a => a.User)
-                .Include(a => a.AccountPermissions)
-                .ThenInclude(a => a.Permission)
-                .Include(a => a.AccountRoles)
-                .ThenInclude(a => a.Role)
-                .SelectMany(a => a.AccountRoles.Select(r => r.Role.Name).Concat(a.AccountPermissions.SelectMany(g => g.Permission.RolePermissions.Select(gr => gr.Role.Name))))
-                .Distinct()
-                .ToListAsync();
-
-            return roles;
         }
 
         private ClaimsPrincipal ValidateToken(string token)

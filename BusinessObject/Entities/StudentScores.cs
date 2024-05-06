@@ -23,20 +23,6 @@ namespace BusinessObject.Entities
         [MaxLength(10)]
         public string Score { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string CreateBy { get; set; }
-
-        [Required]
-        [MaxLength(50)]
-        public string UpdateBy { get; set; }
-
-        [Required]
-        public DateTime CreateAt { get; set; }
-
-        [Required]
-        public DateTime UpdateAt { get; set; }
-
         // Navigation properties
         [ForeignKey("ComponentScoreID")]
         public virtual ComponentScore ComponentScore { get; set; }

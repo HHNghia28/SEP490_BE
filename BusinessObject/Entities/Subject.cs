@@ -27,20 +27,6 @@ namespace BusinessObject.Entities
         [Required]
         public bool IsActive { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string CreateBy { get; set; }
-
-        [Required]
-        [MaxLength(50)]
-        public string UpdateBy { get; set; }
-
-        [Required]
-        public DateTime CreateAt { get; set; } = DateTime.Now;
-
-        [Required]
-        public DateTime UpdateAt { get; set; } = DateTime.Now;
-
         // Navigation properties
         public virtual ICollection<ComponentScore> ComponentScores { get; set; }
         public virtual ICollection<LessonPlans> LessonPlans { get; set; }

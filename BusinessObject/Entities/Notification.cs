@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,18 +22,10 @@ namespace BusinessObject.Entities
         [Required]
         public string Thumbnail { get; set; }
 
-        [Required]
-        [MaxLength(50)]
+        [ForeignKey("Account")]
         public string CreateBy { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string UpdateBy { get; set; }
-
-        [Required]
-        public DateTime CreateAt { get; set; } = DateTime.Now;
-
-        [Required]
-        public DateTime UpdateAt { get; set; } = DateTime.Now;
+        [ForeignKey("CreateBy")]
+        public virtual Account Account { get; set; }
     }
 }
