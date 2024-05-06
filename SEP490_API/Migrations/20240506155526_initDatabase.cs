@@ -40,9 +40,7 @@ namespace SEP490_API.Migrations
                 columns: table => new
                 {
                     ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    FromDate = table.Column<DateTime>(type: "date", nullable: false),
-                    ToDate = table.Column<DateTime>(type: "date", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -497,12 +495,12 @@ namespace SEP490_API.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "ID", "Address", "Avatar", "Birthday", "Email", "Fullname", "Gender", "IsBachelor", "IsDoctor", "IsMaster", "IsProfessor", "Nation", "Phone" },
-                values: new object[] { new Guid("a2470b0d-aa58-404d-9972-508197314c71"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 5, 6, 22, 31, 57, 282, DateTimeKind.Local).AddTicks(6483), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" });
+                values: new object[] { new Guid("bfc0ecc5-f3f4-4799-acf1-efeccd4131ea"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 5, 6, 22, 55, 26, 463, DateTimeKind.Local).AddTicks(5521), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" });
 
             migrationBuilder.InsertData(
                 table: "Accounts",
                 columns: new[] { "ID", "IsActive", "Password", "RefreshToken", "RefreshTokenExpires", "UserID", "Username" },
-                values: new object[] { "GV0001", true, "$2a$11$hKCnspfXmT8JnF2XKlC4o./dW2jcusw/Avta0WSpIzmVwiCG/RElu", "", new DateTime(2024, 5, 6, 22, 31, 57, 464, DateTimeKind.Local).AddTicks(6923), new Guid("a2470b0d-aa58-404d-9972-508197314c71"), "Admin" });
+                values: new object[] { "GV0001", true, "$2a$11$Yi37Uow2kEK.ozHgnAneFu1/X7HZenKJ4iKQNfs6x2k5RT7yGG8ge", "", new DateTime(2024, 5, 6, 22, 55, 26, 654, DateTimeKind.Local).AddTicks(108), new Guid("bfc0ecc5-f3f4-4799-acf1-efeccd4131ea"), "Admin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AccountPermissions_AccountID",

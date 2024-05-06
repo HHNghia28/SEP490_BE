@@ -16,11 +16,5 @@ namespace BusinessObject.Entities
         [Required]
         [MaxLength(50)]
         public string Name { get; set; }
-
-        [Column(TypeName = "date")]
-        public DateTime FromDate { get; set; }
-
-        [Column(TypeName = "date")]
-        public DateTime ToDate { get; set; }
     }
 }
