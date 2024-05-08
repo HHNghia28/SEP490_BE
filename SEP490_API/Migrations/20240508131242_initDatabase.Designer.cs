@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SEP490_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240506155526_initDatabase")]
+    [Migration("20240508131242_initDatabase")]
     partial class initDatabase
     {
         /// <inheritdoc />
@@ -67,10 +67,10 @@ namespace SEP490_API.Migrations
                         {
                             ID = "GV0001",
                             IsActive = true,
-                            Password = "$2a$11$Yi37Uow2kEK.ozHgnAneFu1/X7HZenKJ4iKQNfs6x2k5RT7yGG8ge",
+                            Password = "$2a$11$4I4VnmrZyfjAZH.4x/BeS.e/HkLGpXdlI9kFqnpRop/rFGcZ41KSi",
                             RefreshToken = "",
-                            RefreshTokenExpires = new DateTime(2024, 5, 6, 22, 55, 26, 654, DateTimeKind.Local).AddTicks(108),
-                            UserID = new Guid("bfc0ecc5-f3f4-4799-acf1-efeccd4131ea"),
+                            RefreshTokenExpires = new DateTime(2024, 5, 8, 20, 12, 42, 738, DateTimeKind.Local).AddTicks(7194),
+                            UserID = new Guid("c3ac9c68-d93c-4c52-b93d-fb3044167d27"),
                             Username = "Admin"
                         });
                 });
@@ -220,6 +220,10 @@ namespace SEP490_API.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Classroom")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("SchoolYearID")
                         .HasColumnType("uniqueidentifier");
@@ -721,10 +725,10 @@ namespace SEP490_API.Migrations
                     b.HasData(
                         new
                         {
-                            ID = new Guid("bfc0ecc5-f3f4-4799-acf1-efeccd4131ea"),
+                            ID = new Guid("c3ac9c68-d93c-4c52-b93d-fb3044167d27"),
                             Address = "600 Nguyễn Văn Cừ",
                             Avatar = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png",
-                            Birthday = new DateTime(2024, 5, 6, 22, 55, 26, 463, DateTimeKind.Local).AddTicks(5521),
+                            Birthday = new DateTime(2024, 5, 8, 20, 12, 42, 527, DateTimeKind.Local).AddTicks(5436),
                             Email = "admin@fpt.edu.vn",
                             Fullname = "Lê Văn Admin",
                             Gender = "Nam",

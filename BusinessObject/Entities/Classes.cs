@@ -16,6 +16,8 @@ namespace BusinessObject.Entities
         [Required]
         public string TeacherID { get; set; }
 
+        public string Classroom { get; set; }
+
         [Required]
         public Guid SchoolYearID { get; set; }
 
