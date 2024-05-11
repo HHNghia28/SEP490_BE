@@ -66,10 +66,10 @@ namespace DataAccess.Repository
 
                 List<string> roleStudents = new();
 
-                foreach (var item1 in accountStudentExist.Role.RolePermissions)
-                {
-                    roleStudents.Add(item1.Permission.Name);
-                }
+                //foreach (var item1 in accountStudentExist.Role.RolePermissions)
+                //{
+                //    roleStudents.Add(item1.Permission.Name);
+                //}
 
                 string refreshTokenS = GenerateRefreshToken();
 
@@ -427,7 +427,7 @@ namespace DataAccess.Repository
                 .ThenInclude(a => a.RolePermissions)
                 .ThenInclude(a => a.Permission)
                 .FirstOrDefaultAsync(a => a.ID.ToLower()
-                .Equals(accountID.ToLower()));
+                .Equals(accountID.ToLower()) && a.IsActive);
 
             if (account == null)
             {
@@ -482,9 +482,176 @@ namespace DataAccess.Repository
             await _context.SaveChangesAsync();
         }
 
-        public string CreateNewAccountId()
+        public async Task RegisterStudent(RegisterStudentRequest request)
         {
-            var maxId = _context.Accounts.Max(a => a.ID);
+            string newID = CreateNewAccountId();
+            string newUsername = CreateUsername(request.Fullname, newID);
+            Guid userID = Guid.NewGuid();
+
+            string avt = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png";
+
+            if (request.Avatar != null)
+            {
+                avt = await _imageService.UploadImage(request.Avatar);
+            }
+
+            Student student = new()
+            {
+                ID = userID,
+                Address = request.Address,
+                Avatar = avt,
+                Birthday = request.Birthday,
+                Birthplace = request.Birthplace,
+                Email = request.Email,
+                Fullname = request.Fullname,
+                Gender = request.Gender,
+                HomeTown = request.HomeTown,
+                IsMartyrs = request.IsMartyrs,
+                Nation = request.Nation,
+                Phone = request.Phone,
+                FatherFullName = request.FatherFullName,
+                FatherPhone = request.FatherPhone,
+                FatherProfession = request.FatherProfession,
+                MotherFullName = request.MotherFullName,
+                MotherPhone = request.MotherPhone,
+                MotherProfession = request.MotherProfession
+            };
+
+            await _context.Students.AddAsync(student);
+
+            AccountStudent account = new()
+            {
+                ID = newID,
+                IsActive = true,
+                Password = BCrypt.Net.BCrypt.HashPassword("aA@123"),
+                RefreshToken = "",
+                RefreshTokenExpires = DateTime.Now,
+                RoleID = new Guid("05ce8241-b7c0-49d1-94a5-a32d51fdc22a"),
+                UserID = userID,
+                Username = newUsername,
+            };
+
+            await _context.AccountStudents.AddAsync(account);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<RegisterResponse>> GetStudents()
+        {
+            return await _context.AccountStudents
+                .AsNoTracking()
+                .Include(a => a.Student)
+                .Where(a => a.IsActive)
+                .Select(item => new RegisterResponse()
+                {
+                    Id = item.ID,
+                    Fullname = item.Student.Fullname,
+                    Address = item.Student.Address,
+                    Avatar = item.Student.Avatar,
+                    Email = item.Student.Email,
+                    Phone = item.Student.Phone,
+                    Username = item.Username
+                })
+                .ToListAsync();
+        }
+
+        public async Task<StudentResponse> GetStudent(string accountID)
+        {
+            AccountStudent account = await _context.AccountStudents
+                .AsNoTracking()
+                .Include(a => a.Student)
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(accountID.ToLower()) && a.IsActive);
+
+            if (account == null)
+            {
+                throw new NotFoundException("Tài khoản không tồn tại");
+            }
+
+            return new StudentResponse()
+            {
+                Username = account.Username,
+                Address = account.Student.Address,
+                Avatar = account.Student.Avatar,
+                Birthday = account.Student.Birthday,
+                Email = account.Student.Email,
+                Fullname = account.Student.Fullname,
+                Gender = account.Student.Gender,
+                ID = account.ID,
+                Nation = account.Student.Nation,
+                Phone = account.Student.Phone,
+                FatherFullName = account.Student.FatherFullName,
+                Birthplace = account.Student.Birthplace,
+                FatherPhone = account.Student.FatherPhone,
+                FatherProfession = account.Student.FatherProfession,
+                HomeTown = account.Student.HomeTown,
+                IsMartyrs = account.Student.IsMartyrs,
+                MotherFullName = account.Student.MotherFullName,
+                MotherPhone = account.Student.MotherPhone,
+                MotherProfession = account.Student.MotherProfession,
+            };
+        }
+
+        public async Task DeleteStudent(string accountID)
+        {
+            AccountStudent account = await _context.AccountStudents
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(accountID.ToLower()));
+
+            if (account == null)
+            {
+                throw new NotFoundException("Tài khoản không tồn tại");
+            }
+
+            account.IsActive = false;
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateStudent(string accountID, UpdateStudentRequest request)
+        {
+            AccountStudent account = await _context.AccountStudents
+                .Include(a => a.Student)
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(accountID.ToLower()));
+
+            if (account == null)
+            {
+                throw new NotFoundException("Tài khoản không tồn tại");
+            }
+
+            string avt = account.Student.Avatar;
+
+            if (request.Avatar != null)
+            {
+                avt = await _imageService.UploadImage(request.Avatar);
+            }
+
+            account.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            account.Student.Fullname = request.Fullname;
+            account.Student.Address = request.Address;
+            account.Student.Email = request.Email;
+            account.Student.Phone = request.Phone;
+            account.Student.Gender = request.Gender;
+            account.Student.Birthday = request.Birthday;
+            account.Student.Nation = request.Nation;
+            account.Student.Birthplace = request.Birthplace;
+            account.Student.HomeTown = request.HomeTown;
+            account.Student.FatherFullName = request.FatherFullName;
+            account.Student.FatherProfession = request.FatherProfession;
+            account.Student.FatherPhone = request.FatherPhone;
+            account.Student.MotherFullName = request.MotherFullName;
+            account.Student.MotherProfession = request.MotherProfession;
+            account.Student.MotherPhone = request.MotherPhone;
+            account.Student.IsMartyrs = request.IsMartyrs;
+            account.Student.Avatar = avt;
+
+            await _context.SaveChangesAsync();
+
+        }
+
+        private string CreateNewAccountId()
+        {
+            var maxId = _context.AccountStudents.Max(a => a.ID);
 
             if (!string.IsNullOrEmpty(maxId))
             {
@@ -494,12 +661,12 @@ namespace DataAccess.Repository
 
                 number++;
 
-                var newId = $"GV{number.ToString().PadLeft(4, '0')}";
+                var newId = $"HS{number.ToString().PadLeft(4, '0')}";
 
                 return newId;
             }
 
-            return "GV0001";
+            return "HS0001";
         }
 
         private string CreateToken(LoginResponse user, int seconds, List<string> roles)
@@ -606,6 +773,24 @@ namespace DataAccess.Repository
             var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out validatedToken);
 
             return principal;
+        }
+        private string CreateUsername(string fullName, string suffix)
+        {
+            var nameParts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (nameParts.Length < 2)
+            {
+                throw new ArgumentException("The full name must have at least two parts.", nameof(fullName));
+            }
+
+            var firstName = nameParts.Last();
+
+            var initials = nameParts.Take(nameParts.Length - 1)
+                                    .Select(p => p[0].ToString().ToUpperInvariant());
+
+            var username = $"{firstName}{string.Join("", initials)}{suffix}".ToUpperInvariant();
+
+            return username;
         }
     }
 }
