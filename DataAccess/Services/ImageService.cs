@@ -42,7 +42,7 @@ namespace DataAccess.Services
             }
 
             var currentUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}";
-            var imageUrl = Path.Combine(currentUrl, folderName, fileName).Replace("\\", "/");
+            var imageUrl = Path.Combine(currentUrl, folderName, fileName).Replace("\\", "/").Replace("/wwwroot","");
 
             return imageUrl;
         }

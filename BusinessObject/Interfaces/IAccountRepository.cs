@@ -13,6 +13,6 @@ namespace BusinessObject.Interfaces
         Task<LoginResponse> Login(LoginRequest request);
         Task<LoginResponse> RefreshToken(string accessToken, string refreshToken);
         Task RegisterTeacher(RegisterTeacherRequest request);
-        Task UpdateTeacher(RegisterTeacherRequest request);
+        Task UpdateTeacher(string accountID, UpdateTeacherRequest request);
     }
 }

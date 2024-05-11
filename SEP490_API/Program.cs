@@ -158,4 +158,6 @@ app.UseMiddleware<AuthorizationMiddleware>();
 
 app.MapControllers();
 
+app.UseStaticFiles();
+
 app.Run();

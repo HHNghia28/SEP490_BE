@@ -222,7 +222,7 @@ namespace DataAccess.Repository
         public async Task RegisterTeacher(RegisterTeacherRequest request)
         {
             Account accountIDExist = await _context.Accounts.FirstOrDefaultAsync(a => a.ID.ToLower()
-            .Equals(request.ID.ToLower().Trim()));
+            .Equals(request.Username.ToLower().Trim()));
 
             if (accountIDExist != null)
             {
@@ -246,7 +246,7 @@ namespace DataAccess.Repository
             }
 
             Guid guid = Guid.NewGuid();
-            string accountID = request.ID;
+            string accountID = request.Username;
 
             string avt = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png";
 
@@ -312,6 +312,79 @@ namespace DataAccess.Repository
                 Permission per = await _context.Permissions.FirstOrDefaultAsync(r => r.Name.ToLower().Equals(role.ToLower()));
 
                 if(per != null)
+                {
+                    permissions.Add(new()
+                    {
+                        AccountID = accountID,
+                        PermissionID = per.ID
+                    });
+                }
+            }
+
+            await _context.AccountPermissions.AddRangeAsync(permissions);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateTeacher(string accountID, UpdateTeacherRequest request)
+        {
+            Account accountExist = await _context.Accounts
+                .Include(a => a.User)
+                .Include(a => a.AccountPermissions)
+                .Include(a => a.AccountRoles)
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(accountID.ToLower().Trim()));
+
+            if (accountExist == null)
+            {
+                throw new ArgumentException("Tài khoản không tồn tại");
+            }
+
+            string avt = accountExist.User.Avatar;
+
+            if (request.Avatar != null)
+            {
+                avt = await _imageService.UploadImage(request.Avatar);
+            }
+
+            accountExist.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            accountExist.User.Address = request.Address;
+            accountExist.User.Fullname = request.Fullname;
+            accountExist.User.Birthday = request.Birthday;
+            accountExist.User.Email = request.Email;
+            accountExist.User.Phone = request.Phone;
+            accountExist.User.Gender = request.Gender;
+            accountExist.User.Nation = request.Nation;
+            accountExist.User.IsDoctor = request.IsDoctor;
+            accountExist.User.IsBachelor = request.IsBachelor;
+            accountExist.User.IsMaster = request.IsMaster;
+            accountExist.User.IsProfessor = request.IsProfessor;
+            accountExist.User.Avatar = avt;
+
+            List<AccountRole> roles = new();
+
+            foreach (var role in request.Roles)
+            {
+                Role role1 = await _context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower().Equals(role.ToLower()));
+
+                if (role1 != null)
+                {
+                    roles.Add(new()
+                    {
+                        AccountID = accountID,
+                        RoleID = role1.ID
+                    });
+                }
+            }
+
+            await _context.AccountRoles.AddRangeAsync(roles);
+
+            List<AccountPermission> permissions = new();
+
+            foreach (var role in request.Permissions)
+            {
+                Permission per = await _context.Permissions.FirstOrDefaultAsync(r => r.Name.ToLower().Equals(role.ToLower()));
+
+                if (per != null)
                 {
                     permissions.Add(new()
                     {
