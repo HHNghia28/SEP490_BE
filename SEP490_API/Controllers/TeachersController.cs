@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTOs;
+﻿using Azure.Core;
+using BusinessObject.DTOs;
 using BusinessObject.Exceptions;
 using BusinessObject.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +16,41 @@ namespace SEP490_API.Controllers
         public TeachersController(IAccountRepository accountRepository)
         {
             _accountRepository = accountRepository;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Any())
+                        .ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+                    return BadRequest(errors);
+                }
+
+                return Ok(await _accountRepository.GetTeachers());
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(ex.Message)
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
         }
 
         [HttpPost]

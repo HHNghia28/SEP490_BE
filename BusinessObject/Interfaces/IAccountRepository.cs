@@ -14,5 +14,6 @@ namespace BusinessObject.Interfaces
         Task<LoginResponse> RefreshToken(string accessToken, string refreshToken);
         Task RegisterTeacher(RegisterTeacherRequest request);
         Task UpdateTeacher(string accountID, UpdateTeacherRequest request);
+        Task<IEnumerable<RegisterResponse>> GetTeachers();
     }
 }

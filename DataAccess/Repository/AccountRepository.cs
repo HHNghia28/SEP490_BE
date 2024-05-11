@@ -398,6 +398,25 @@ namespace DataAccess.Repository
             await _context.SaveChangesAsync();
         }
 
+        public async Task<IEnumerable<RegisterResponse>> GetTeachers()
+        {
+            return await _context.Accounts
+                .AsNoTracking()
+                .Include(a => a.User)
+                .Where(a => a.IsActive)
+                .Select(item => new RegisterResponse()
+                {
+                    Id = item.ID,
+                    Fullname = item.User.Fullname,
+                    Address = item.User.Address,
+                    Avatar = item.User.Avatar,
+                    Email = item.User.Email,
+                    Phone = item.User.Phone,
+                    Username = item.Username
+                })
+                .ToListAsync();
+        }
+
         public string CreateNewAccountId()
         {
             var maxId = _context.Accounts.Max(a => a.ID);
