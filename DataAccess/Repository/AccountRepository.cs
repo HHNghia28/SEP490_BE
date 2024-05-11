@@ -3,6 +3,7 @@ using BusinessObject.DTOs;
 using BusinessObject.Entities;
 using BusinessObject.Exceptions;
 using BusinessObject.Interfaces;
+using BusinessObject.IServices;
 using DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -24,11 +25,13 @@ namespace DataAccess.Repository
     {
         private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _context;
+        private readonly IImageService _imageService;
 
-        public AccountRepository(IConfiguration configuration, ApplicationDbContext context)
+        public AccountRepository(IConfiguration configuration, ApplicationDbContext context, IImageService imageService)
         {
             _configuration = configuration;
             _context = context;
+            _imageService = imageService;
         }
 
         public async Task<LoginResponse> Login(LoginRequest request)
@@ -218,6 +221,14 @@ namespace DataAccess.Repository
 
         public async Task RegisterTeacher(RegisterTeacherRequest request)
         {
+            Account accountIDExist = await _context.Accounts.FirstOrDefaultAsync(a => a.ID.ToLower()
+            .Equals(request.ID.ToLower().Trim()));
+
+            if (accountIDExist != null)
+            {
+                throw new ArgumentException("ID đã được sử dụng");
+            }
+
             Account accountExist = await _context.Accounts.FirstOrDefaultAsync(a => a.Username.ToLower()
             .Equals(request.Username.ToLower().Trim()));
 
@@ -235,13 +246,20 @@ namespace DataAccess.Repository
             }
 
             Guid guid = Guid.NewGuid();
-            string accountID = CreateNewAccountId();
+            string accountID = request.ID;
+
+            string avt = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png";
+
+            if (request.Avatar != null)
+            {
+                avt = await _imageService.UploadImage(request.Avatar);
+            }
 
             User user = new()
             {
                 ID = guid,
                 Address = request.Address.Trim(),
-                Avatar = "",
+                Avatar = avt,
                 Email = request.Email.Trim(),
                 Birthday = request.Birthday,
                 Fullname = request.Fullname.Trim(),

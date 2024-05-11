@@ -10,6 +10,10 @@ namespace BusinessObject.DTOs
 {
     public class RegisterTeacherRequest
     {
+        [Required(ErrorMessage = "ID là bắt buộc")]
+        [StringLength(50, ErrorMessage = "ID không được vượt quá 50 ký tự")]
+        public string ID { get; set; }
+
         [Required(ErrorMessage = "Tên đăng nhập là bắt buộc")]
         [StringLength(50, ErrorMessage = "Tên đăng nhập không được vượt quá 50 ký tự")]
         public string Username { get; set; }

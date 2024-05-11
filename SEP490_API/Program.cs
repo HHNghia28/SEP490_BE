@@ -11,6 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Text;
+using BusinessObject.IServices;
+using DataAccess.Services;
 
 var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -27,6 +29,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add(new TypeFilterAttribute(typeof(ApiResponseAttribute)));
@@ -62,6 +65,8 @@ builder.Services.AddSwaggerGen(opt =>
 });
 
 builder.Services.AddTransient<IAccountRepository, AccountRepository>();
+
+builder.Services.AddTransient<IImageService, ImageService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
