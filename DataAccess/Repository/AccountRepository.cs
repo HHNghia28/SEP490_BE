@@ -43,7 +43,7 @@ namespace DataAccess.Repository
                 .Include(a => a.AccountPermissions)
                 .ThenInclude(a => a.Permission)
                 .FirstOrDefaultAsync(a => a.Username.ToLower()
-                .Equals(request.Username.ToLower()));
+                .Equals(request.Username.ToLower()) && a.IsActive);
 
             if (accountExist == null)
             {
@@ -51,7 +51,7 @@ namespace DataAccess.Repository
                 .Include(a => a.Student)
                 .Include(a => a.Role)
                 .FirstOrDefaultAsync(a => a.Username.ToLower()
-                .Equals(request.Username.ToLower()))
+                .Equals(request.Username.ToLower()) && a.IsActive)
                 ?? throw new ArgumentException("Tên đăng nhập hoặc tài khoản không chính xác");
 
                 if (!accountStudentExist.IsActive)
@@ -463,6 +463,23 @@ namespace DataAccess.Repository
                 Roles = account.AccountRoles.Select(item => item.Role.Name).ToList(),
                 Permissions = permission
             };
+        }
+
+        public async Task DeleteTeacher(string accountID)
+        {
+            Account account = await _context.Accounts
+                .Include(a => a.User)
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(accountID.ToLower()));
+
+            if (account == null)
+            {
+                throw new NotFoundException("Tài khoản không tồn tại");
+            }
+
+            account.IsActive = false;
+
+            await _context.SaveChangesAsync();
         }
 
         public string CreateNewAccountId()
