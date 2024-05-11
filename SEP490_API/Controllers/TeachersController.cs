@@ -53,6 +53,41 @@ namespace SEP490_API.Controllers
             }
         }
 
+        [HttpGet("{accountID}")]
+        public async Task<IActionResult> Get(string accountID)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Any())
+                        .ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+                    return BadRequest(errors);
+                }
+
+                return Ok(await _accountRepository.GetTeacher(accountID));
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(ex.Message)
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] RegisterTeacherRequest request)
         {

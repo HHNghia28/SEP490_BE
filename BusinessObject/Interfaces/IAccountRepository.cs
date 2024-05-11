@@ -15,5 +15,6 @@ namespace BusinessObject.Interfaces
         Task RegisterTeacher(RegisterTeacherRequest request);
         Task UpdateTeacher(string accountID, UpdateTeacherRequest request);
         Task<IEnumerable<RegisterResponse>> GetTeachers();
+        Task<TeacherResponse> GetTeacher(string accountID);
     }
 }

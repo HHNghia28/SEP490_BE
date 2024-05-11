@@ -17,7 +17,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DataAccess.Repository
 {
@@ -336,7 +335,7 @@ namespace DataAccess.Repository
 
             if (accountExist == null)
             {
-                throw new ArgumentException("Tài khoản không tồn tại");
+                throw new NotFoundException("Tài khoản không tồn tại");
             }
 
             string avt = accountExist.User.Avatar;
@@ -415,6 +414,55 @@ namespace DataAccess.Repository
                     Username = item.Username
                 })
                 .ToListAsync();
+        }
+
+        public async Task<TeacherResponse> GetTeacher(string accountID)
+        {
+            Account account = await _context.Accounts
+                .AsNoTracking()
+                .Include(a => a.User)
+                .Include(a => a.AccountPermissions)
+                .Include(a => a.AccountRoles)
+                .ThenInclude(a => a.Role)
+                .ThenInclude(a => a.RolePermissions)
+                .ThenInclude(a => a.Permission)
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(accountID.ToLower()));
+
+            if (account == null)
+            {
+                throw new NotFoundException("Tài khoản không tồn tại");
+            }
+
+            List<string> permission = account.AccountPermissions.Select(item => item.Permission.Name).ToList();
+
+            foreach (var item in account.AccountRoles)
+            {
+                foreach (var item1 in item.Role.RolePermissions)
+                {
+                    permission.Add(item1.Permission.Name);
+                }
+            }
+
+            return new TeacherResponse()
+            {
+                Username = account.Username,
+                Address = account.User.Address,
+                Avatar = account.User.Avatar,
+                Birthday = account.User.Birthday,
+                Email = account.User.Email,
+                Fullname = account.User.Fullname,
+                Gender = account.User.Gender,
+                ID = account.ID,
+                IsBachelor = account.User.IsBachelor,
+                IsDoctor = account.User.IsDoctor,
+                IsMaster = account.User.IsMaster,
+                IsProfessor = account.User.IsProfessor,
+                Nation = account.User.Nation,
+                Phone = account.User.Phone,
+                Roles = account.AccountRoles.Select(item => item.Role.Name).ToList(),
+                Permissions = permission
+            };
         }
 
         public string CreateNewAccountId()
