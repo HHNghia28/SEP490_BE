@@ -21,6 +21,9 @@ namespace BusinessObject.Entities
         [Required]
         public Guid SchoolYearID { get; set; }
 
+        [Required]
+        public bool IsActive { get; set; }
+
         // Navigation properties
         public virtual Account Teacher { get; set; }
         public virtual SchoolYear SchoolYear { get; set; }

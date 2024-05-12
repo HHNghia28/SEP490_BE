@@ -526,7 +526,7 @@ namespace DataAccess.Repository
                 Password = BCrypt.Net.BCrypt.HashPassword("aA@123"),
                 RefreshToken = "",
                 RefreshTokenExpires = DateTime.Now,
-                RoleID = new Guid("05ce8241-b7c0-49d1-94a5-a32d51fdc22a"),
+                RoleID = new Guid("00bc7cb4-7f54-4ac7-8e22-eee898879d36"),
                 UserID = userID,
                 Username = newUsername,
             };

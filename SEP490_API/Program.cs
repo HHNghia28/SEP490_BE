@@ -66,6 +66,7 @@ builder.Services.AddSwaggerGen(opt =>
 
 builder.Services.AddTransient<IAccountRepository, AccountRepository>();
 builder.Services.AddTransient<ISubjectRepository, SubjectRepository>();
+builder.Services.AddTransient<IClassesRepository, ClassesRepository>();
 
 builder.Services.AddTransient<IImageService, ImageService>();
 
