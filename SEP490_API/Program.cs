@@ -1,4 +1,4 @@
-using BusinessObject.DTOs;
+﻿using BusinessObject.DTOs;
 using BusinessObject.Interfaces;
 using DataAccess.Context;
 using DataAccess.Repository;
@@ -124,7 +124,7 @@ builder.Services.AddHttpClient();
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.File(
-        path: "./Logs/log-.txt",
+        path: "./wwwroot/Logs/log-.txt", 
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: expiresDay,
         outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
