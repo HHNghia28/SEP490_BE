@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SEP490_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240511152237_initDatabase")]
+    [Migration("20240512053429_initDatabase")]
     partial class initDatabase
     {
         /// <inheritdoc />
@@ -67,10 +67,10 @@ namespace SEP490_API.Migrations
                         {
                             ID = "GV0001",
                             IsActive = true,
-                            Password = "$2a$11$9.TutocuP1wsuSuJwF9XTuGpHSm9IHj.nDizsPAJpuFuGMSONaRe2",
+                            Password = "$2a$11$usZL/1Q23wBX830aRLn2sOO3tLJ6xKaXREGAMJYtSuN.tEPjQsgEu",
                             RefreshToken = "",
-                            RefreshTokenExpires = new DateTime(2024, 5, 11, 22, 22, 37, 702, DateTimeKind.Local).AddTicks(4879),
-                            UserID = new Guid("c530fcb7-fbf6-461f-a11b-a7ccc4521106"),
+                            RefreshTokenExpires = new DateTime(2024, 5, 12, 12, 34, 29, 765, DateTimeKind.Local).AddTicks(7491),
+                            UserID = new Guid("80c09260-c66b-4e12-a24c-bf72e33bf95b"),
                             Username = "Admin"
                         });
                 });
@@ -277,16 +277,6 @@ namespace SEP490_API.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<string>("Semester")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
 
                     b.Property<int>("Slot")
                         .HasColumnType("int");
@@ -639,11 +629,6 @@ namespace SEP490_API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
                     b.Property<string>("Grade")
                         .IsRequired()
                         .HasMaxLength(250)
@@ -724,10 +709,10 @@ namespace SEP490_API.Migrations
                     b.HasData(
                         new
                         {
-                            ID = new Guid("c530fcb7-fbf6-461f-a11b-a7ccc4521106"),
+                            ID = new Guid("80c09260-c66b-4e12-a24c-bf72e33bf95b"),
                             Address = "600 Nguyễn Văn Cừ",
                             Avatar = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png",
-                            Birthday = new DateTime(2024, 5, 11, 22, 22, 37, 526, DateTimeKind.Local).AddTicks(3789),
+                            Birthday = new DateTime(2024, 5, 12, 12, 34, 29, 578, DateTimeKind.Local).AddTicks(5462),
                             Email = "admin@fpt.edu.vn",
                             Fullname = "Lê Văn Admin",
                             Gender = "Nam",

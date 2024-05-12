@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessObject.Entities
+namespace BusinessObject.DTOs
 {
-    public class Subject
+    public class SubjectResponse
     {
         [Key]
         public Guid ID { get; set; }
@@ -20,12 +20,7 @@ namespace BusinessObject.Entities
         [MaxLength(250)]
         public string Grade { get; set; }
 
-        [Required]
-        public bool IsActive { get; set; }
-
-        // Navigation properties
-        public virtual ICollection<ComponentScore> ComponentScores { get; set; }
-        public virtual ICollection<LessonPlans> LessonPlans { get; set; }
-        public virtual ICollection<Schedule> Schedules { get; set; }
+        public List<ComponentScoreResponse> ComponentScores { get; set; }
+        public List<LessonPlanResponse> LessonPlans { get; set; }
     }
 }

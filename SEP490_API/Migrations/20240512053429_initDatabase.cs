@@ -81,7 +81,6 @@ namespace SEP490_API.Migrations
                 {
                     ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     Grade = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -195,8 +194,6 @@ namespace SEP490_API.Migrations
                     ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Slot = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    Semester = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     SubjectID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
@@ -496,12 +493,12 @@ namespace SEP490_API.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "ID", "Address", "Avatar", "Birthday", "Email", "Fullname", "Gender", "IsBachelor", "IsDoctor", "IsMaster", "IsProfessor", "Nation", "Phone" },
-                values: new object[] { new Guid("c530fcb7-fbf6-461f-a11b-a7ccc4521106"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 5, 11, 22, 22, 37, 526, DateTimeKind.Local).AddTicks(3789), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" });
+                values: new object[] { new Guid("80c09260-c66b-4e12-a24c-bf72e33bf95b"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 5, 12, 12, 34, 29, 578, DateTimeKind.Local).AddTicks(5462), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" });
 
             migrationBuilder.InsertData(
                 table: "Accounts",
                 columns: new[] { "ID", "IsActive", "Password", "RefreshToken", "RefreshTokenExpires", "UserID", "Username" },
-                values: new object[] { "GV0001", true, "$2a$11$9.TutocuP1wsuSuJwF9XTuGpHSm9IHj.nDizsPAJpuFuGMSONaRe2", "", new DateTime(2024, 5, 11, 22, 22, 37, 702, DateTimeKind.Local).AddTicks(4879), new Guid("c530fcb7-fbf6-461f-a11b-a7ccc4521106"), "Admin" });
+                values: new object[] { "GV0001", true, "$2a$11$usZL/1Q23wBX830aRLn2sOO3tLJ6xKaXREGAMJYtSuN.tEPjQsgEu", "", new DateTime(2024, 5, 12, 12, 34, 29, 765, DateTimeKind.Local).AddTicks(7491), new Guid("80c09260-c66b-4e12-a24c-bf72e33bf95b"), "Admin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AccountPermissions_AccountID",
