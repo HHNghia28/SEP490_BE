@@ -11,7 +11,8 @@ namespace BusinessObject.Entities
     public class Permission
     {
         [Key]
-        public Guid ID { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int ID { get; set; }
 
         [Required]
         [MaxLength(50)]

@@ -12,7 +12,8 @@ namespace BusinessObject.Entities
     public class Role
     {
         [Key]
-        public Guid ID { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int ID { get; set; }
 
         [Required]
         [MaxLength(50)]

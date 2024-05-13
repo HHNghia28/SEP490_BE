@@ -12,5 +12,6 @@ namespace BusinessObject.DTOs
         public RegisterResponse User { get; set; }
         public string AccessToken { get; set; }
         public string? RefreshToken { get; set; }
+        public List<string> Permissions { get; set; }
     }
 }

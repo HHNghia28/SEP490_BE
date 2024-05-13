@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTOs;
+﻿using Azure.Core;
+using BusinessObject.DTOs;
 using BusinessObject.Entities;
 using BusinessObject.Exceptions;
 using BusinessObject.Interfaces;
@@ -15,10 +16,12 @@ namespace DataAccess.Repository
     public class SubjectRepository : ISubjectRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly IActivityLogRepository _activityLogRepository;
 
-        public SubjectRepository(ApplicationDbContext context)
+        public SubjectRepository(ApplicationDbContext context, IActivityLogRepository activityLogRepository)
         {
             _context = context;
+            _activityLogRepository = activityLogRepository;
         }
 
         public async Task<IEnumerable<SubjectsResponse>> GetSubjects()
@@ -82,14 +85,19 @@ namespace DataAccess.Repository
             };
         }
 
-        public async Task AddSubject(SubjectRequest request)
+        public async Task AddSubject(string accountID, SubjectRequest request)
         {
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(accountID.ToLower())) ?? throw new ArgumentException("Tài khoản của bạn không tồn tại");
+
             Subject subjectExist = await _context.Subjects
-                .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(request.Name.ToLower().Trim()) && s.IsActive);
+                .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(request.Name.ToLower().Trim())
+                && s.Grade.ToLower().Equals(request.Grade.ToLower().Trim()) && s.IsActive);
 
             if (subjectExist != null)
             {
-                throw new ArgumentException("Tên môn học đã tồn tại");
+                throw new ArgumentException("Môn học đã tồn tại");
             }
 
             if (HasDuplicateSlot(request.LessonPlans))
@@ -146,10 +154,21 @@ namespace DataAccess.Repository
 
             await _context.LessonsPlans.AddRangeAsync(lessonPlans);
             await _context.SaveChangesAsync();
+
+            await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
+            {
+                AccountID = accountID,
+                Note = "Người dùng " + account.Username + " vừa thực hiện thêm môn học " + request.Name + " khối " + request.Grade,
+                Type = LogName.CREATE.ToString(),
+            });
         }
 
-        public async Task UpdateSubject(string subjectID, SubjectRequest request)
+        public async Task UpdateSubject(string accountID, string subjectID, SubjectRequest request)
         {
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(accountID.ToLower())) ?? throw new ArgumentException("Tài khoản của bạn không tồn tại");
+
             using (var transaction = _context.Database.BeginTransaction())
             {
                 try
@@ -168,12 +187,12 @@ namespace DataAccess.Repository
                     if (subjectExist.LessonPlans.Count > 0) _context.LessonsPlans.RemoveRange(subjectExist.LessonPlans);
 
                     Subject subjectName = await _context.Subjects
-                        .Where(s => !s.ID.ToString().ToLower().Equals(subjectID.ToLower()))
-                        .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(request.Name.ToLower().Trim()) && s.IsActive);
+                        .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(request.Name.ToLower().Trim())
+                        && s.Grade.ToLower().Equals(request.Grade.ToLower().Trim()) && s.IsActive);
 
-                    if (subjectName != null)
+                    if (subjectExist != null)
                     {
-                        throw new ArgumentException("Tên môn học đã tồn tại");
+                        throw new ArgumentException("Môn học đã tồn tại");
                     }
 
                     if (HasDuplicateSlot(request.LessonPlans))
@@ -225,6 +244,13 @@ namespace DataAccess.Repository
                     await _context.SaveChangesAsync();
 
                     transaction.Commit();
+
+                    await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
+                    {
+                        AccountID = accountID,
+                        Note = "Người dùng " + account.Username + " vừa thực hiện chỉnh sửa môn học " + request.Name + " khối " + request.Grade,
+                        Type = LogName.UPDATE.ToString(),
+                    });
                 }
                 catch (Exception)
                 {
@@ -234,8 +260,12 @@ namespace DataAccess.Repository
             }
         }
 
-        public async Task DeleteSubject(string subjectID)
+        public async Task DeleteSubject(string accountID, string subjectID)
         {
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(accountID.ToLower())) ?? throw new ArgumentException("Tài khoản của bạn không tồn tại");
+
             Subject subjectExist = await _context.Subjects
                         .FirstOrDefaultAsync(s => s.ID.ToString().ToLower().Equals(subjectID.ToLower().Trim()) && s.IsActive);
 
@@ -247,6 +277,13 @@ namespace DataAccess.Repository
             subjectExist.IsActive = false;
 
             await _context.SaveChangesAsync();
+
+            await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
+            {
+                AccountID = accountID,
+                Note = "Người dùng " + account.Username + " vừa thực hiện xóa môn học " + subjectExist.Name + " khối " + subjectExist.Grade,
+                Type = LogName.DELETE.ToString(),
+            });
         }
 
         private bool HasDuplicateSlot(List<LessonPlanRequest> lessonPlanRequests)

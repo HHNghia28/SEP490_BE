@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BusinessObject.Entities
 {
@@ -24,11 +25,10 @@ namespace BusinessObject.Entities
 
         [Required]
         public bool IsActive { get; set; }
-
         public Guid? UserID { get; set; }
 
         [Required]
-        public Guid RoleID { get; set; }
+        public int RoleID { get; set; }
 
         [MaxLength(100)]
         public string RefreshToken { get; set; }

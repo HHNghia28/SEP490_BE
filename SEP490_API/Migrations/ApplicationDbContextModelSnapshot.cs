@@ -64,18 +64,48 @@ namespace SEP490_API.Migrations
                         {
                             ID = "GV0001",
                             IsActive = true,
-                            Password = "$2a$11$fhow3FqNmpS4/gRfoYisa.k7Fx7jWc7qjibTYZVVxdnk.DMBe1NA2",
+                            Password = "$2a$11$HtGmr2ooQQRA2dUleyh6r.krFTYwuIDlqyftJ6C5.2/HkMJ35GXji",
                             RefreshToken = "",
-                            RefreshTokenExpires = new DateTime(2024, 5, 12, 15, 8, 5, 975, DateTimeKind.Local).AddTicks(342),
-                            UserID = new Guid("a1d9b07d-42e6-44ab-a962-c3bc7f5d69c2"),
+                            RefreshTokenExpires = new DateTime(2024, 5, 13, 22, 55, 27, 612, DateTimeKind.Local).AddTicks(6808),
+                            UserID = new Guid("f64b2a6a-ee14-4653-9053-5cfc8a83dc27"),
                             Username = "Admin"
+                        },
+                        new
+                        {
+                            ID = "GV0002",
+                            IsActive = true,
+                            Password = "$2a$11$Am3biJaZat4t3aJv.THxfu/39ONZ9i9mqsPlum4Ouw1RqnADlqe92",
+                            RefreshToken = "",
+                            RefreshTokenExpires = new DateTime(2024, 5, 13, 22, 55, 27, 783, DateTimeKind.Local).AddTicks(4797),
+                            UserID = new Guid("2cef2fe7-0047-4811-ab43-e608103b3ec3"),
+                            Username = "HomeroomTeacher"
+                        },
+                        new
+                        {
+                            ID = "GV0003",
+                            IsActive = true,
+                            Password = "$2a$11$IUfoDLVT7kx2TELn630zkOwiYK3dnzR7V7jgF1mm9EC6JojdXrwe.",
+                            RefreshToken = "",
+                            RefreshTokenExpires = new DateTime(2024, 5, 13, 22, 55, 27, 954, DateTimeKind.Local).AddTicks(5445),
+                            UserID = new Guid("3d63767e-e98f-490c-8e34-d7c65fb3aacc"),
+                            Username = "SubjectTeacher"
+                        },
+                        new
+                        {
+                            ID = "GV0004",
+                            IsActive = true,
+                            Password = "$2a$11$MfRolm3JxuNY2W77C40CTug6qtLuBo2Iick/5SABQDW/d2k6XLiwe",
+                            RefreshToken = "",
+                            RefreshTokenExpires = new DateTime(2024, 5, 13, 22, 55, 28, 130, DateTimeKind.Local).AddTicks(8695),
+                            UserID = new Guid("033f2b95-93aa-46cc-94f2-89a74a865175"),
+                            Username = "Supervisor"
                         });
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.AccountPermission", b =>
                 {
-                    b.Property<Guid>("PermissionID")
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<int>("PermissionID")
+                        .HasColumnType("int")
                         .HasColumnOrder(0);
 
                     b.Property<string>("AccountID")
@@ -91,8 +121,8 @@ namespace SEP490_API.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.AccountRole", b =>
                 {
-                    b.Property<Guid>("RoleID")
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<int>("RoleID")
+                        .HasColumnType("int")
                         .HasColumnOrder(0);
 
                     b.Property<string>("AccountID")
@@ -104,6 +134,28 @@ namespace SEP490_API.Migrations
                     b.HasIndex("AccountID");
 
                     b.ToTable("AccountRoles");
+
+                    b.HasData(
+                        new
+                        {
+                            RoleID = 1,
+                            AccountID = "GV0001"
+                        },
+                        new
+                        {
+                            RoleID = 3,
+                            AccountID = "GV0002"
+                        },
+                        new
+                        {
+                            RoleID = 4,
+                            AccountID = "GV0003"
+                        },
+                        new
+                        {
+                            RoleID = 5,
+                            AccountID = "GV0004"
+                        });
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.AccountStudent", b =>
@@ -127,8 +179,8 @@ namespace SEP490_API.Migrations
                     b.Property<DateTime?>("RefreshTokenExpires")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("RoleID")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("RoleID")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("UserID")
                         .HasColumnType("uniqueidentifier");
@@ -327,9 +379,11 @@ namespace SEP490_API.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.Permission", b =>
                 {
-                    b.Property<Guid>("ID")
+                    b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -339,13 +393,212 @@ namespace SEP490_API.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("Permissions");
+
+                    b.HasData(
+                        new
+                        {
+                            ID = 1,
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            ID = 2,
+                            Name = "Add Teacher"
+                        },
+                        new
+                        {
+                            ID = 3,
+                            Name = "Update Teacher"
+                        },
+                        new
+                        {
+                            ID = 4,
+                            Name = "Delete Teacher"
+                        },
+                        new
+                        {
+                            ID = 5,
+                            Name = "Get Teacher"
+                        },
+                        new
+                        {
+                            ID = 6,
+                            Name = "Add Student"
+                        },
+                        new
+                        {
+                            ID = 7,
+                            Name = "Update Student"
+                        },
+                        new
+                        {
+                            ID = 8,
+                            Name = "Delete Student"
+                        },
+                        new
+                        {
+                            ID = 9,
+                            Name = "Get Student"
+                        },
+                        new
+                        {
+                            ID = 10,
+                            Name = "Add Subject"
+                        },
+                        new
+                        {
+                            ID = 11,
+                            Name = "Update Subject"
+                        },
+                        new
+                        {
+                            ID = 12,
+                            Name = "Delete Subject"
+                        },
+                        new
+                        {
+                            ID = 13,
+                            Name = "Get Subject"
+                        },
+                        new
+                        {
+                            ID = 14,
+                            Name = "Add Class"
+                        },
+                        new
+                        {
+                            ID = 15,
+                            Name = "Update Class"
+                        },
+                        new
+                        {
+                            ID = 16,
+                            Name = "Delete Class"
+                        },
+                        new
+                        {
+                            ID = 17,
+                            Name = "Get Class"
+                        },
+                        new
+                        {
+                            ID = 18,
+                            Name = "Add Schedule"
+                        },
+                        new
+                        {
+                            ID = 19,
+                            Name = "Update Schedule"
+                        },
+                        new
+                        {
+                            ID = 20,
+                            Name = "Delete Schedule"
+                        },
+                        new
+                        {
+                            ID = 21,
+                            Name = "Get Schedule"
+                        },
+                        new
+                        {
+                            ID = 22,
+                            Name = "Add Register Book"
+                        },
+                        new
+                        {
+                            ID = 23,
+                            Name = "Update Register Book"
+                        },
+                        new
+                        {
+                            ID = 24,
+                            Name = "Delete Register Book"
+                        },
+                        new
+                        {
+                            ID = 25,
+                            Name = "Get Register Book"
+                        },
+                        new
+                        {
+                            ID = 26,
+                            Name = "Add Attendance"
+                        },
+                        new
+                        {
+                            ID = 27,
+                            Name = "Update Attendance"
+                        },
+                        new
+                        {
+                            ID = 28,
+                            Name = "Delete Attendance"
+                        },
+                        new
+                        {
+                            ID = 29,
+                            Name = "Get Attendance"
+                        },
+                        new
+                        {
+                            ID = 30,
+                            Name = "Add Mark"
+                        },
+                        new
+                        {
+                            ID = 31,
+                            Name = "Update Mark"
+                        },
+                        new
+                        {
+                            ID = 32,
+                            Name = "Delete Mark"
+                        },
+                        new
+                        {
+                            ID = 33,
+                            Name = "Get Mark"
+                        },
+                        new
+                        {
+                            ID = 34,
+                            Name = "Add Notification"
+                        },
+                        new
+                        {
+                            ID = 35,
+                            Name = "Update Notification"
+                        },
+                        new
+                        {
+                            ID = 36,
+                            Name = "Delete Notification"
+                        },
+                        new
+                        {
+                            ID = 37,
+                            Name = "Get Notification"
+                        },
+                        new
+                        {
+                            ID = 38,
+                            Name = "Update Setting"
+                        },
+                        new
+                        {
+                            ID = 39,
+                            Name = "Get Log"
+                        });
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Role", b =>
                 {
-                    b.Property<Guid>("ID")
+                    b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -355,16 +608,43 @@ namespace SEP490_API.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            ID = 1,
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            ID = 2,
+                            Name = "Student"
+                        },
+                        new
+                        {
+                            ID = 3,
+                            Name = "Homeroom Teacher"
+                        },
+                        new
+                        {
+                            ID = 4,
+                            Name = "Subject Teacher"
+                        },
+                        new
+                        {
+                            ID = 5,
+                            Name = "Supervisor"
+                        });
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.RolePermission", b =>
                 {
-                    b.Property<Guid>("PermissionID")
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<int>("PermissionID")
+                        .HasColumnType("int")
                         .HasColumnOrder(0);
 
-                    b.Property<Guid>("RoleID")
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<int>("RoleID")
+                        .HasColumnType("int")
                         .HasColumnOrder(1);
 
                     b.HasKey("PermissionID", "RoleID");
@@ -372,6 +652,373 @@ namespace SEP490_API.Migrations
                     b.HasIndex("RoleID");
 
                     b.ToTable("RolePermissions");
+
+                    b.HasData(
+                        new
+                        {
+                            PermissionID = 1,
+                            RoleID = 1
+                        },
+                        new
+                        {
+                            PermissionID = 5,
+                            RoleID = 2
+                        },
+                        new
+                        {
+                            PermissionID = 9,
+                            RoleID = 2
+                        },
+                        new
+                        {
+                            PermissionID = 13,
+                            RoleID = 2
+                        },
+                        new
+                        {
+                            PermissionID = 17,
+                            RoleID = 2
+                        },
+                        new
+                        {
+                            PermissionID = 21,
+                            RoleID = 2
+                        },
+                        new
+                        {
+                            PermissionID = 25,
+                            RoleID = 2
+                        },
+                        new
+                        {
+                            PermissionID = 29,
+                            RoleID = 2
+                        },
+                        new
+                        {
+                            PermissionID = 33,
+                            RoleID = 2
+                        },
+                        new
+                        {
+                            PermissionID = 37,
+                            RoleID = 2
+                        },
+                        new
+                        {
+                            PermissionID = 3,
+                            RoleID = 3
+                        },
+                        new
+                        {
+                            PermissionID = 5,
+                            RoleID = 3
+                        },
+                        new
+                        {
+                            PermissionID = 7,
+                            RoleID = 3
+                        },
+                        new
+                        {
+                            PermissionID = 9,
+                            RoleID = 3
+                        },
+                        new
+                        {
+                            PermissionID = 13,
+                            RoleID = 3
+                        },
+                        new
+                        {
+                            PermissionID = 17,
+                            RoleID = 3
+                        },
+                        new
+                        {
+                            PermissionID = 21,
+                            RoleID = 3
+                        },
+                        new
+                        {
+                            PermissionID = 23,
+                            RoleID = 3
+                        },
+                        new
+                        {
+                            PermissionID = 25,
+                            RoleID = 3
+                        },
+                        new
+                        {
+                            PermissionID = 3,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 5,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 7,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 9,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 13,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 17,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 21,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 22,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 23,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 24,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 25,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 26,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 27,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 28,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 29,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 30,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 31,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 32,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 33,
+                            RoleID = 4
+                        },
+                        new
+                        {
+                            PermissionID = 2,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 3,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 4,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 5,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 6,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 7,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 8,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 9,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 10,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 11,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 12,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 13,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 14,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 15,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 16,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 17,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 18,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 19,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 20,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 21,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 22,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 23,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 24,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 25,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 26,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 27,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 28,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 29,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 33,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 34,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 35,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 36,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 37,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 38,
+                            RoleID = 5
+                        },
+                        new
+                        {
+                            PermissionID = 39,
+                            RoleID = 5
+                        });
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Schedule", b =>
@@ -709,10 +1356,58 @@ namespace SEP490_API.Migrations
                     b.HasData(
                         new
                         {
-                            ID = new Guid("a1d9b07d-42e6-44ab-a962-c3bc7f5d69c2"),
+                            ID = new Guid("f64b2a6a-ee14-4653-9053-5cfc8a83dc27"),
                             Address = "600 Nguyễn Văn Cừ",
                             Avatar = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png",
-                            Birthday = new DateTime(2024, 5, 12, 15, 8, 5, 782, DateTimeKind.Local).AddTicks(9773),
+                            Birthday = new DateTime(2024, 5, 13, 22, 55, 27, 441, DateTimeKind.Local).AddTicks(2398),
+                            Email = "admin@fpt.edu.vn",
+                            Fullname = "Lê Văn Admin",
+                            Gender = "Nam",
+                            IsBachelor = false,
+                            IsDoctor = false,
+                            IsMaster = false,
+                            IsProfessor = false,
+                            Nation = "Kinh",
+                            Phone = "0987654321"
+                        },
+                        new
+                        {
+                            ID = new Guid("2cef2fe7-0047-4811-ab43-e608103b3ec3"),
+                            Address = "600 Nguyễn Văn Cừ",
+                            Avatar = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png",
+                            Birthday = new DateTime(2024, 5, 13, 22, 55, 27, 612, DateTimeKind.Local).AddTicks(7212),
+                            Email = "admin@fpt.edu.vn",
+                            Fullname = "Lê Văn Admin",
+                            Gender = "Nam",
+                            IsBachelor = false,
+                            IsDoctor = false,
+                            IsMaster = false,
+                            IsProfessor = false,
+                            Nation = "Kinh",
+                            Phone = "0987654321"
+                        },
+                        new
+                        {
+                            ID = new Guid("3d63767e-e98f-490c-8e34-d7c65fb3aacc"),
+                            Address = "600 Nguyễn Văn Cừ",
+                            Avatar = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png",
+                            Birthday = new DateTime(2024, 5, 13, 22, 55, 27, 783, DateTimeKind.Local).AddTicks(5108),
+                            Email = "admin@fpt.edu.vn",
+                            Fullname = "Lê Văn Admin",
+                            Gender = "Nam",
+                            IsBachelor = false,
+                            IsDoctor = false,
+                            IsMaster = false,
+                            IsProfessor = false,
+                            Nation = "Kinh",
+                            Phone = "0987654321"
+                        },
+                        new
+                        {
+                            ID = new Guid("033f2b95-93aa-46cc-94f2-89a74a865175"),
+                            Address = "600 Nguyễn Văn Cừ",
+                            Avatar = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png",
+                            Birthday = new DateTime(2024, 5, 13, 22, 55, 27, 954, DateTimeKind.Local).AddTicks(5652),
                             Email = "admin@fpt.edu.vn",
                             Fullname = "Lê Văn Admin",
                             Gender = "Nam",

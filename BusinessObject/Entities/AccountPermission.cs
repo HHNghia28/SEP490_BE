@@ -11,7 +11,7 @@ namespace BusinessObject.Entities
     public class AccountPermission
     {
         [Key, Column(Order = 0)]
-        public Guid PermissionID { get; set; }
+        public int PermissionID { get; set; }
 
         [ForeignKey("PermissionID")]
         public Permission Permission { get; set; }

@@ -23,6 +23,19 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Teacher")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -58,6 +71,19 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Teacher")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -93,6 +119,19 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Add Teacher")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -130,6 +169,19 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Update Teacher")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -167,6 +219,19 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Delete Teacher")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState

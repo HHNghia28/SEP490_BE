@@ -40,6 +40,7 @@ namespace DataAccess.Repository
                 .Include(a => a.AccountRoles)
                 .ThenInclude(a => a.Role)
                 .ThenInclude(a => a.RolePermissions)
+                .ThenInclude(a => a.Permission)
                 .Include(a => a.AccountPermissions)
                 .ThenInclude(a => a.Permission)
                 .FirstOrDefaultAsync(a => a.Username.ToLower()
@@ -141,7 +142,8 @@ namespace DataAccess.Repository
                     Fullname = accountExist.User.Fullname,
                     Phone = accountExist.User.Phone,
                     Avatar = accountExist.User.Avatar
-                }
+                },
+                Permissions = roles,
             };
 
             loginResponse.AccessToken = CreateToken(loginResponse, 60 * 60 * 24, roles);
@@ -286,41 +288,49 @@ namespace DataAccess.Repository
 
             await _context.Accounts.AddAsync(account);
 
-            List<AccountRole> roles = new();
-
-            foreach (var role in request.Roles)
+            if (request.Roles != null && request.Roles.Count > 0)
             {
-                Role role1 = await _context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower().Equals(role.ToLower()));
+                List<AccountRole> roles = new();
 
-                if(role1 != null)
+                foreach (var role in request.Roles)
                 {
-                    roles.Add(new()
+                    Role role1 = await _context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower().Equals(role.ToLower()));
+
+                    if (role1 != null)
                     {
-                        AccountID = accountID,
-                        RoleID = role1.ID
-                    });
+                        roles.Add(new()
+                        {
+                            AccountID = accountID,
+                            RoleID = role1.ID
+                        });
+                    }
                 }
+
+                await _context.AccountRoles.AddRangeAsync(roles);
             }
 
-            await _context.AccountRoles.AddRangeAsync(roles);
-
-            List<AccountPermission> permissions = new();
-
-            foreach (var role in request.Permissions)
+            if (request.Permissions != null && request.Permissions.Count > 0)
             {
-                Permission per = await _context.Permissions.FirstOrDefaultAsync(r => r.Name.ToLower().Equals(role.ToLower()));
 
-                if(per != null)
+                List<AccountPermission> permissions = new();
+
+                foreach (var role in request.Permissions)
                 {
-                    permissions.Add(new()
+                    Permission per = await _context.Permissions.FirstOrDefaultAsync(r => r.Name.ToLower().Equals(role.ToLower()));
+
+                    if (per != null)
                     {
-                        AccountID = accountID,
-                        PermissionID = per.ID
-                    });
+                        permissions.Add(new()
+                        {
+                            AccountID = accountID,
+                            PermissionID = per.ID
+                        });
+                    }
                 }
+
+                await _context.AccountPermissions.AddRangeAsync(permissions);
             }
 
-            await _context.AccountPermissions.AddRangeAsync(permissions);
             await _context.SaveChangesAsync();
         }
 
@@ -526,7 +536,7 @@ namespace DataAccess.Repository
                 Password = BCrypt.Net.BCrypt.HashPassword("aA@123"),
                 RefreshToken = "",
                 RefreshTokenExpires = DateTime.Now,
-                RoleID = new Guid("00bc7cb4-7f54-4ac7-8e22-eee898879d36"),
+                RoleID = 2,
                 UserID = userID,
                 Username = newUsername,
             };
@@ -716,9 +726,9 @@ namespace DataAccess.Repository
         private string Base64UrlEncode(byte[] input)
         {
             var output = Convert.ToBase64String(input);
-            output = output.Split('=')[0]; 
+            output = output.Split('=')[0];
             output = output.Replace('+', '-');
-            output = output.Replace('/', '_'); 
+            output = output.Replace('/', '_');
             return output;
         }
 
@@ -735,7 +745,7 @@ namespace DataAccess.Repository
                 ValidateAudience = true,
                 ValidIssuer = _configuration["AppSettings:Issuer"],
                 ValidAudience = _configuration["AppSettings:Audience"],
-                ValidateLifetime = false, 
+                ValidateLifetime = false,
                 ClockSkew = TimeSpan.Zero
             };
 

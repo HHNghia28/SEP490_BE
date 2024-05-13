@@ -15,14 +15,20 @@ namespace DataAccess.Repository
     public class ClassesRepository : IClassesRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly IActivityLogRepository _activityLogRepository;
 
-        public ClassesRepository(ApplicationDbContext context)
+        public ClassesRepository(ApplicationDbContext context, IActivityLogRepository activityLogRepository)
         {
             _context = context;
+            _activityLogRepository = activityLogRepository;
         }
 
-        public async Task AddClasses(ClassesRequest request)
+        public async Task AddClasses(string accountID, ClassesRequest request)
         {
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(accountID.ToLower())) ?? throw new ArgumentException("Tài khoản của bạn không tồn tại");
+
             Guid schoolYearID = Guid.NewGuid();
             SchoolYear schoolYear = await _context.SchoolYears
                 .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(request.SchoolYear.ToLower()));
@@ -76,10 +82,21 @@ namespace DataAccess.Repository
 
             await _context.StudentClasses.AddRangeAsync(studentClasses);
             await _context.SaveChangesAsync();
+
+            await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
+            {
+                AccountID = accountID,
+                Note = "Người dùng " + account.Username + " vừa thực hiện thêm lớp học " + request.Classroom,
+                Type = LogName.CREATE.ToString(),
+            });
         }
 
-        public async Task DeleteClasses(string classID)
+        public async Task DeleteClasses(string accountID, string classID)
         {
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(accountID.ToLower())) ?? throw new ArgumentException("Tài khoản của bạn không tồn tại");
+
             Classes classes = await _context.Classes
                 .Include(c => c.StudentClasses)
                 .FirstOrDefaultAsync(c => c.ID.ToString().ToLower().Equals(classID.ToLower()));
@@ -92,6 +109,13 @@ namespace DataAccess.Repository
             classes.IsActive = false;
 
             await _context.SaveChangesAsync();
+
+            await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
+            {
+                AccountID = accountID,
+                Note = "Người dùng " + account.Username + " vừa thực hiện xóa lớp học " + classes.Classroom,
+                Type = LogName.DELETE.ToString(),
+            });
         }
 
         public async Task<ClassResponse> GetClass(string classID)
@@ -148,8 +172,12 @@ namespace DataAccess.Repository
                 .ToListAsync();
         }
 
-        public async Task UpdateClasses(string classID, ClassesRequest request)
+        public async Task UpdateClasses(string accountID, string classID, ClassesRequest request)
         {
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(accountID.ToLower())) ?? throw new ArgumentException("Tài khoản của bạn không tồn tại");
+
             Classes classes = await _context.Classes
                 .Include(c => c.StudentClasses)
                 .FirstOrDefaultAsync(c => c.ID.ToString().ToLower().Equals(classID.ToLower()));
@@ -206,6 +234,13 @@ namespace DataAccess.Repository
 
             await _context.StudentClasses.AddRangeAsync(studentClasses);
             await _context.SaveChangesAsync();
+
+            await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
+            {
+                AccountID = accountID,
+                Note = "Người dùng " + account.Username + " vừa thực hiện chỉnh sửa lớp học " + classes.Classroom,
+                Type = LogName.UPDATE.ToString(),
+            });
         }
     }
 }

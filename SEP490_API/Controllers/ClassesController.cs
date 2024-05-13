@@ -23,6 +23,19 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Class")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -58,6 +71,19 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Class")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -93,6 +119,26 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Add Class")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
+                string accountId = User.Claims.FirstOrDefault(c => c.Type == "ID")?.Value;
+
+                if (string.IsNullOrEmpty(accountId))
+                {
+                    return Unauthorized("");
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -104,7 +150,7 @@ namespace SEP490_API.Controllers
                     return BadRequest(errors);
                 }
 
-                await _classesRepository.AddClasses(request);
+                await _classesRepository.AddClasses(accountId, request);
 
                 return Ok("Thêm lớp thành công");
             }
@@ -130,6 +176,26 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Update Class")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
+                string accountId = User.Claims.FirstOrDefault(c => c.Type == "ID")?.Value;
+
+                if (string.IsNullOrEmpty(accountId))
+                {
+                    return Unauthorized("");
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -141,7 +207,7 @@ namespace SEP490_API.Controllers
                     return BadRequest(errors);
                 }
 
-                await _classesRepository.UpdateClasses(classID,request);
+                await _classesRepository.UpdateClasses(accountId, classID,request);
 
                 return Ok("Chỉnh sửa lớp thành công");
             }
@@ -167,6 +233,26 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Delete Class")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
+                string accountId = User.Claims.FirstOrDefault(c => c.Type == "ID")?.Value;
+
+                if (string.IsNullOrEmpty(accountId))
+                {
+                    return Unauthorized("");
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -178,7 +264,7 @@ namespace SEP490_API.Controllers
                     return BadRequest(errors);
                 }
 
-                await _classesRepository.DeleteClasses(classID);
+                await _classesRepository.DeleteClasses(accountId, classID);
 
                 return Ok("Xóa lớp thành công");
             }

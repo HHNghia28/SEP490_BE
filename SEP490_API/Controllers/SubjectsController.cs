@@ -23,6 +23,19 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Subject")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -58,6 +71,19 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Subject")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -93,6 +119,26 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Add Subject")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
+                string accountId = User.Claims.FirstOrDefault(c => c.Type == "ID")?.Value;
+
+                if (string.IsNullOrEmpty(accountId))
+                {
+                    return Unauthorized("");
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -104,7 +150,7 @@ namespace SEP490_API.Controllers
                     return BadRequest(errors);
                 }
 
-                await _subjectRepository.AddSubject(request);
+                await _subjectRepository.AddSubject(accountId, request);
 
                 return Ok("Thêm môn học thành công");
             }
@@ -126,10 +172,30 @@ namespace SEP490_API.Controllers
         }
 
         [HttpDelete("{subjectID}")]
-        public async Task<IActionResult> Update(string subjectID)
+        public async Task<IActionResult> Delete(string subjectID)
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Delete Subject")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
+                string accountId = User.Claims.FirstOrDefault(c => c.Type == "ID")?.Value;
+
+                if (string.IsNullOrEmpty(accountId))
+                {
+                    return Unauthorized("");
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -141,7 +207,7 @@ namespace SEP490_API.Controllers
                     return BadRequest(errors);
                 }
 
-                await _subjectRepository.DeleteSubject(subjectID);
+                await _subjectRepository.DeleteSubject(accountId, subjectID);
 
                 return Ok("Xóa môn học thành công");
             }
@@ -167,6 +233,26 @@ namespace SEP490_API.Controllers
         {
             try
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Update Subject")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
+                string accountId = User.Claims.FirstOrDefault(c => c.Type == "ID")?.Value;
+
+                if (string.IsNullOrEmpty(accountId))
+                {
+                    return Unauthorized("");
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -178,7 +264,7 @@ namespace SEP490_API.Controllers
                     return BadRequest(errors);
                 }
 
-                await _subjectRepository.UpdateSubject(subjectID, request);
+                await _subjectRepository.UpdateSubject(accountId, subjectID, request);
 
                 return Ok("Chỉnh sửa môn học thành công");
             }

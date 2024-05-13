@@ -65,6 +65,7 @@ builder.Services.AddSwaggerGen(opt =>
 });
 
 builder.Services.AddTransient<IAccountRepository, AccountRepository>();
+builder.Services.AddTransient<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddTransient<ISubjectRepository, SubjectRepository>();
 builder.Services.AddTransient<IClassesRepository, ClassesRepository>();
 

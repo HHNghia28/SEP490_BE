@@ -11,13 +11,13 @@ namespace BusinessObject.Entities
     public class RolePermission
     {
         [Key, Column(Order = 0)]
-        public Guid PermissionID { get; set; }
+        public int PermissionID { get; set; }
 
         [ForeignKey("PermissionID")]
         public Permission Permission { get; set; }
 
         [Key, Column(Order = 1)]
-        public Guid RoleID { get; set; }
+        public int RoleID { get; set; }
 
         [ForeignKey("RoleID")]
         public Role Role { get; set; }
