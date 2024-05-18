@@ -51,6 +51,8 @@ namespace DataAccess.Repository
                 AccountStudent accountStudentExist = await _context.AccountStudents
                 .Include(a => a.Student)
                 .Include(a => a.Role)
+                .ThenInclude(a => a.RolePermissions)
+                .ThenInclude(a => a.Permission)
                 .FirstOrDefaultAsync(a => a.Username.ToLower()
                 .Equals(request.Username.ToLower()) && a.IsActive)
                 ?? throw new ArgumentException("Tên đăng nhập hoặc tài khoản không chính xác");
@@ -67,10 +69,10 @@ namespace DataAccess.Repository
 
                 List<string> roleStudents = new();
 
-                //foreach (var item1 in accountStudentExist.Role.RolePermissions)
-                //{
-                //    roleStudents.Add(item1.Permission.Name);
-                //}
+                foreach (var item1 in accountStudentExist.Role.RolePermissions)
+                {
+                    roleStudents.Add(item1.Permission.Name);
+                }
 
                 string refreshTokenS = GenerateRefreshToken();
 
@@ -90,10 +92,11 @@ namespace DataAccess.Repository
                         Fullname = accountStudentExist.Student.Fullname,
                         Phone = accountStudentExist.Student.Phone,
                         Avatar = accountStudentExist.Student.Avatar
-                    }
+                    },
+                    Permissions = roleStudents,
                 };
 
-                loginResponseS.AccessToken = CreateToken(loginResponseS, 60 * 60 * 24, roleStudents);
+                loginResponseS.AccessToken = CreateToken(loginResponseS, 60 * 60 * 24 * 30, roleStudents);
                 loginResponseS.RefreshToken = refreshTokenS;
 
                 return loginResponseS;
@@ -146,7 +149,7 @@ namespace DataAccess.Repository
                 Permissions = roles,
             };
 
-            loginResponse.AccessToken = CreateToken(loginResponse, 60 * 60 * 24, roles);
+            loginResponse.AccessToken = CreateToken(loginResponse, 60 * 60 * 24 * 30, roles);
             loginResponse.RefreshToken = refreshToken;
 
             return loginResponse;
@@ -162,6 +165,7 @@ namespace DataAccess.Repository
                 .Include(a => a.AccountRoles)
                 .ThenInclude(a => a.Role)
                 .ThenInclude(a => a.RolePermissions)
+                .ThenInclude(a => a.Permission)
                 .Include(a => a.AccountPermissions)
                 .ThenInclude(a => a.Permission)
                 .FirstOrDefaultAsync(a => a.ID.Equals(accountID) && a.IsActive)

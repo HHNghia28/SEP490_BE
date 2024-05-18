@@ -38,5 +38,6 @@ namespace BusinessObject.Entities
 
         [ForeignKey("TeacherID")]
         public virtual Account Teacher { get; set; }
+        public ICollection<Attendance> Attendances { get; set; }
     }
 }
