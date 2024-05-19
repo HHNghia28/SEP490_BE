@@ -4,6 +4,7 @@ using BusinessObject.Exceptions;
 using BusinessObject.Interfaces;
 using ClosedXML.Excel;
 using DataAccess.Context;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -27,7 +28,7 @@ namespace DataAccess.Repository
             _activityLogRepository = activityLogRepository;
         }
 
-        public async Task AddSchedule(string accountID, ScheduleRequest request)
+        public async Task AddScheduleByExcel(string accountID, ScheduleExcelRequest request)
         {
             Account account = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(accountID.ToLower())) ?? throw new NotFoundException("Tài khoản của bạn không tồn tại");
@@ -890,7 +891,7 @@ namespace DataAccess.Repository
             }
         }
 
-        public async Task<ScheduleResponse> GetSchedulesByStudents(string studentID, string fromDate, string schoolYear)
+        public async Task<ScheduleResponse> GetSchedulesByStudent(string studentID, string fromDate, string schoolYear)
         {
             Classes classes = await _context.Classes
                 .AsNoTracking()
@@ -901,14 +902,6 @@ namespace DataAccess.Repository
                 .Where(c => c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower()))
                 .FirstOrDefaultAsync(c => c.IsActive && c.StudentClasses
                 .Select(item => item.StudentID.ToLower()).Contains(studentID.ToLower())) ?? throw new NotFoundException("Không tìm thấy lớp học");
-
-            DateTime startDate = await _context.Schedules
-                .AsNoTracking()
-                .Include(s => s.Classes)
-                .Where(s => Guid.Equals(s.ClassID, classes.ID))
-                .OrderBy(s => s.Date)
-                .Select(item => item.Date)
-                .FirstOrDefaultAsync();
 
             List<DateTime> dates = GetDatesToNextSunday(DateTime.ParseExact(fromDate, "dd/MM/yyyy", CultureInfo.InvariantCulture));
 
@@ -986,6 +979,250 @@ namespace DataAccess.Repository
             schedulesResponse.Details = scheduleDetailResponse;
 
             return schedulesResponse;
+        }
+
+        public async Task<ScheduleResponse> GetSchedulesBySubjectTeacher(string teacherID, string fromDate, string schoolYear)
+        {
+            Account teacher = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(teacherID.ToLower()) && a.IsActive) ?? throw new NotFoundException("Không tìm thấy tài khoản giáo viên");
+
+            List<DateTime> dates = GetDatesToNextSunday(DateTime.ParseExact(fromDate, "dd/MM/yyyy", CultureInfo.InvariantCulture));
+
+            List<Schedule> schedules = await _context.Schedules
+                .AsNoTracking()
+                .Include(s => s.Classes)
+                .Include(s => s.Teacher)
+                .Include(s => s.Subject)
+                .Include(s => s.Attendances)
+                .Where(s => s.TeacherID.ToLower().Equals(teacherID.ToLower()) && dates.Contains(s.Date))
+                .OrderBy(s => s.Date)
+                .ThenBy(s => s.SlotByDate)
+                .ToListAsync();
+
+            ScheduleResponse schedulesResponse = new()
+            {
+                Class = "",
+                FromDate = dates.ElementAt(0).ToString("dd/MM/yyyy"),
+                ToDate = dates.ElementAt(dates.Count - 1).ToString("dd/MM/yyyy"),
+                MainTeacher = teacher.Username,
+                SchoolYear = schoolYear
+            };
+
+            List<ScheduleDetailResponse> scheduleDetailResponse = new();
+
+            foreach (var item in dates)
+            {
+                List<ScheduleSlotResponse> slotResponses = new();
+
+                for (int i = 1; i < 11; i++)
+                {
+                    Schedule schedule = schedules.FirstOrDefault(s => s.SlotByDate == i && s.Date == item);
+
+                    if (schedule == null)
+                    {
+                        slotResponses.Add(new ScheduleSlotResponse()
+                        {
+                            ID = Guid.NewGuid().ToString(),
+                            Slot = i,
+                            Classroom = "",
+                            SlotTime = GetSlotTime(i),
+                            SlotByLessonPlans = 0,
+                            Status = "",
+                            IsAttendance = false,
+                            Teacher = "",
+                            Subject = ""
+                        });
+                    }
+                    else
+                    {
+                        slotResponses.Add(new ScheduleSlotResponse()
+                        {
+                            ID = schedule.ID.ToString(),
+                            Slot = schedule.SlotByDate,
+                            Classroom = schedule.Subject.Name.Equals("Chào cờ") ? "Sân chào cờ" : "Phòng " + schedule.Classes.Classroom,
+                            SlotTime = GetSlotTime(i),
+                            SlotByLessonPlans = schedule.SlotByLessonPlans,
+                            Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : !string.IsNullOrEmpty(schedule.Rank) ? "Có mặt" : "Vắng",
+                            IsAttendance = !string.IsNullOrEmpty(schedule.Rank),
+                            Teacher = schedule.Teacher.Username,
+                            Subject = schedule.Subject.Name
+                        });
+                    }
+                }
+
+                scheduleDetailResponse.Add(new ScheduleDetailResponse()
+                {
+                    ID = Guid.NewGuid().ToString(),
+                    Date = item.ToString("dd/MM/yyyy"),
+                    WeekDate = GetVietnameseDayOfWeek(item.DayOfWeek),
+                    Slots = slotResponses,
+                });
+            }
+
+            schedulesResponse.Details = scheduleDetailResponse;
+
+            return schedulesResponse;
+        }
+
+        public async Task<ScheduleResponse> GetSchedulesByHomeroomTeacher(string teacherID, string classname, string fromDate, string schoolYear)
+        {
+            Account teacher = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(teacherID.ToLower()) && a.IsActive) ?? throw new NotFoundException("Không tìm thấy tài khoản giáo viên");
+
+            Classes classes = await _context.Classes
+                .Include(c => c.SchoolYear)
+                .FirstOrDefaultAsync(c => c.TeacherID.ToLower().Equals(teacherID.ToLower())
+                && c.Classroom.ToLower().Equals(classname.ToLower()) 
+                && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Không tìm thấy lớp chủ nhiệm");
+
+            List<DateTime> dates = GetDatesToNextSunday(DateTime.ParseExact(fromDate, "dd/MM/yyyy", CultureInfo.InvariantCulture));
+
+            List<Schedule> schedules = await _context.Schedules
+                .AsNoTracking()
+                .Include(s => s.Classes)
+                .Include(s => s.Teacher)
+                .Include(s => s.Subject)
+                .Include(s => s.Attendances)
+                .Where(s => Guid.Equals(s.ClassID, classes.ID) && dates.Contains(s.Date))
+                .OrderBy(s => s.Date)
+                .ThenBy(s => s.SlotByDate)
+                .ToListAsync();
+
+            ScheduleResponse schedulesResponse = new()
+            {
+                Class = "",
+                FromDate = dates.ElementAt(0).ToString("dd/MM/yyyy"),
+                ToDate = dates.ElementAt(dates.Count - 1).ToString("dd/MM/yyyy"),
+                MainTeacher = teacher.Username,
+                SchoolYear = schoolYear
+            };
+
+            List<ScheduleDetailResponse> scheduleDetailResponse = new();
+
+            foreach (var item in dates)
+            {
+                List<ScheduleSlotResponse> slotResponses = new();
+
+                for (int i = 1; i < 11; i++)
+                {
+                    Schedule schedule = schedules.FirstOrDefault(s => s.SlotByDate == i && s.Date == item);
+
+                    if (schedule == null)
+                    {
+                        slotResponses.Add(new ScheduleSlotResponse()
+                        {
+                            ID = Guid.NewGuid().ToString(),
+                            Slot = i,
+                            Classroom = "",
+                            SlotTime = GetSlotTime(i),
+                            SlotByLessonPlans = 0,
+                            Status = "",
+                            IsAttendance = false,
+                            Teacher = "",
+                            Subject = ""
+                        });
+                    }
+                    else
+                    {
+                        slotResponses.Add(new ScheduleSlotResponse()
+                        {
+                            ID = schedule.ID.ToString(),
+                            Slot = schedule.SlotByDate,
+                            Classroom = schedule.Subject.Name.Equals("Chào cờ") ? "Sân chào cờ" : "Phòng " + schedule.Classes.Classroom,
+                            SlotTime = GetSlotTime(i),
+                            SlotByLessonPlans = schedule.SlotByLessonPlans,
+                            Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : !string.IsNullOrEmpty(schedule.Rank) ? "Có mặt" : "Vắng",
+                            IsAttendance = !string.IsNullOrEmpty(schedule.Rank),
+                            Teacher = schedule.Teacher.Username,
+                            Subject = schedule.Subject.Name
+                        });
+                    }
+                }
+
+                scheduleDetailResponse.Add(new ScheduleDetailResponse()
+                {
+                    ID = Guid.NewGuid().ToString(),
+                    Date = item.ToString("dd/MM/yyyy"),
+                    WeekDate = GetVietnameseDayOfWeek(item.DayOfWeek),
+                    Slots = slotResponses,
+                });
+            }
+
+            schedulesResponse.Details = scheduleDetailResponse;
+
+            return schedulesResponse;
+        }
+
+        public async Task DeleteSchedule(string accountID, string scheduleID)
+        {
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(accountID.ToLower())) ?? throw new NotFoundException("Tài khoản của bạn không tồn tại");
+
+            Schedule schedule = await _context.Schedules
+                .Include(s => s.Classes)
+                .ThenInclude(s => s.SchoolYear)
+                .FirstOrDefaultAsync(s => Guid.Equals(s.ID, new Guid(scheduleID))) ?? throw new NotFoundException("Không tìm thấy lịch học");
+
+            _context.Schedules.Remove(schedule);
+            await _context.SaveChangesAsync();
+
+            await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
+            {
+                AccountID = accountID,
+                Note = "Người dùng " + account.Username + " vừa thực hiện xóa thời khóa biểu tiết " + schedule.SlotByDate + " " + GetVietnameseDayOfWeek(schedule.Date.DayOfWeek)
+                + " của lớp học " + schedule.Classes.Classroom + " năm học " + schedule.Classes.SchoolYear.Name,
+                Type = LogName.DELETE.ToString(),
+            });
+        }
+
+        public async Task AddSchedule(string accountID, ScheduleRequest request)
+        {
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(accountID.ToLower())) ?? throw new NotFoundException("Tài khoản của bạn không tồn tại");
+
+            Account teacher = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(request.TeacherID.ToLower())) ?? throw new NotFoundException("Giáo viên bộ môn không tồn tại");
+
+            Subject subject = await _context.Subjects
+                .FirstOrDefaultAsync(s => Guid.Equals(s.ID, request.SubjectID)) ?? throw new NotFoundException("Môn học không tồn tại");
+
+            Classes classes = await _context.Classes
+                .Include(c => c.SchoolYear)
+                .FirstOrDefaultAsync(c => Guid.Equals(c.ID, request.ClassID)) ?? throw new NotFoundException("Lớp học không tồn tại");
+
+            Schedule scheduleExist = await _context.Schedules
+                .FirstOrDefaultAsync(s => s.TeacherID.ToLower().Equals(request.TeacherID.ToLower())
+                && Guid.Equals(s.ClassID, request.ClassID)
+                && s.SlotByDate == request.SlotByDate);
+
+            if (scheduleExist != null)
+            {
+                throw new ArgumentException("Tiết học đã tồn tại");
+            }
+
+            Schedule schedule = new()
+            {
+                ID = Guid.NewGuid(),
+                ClassID = request.ClassID,
+                SubjectID = request.SubjectID,
+                TeacherID = request.TeacherID,
+                SlotByDate = request.SlotByDate,
+                SlotByLessonPlans = request.SlotByLessonPlans,
+                Date = request.Date,
+                Note = "",
+                Rank = ""
+            };
+
+            await _context.Schedules.AddAsync(schedule);
+            await _context.SaveChangesAsync();
+
+            await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
+            {
+                AccountID = accountID,
+                Note = "Người dùng " + account.Username + " vừa thực hiện xóa thời khóa biểu tiết " + request.SlotByDate + " " + GetVietnameseDayOfWeek(request.Date.DayOfWeek)
+                + " của lớp học " + classes.Classroom + " năm học " + classes.SchoolYear.Name,
+                Type = LogName.DELETE.ToString(),
+            });
         }
 
         private List<DateTime> GetDatesToNextSunday(DateTime startDate)
