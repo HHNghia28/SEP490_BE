@@ -890,7 +890,7 @@ namespace DataAccess.Repository
             }
         }
 
-        public async Task<ScheduleResponse> GetSchedulesByStudents(string studentID, int currentIndex, string schoolYear)
+        public async Task<ScheduleResponse> GetSchedulesByStudents(string studentID, string fromDate, string schoolYear)
         {
             Classes classes = await _context.Classes
                 .AsNoTracking()
@@ -910,13 +910,7 @@ namespace DataAccess.Repository
                 .Select(item => item.Date)
                 .FirstOrDefaultAsync();
 
-            List<DateTime> dates = new();
-
-            for (int i = 0; i < currentIndex; i++)
-            {
-                dates = GetDatesToNextSunday(startDate);
-                startDate = dates.ElementAt(dates.Count - 1);
-            }
+            List<DateTime> dates = GetDatesToNextSunday(DateTime.ParseExact(fromDate, "dd/MM/yyyy", CultureInfo.InvariantCulture));
 
             List<Schedule> schedules = await _context.Schedules
                 .AsNoTracking()
@@ -942,25 +936,51 @@ namespace DataAccess.Repository
 
             foreach (var item in dates)
             {
+                List<ScheduleSlotResponse> slotResponses = new();
+
+                for (int i = 1; i < 11; i++)
+                {
+                    Schedule schedule = schedules.FirstOrDefault(s => s.SlotByDate == i && s.Date == item);
+
+                    if (schedule == null)
+                    {
+                        slotResponses.Add(new ScheduleSlotResponse()
+                        {
+                            ID = Guid.NewGuid().ToString(),
+                            Slot = i,
+                            Classroom = "",
+                            SlotTime = GetSlotTime(i),
+                            SlotByLessonPlans = 0,
+                            Status = "",
+                            IsAttendance = false,
+                            Teacher = "",
+                            Subject = ""
+                        });
+                    }
+                    else
+                    {
+                        slotResponses.Add(new ScheduleSlotResponse()
+                        {
+                            ID = schedule.ID.ToString(),
+                            Slot = schedule.SlotByDate,
+                            Classroom = schedule.Subject.Name.Equals("Chào cờ") ? "Sân chào cờ" : "Phòng " + classes.Classroom,
+                            SlotTime = GetSlotTime(i),
+                            SlotByLessonPlans = schedule.SlotByLessonPlans,
+                            Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : schedule.Attendances.FirstOrDefault(a => a.StudentID.Equals(studentID)).Present ? "Có mặt" : "Vắng",
+                            IsAttendance = schedule.Attendances.FirstOrDefault(a => a.StudentID.Equals(studentID)).Present,
+                            Teacher = schedule.Teacher.Username,
+                            Subject = schedule.Subject.Name
+                        });
+                    }
+                }
+
                 scheduleDetailResponse.Add(new ScheduleDetailResponse()
                 {
                     ID = Guid.NewGuid().ToString(),
                     Date = item.ToString("dd/MM/yyyy"),
                     WeekDate = GetVietnameseDayOfWeek(item.DayOfWeek),
-                    Slots = schedules.Where(s => s.Date == item)
-                    .Select(item => new ScheduleSlotResponse()
-                    {
-                        ID = item.ID.ToString(),
-                        Slot = item.SlotByDate,
-                        Classroom = item.Subject.Name.Equals("Chào cờ") ? "Sân chào cờ" : "Phòng " + classes.Classroom,
-                        SlotTime = "",
-                        SlotByLessonPlans = item.SlotByLessonPlans,
-                        Status = item.Date > DateTime.Now ? "Chưa bắt đầu" : item.Attendances.FirstOrDefault(a => a.StudentID.Equals(studentID)).Present ? "Có mặt" : "Vắng",
-                        IsAttendance = item.Attendances.FirstOrDefault(a => a.StudentID.Equals(studentID)).Present,
-                        Teacher = item.Teacher.Username,
-                        Subject = item.Subject.Name
-                    }).ToList()
-                }); ;
+                    Slots = slotResponses,
+                });
             }
 
             schedulesResponse.Details = scheduleDetailResponse;
@@ -1011,6 +1031,35 @@ namespace DataAccess.Repository
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dayOfWeek), "Ngày không hợp lệ");
             }
+        }
+
+        private string GetSlotTime(int i)
+        {
+            switch (i)
+            {
+                case 1:
+                    return "7h10-7h55";
+                case 2:
+                    return "8h00-8h45";
+                case 3:
+                    return "9h05-9h50";
+                case 4:
+                    return "9h55-10h40";
+                case 5:
+                    return "10h50-11h35";
+                case 6:
+                    return "12h45-13h20";
+                case 7:
+                    return "13h25-14h10";
+                case 8:
+                    return "14h30-15h15";
+                case 9:
+                    return "15h20-16h05";
+                case 10:
+                    return "16h15-17h00";
+            }
+
+            return "";
         }
 
         private class ScheduleSubject

@@ -19,7 +19,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetScheduleByStudent(int currentIndex, string schoolYear)
+        public async Task<IActionResult> GetScheduleByStudent(string studentID, string fromDate, string schoolYear)
         {
             try
             {
@@ -36,13 +36,6 @@ namespace SEP490_API.Controllers
                     };
                 }
 
-                string accountId = User.Claims.FirstOrDefault(c => c.Type == "ID")?.Value;
-
-                if (string.IsNullOrEmpty(accountId))
-                {
-                    return Unauthorized("");
-                }
-
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
@@ -54,7 +47,7 @@ namespace SEP490_API.Controllers
                     return BadRequest(errors);
                 }
 
-                return Ok(await _scheduleRepository.GetSchedulesByStudents(accountId, currentIndex, schoolYear));
+                return Ok(await _scheduleRepository.GetSchedulesByStudents(studentID, fromDate, schoolYear));
             }
             catch (NotFoundException ex)
             {
