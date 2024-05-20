@@ -1317,6 +1317,7 @@ namespace DataAccess.Repository
                 Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : !string.IsNullOrEmpty(schedule.Rank) ? "Có mặt" : "Vắng",
                 Teacher = schedule.TeacherID,
                 Title = lesson != null ? lesson.Title : "",
+                Date = schedule.Date.ToString("dd/MM/yyyy"),
             };
         }
 
@@ -1347,6 +1348,7 @@ namespace DataAccess.Repository
                 Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : attendance != null ? attendance.Present ? "Có mặt" : "Vắng" : "Vắng",
                 Teacher = schedule.TeacherID,
                 Title = lesson != null ? lesson.Title : "",
+                Date = schedule.Date.ToString("dd/MM/yyyy"),
             };
         }
 

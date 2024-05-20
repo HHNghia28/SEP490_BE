@@ -19,5 +19,6 @@ namespace BusinessObject.DTOs
         public string Title { get; set; }
         public string Status { get; set; }
         public bool IsAttendance {  get; set; } 
+        public string Date {  get; set; }
     }
 }
