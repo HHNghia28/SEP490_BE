@@ -8,12 +8,16 @@ namespace BusinessObject.DTOs
 {
     public class ScheduleResponse
     {
-        public string SchoolYear { get; set; }
-        public string Class { get; set; }
-        public string MainTeacher { get; set; }
-        public string FromDate { get; set; }
-        public string ToDate { get; set; }
-        public string Semester { get; set; } = "";
-        public List<ScheduleDetailResponse> Details { get; set; }
+        public string ID { get; set; }
+        public int Slot {  get; set; }
+        public string Classroom { get; set; }
+        public string Classname { get; set; }
+        public string SlotTime { get; set; }
+        public string Subject { get; set; }
+        public int SlotByLessonPlans { get; set; }
+        public string Teacher { get; set; }
+        public string Title { get; set; }
+        public string Status { get; set; }
+        public bool IsAttendance {  get; set; } 
     }
 }

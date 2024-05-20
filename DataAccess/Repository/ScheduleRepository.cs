@@ -893,7 +893,7 @@ namespace DataAccess.Repository
             }
         }
 
-        public async Task<ScheduleResponse> GetSchedulesByStudent(string studentID, string fromDate, string schoolYear)
+        public async Task<SchedulesResponse> GetSchedulesByStudent(string studentID, string fromDate, string schoolYear)
         {
             Classes classes = await _context.Classes
                 .AsNoTracking()
@@ -918,7 +918,7 @@ namespace DataAccess.Repository
                 .ThenBy(s => s.SlotByDate)
                 .ToListAsync();
 
-            ScheduleResponse schedulesResponse = new()
+            SchedulesResponse schedulesResponse = new()
             {
                 Class = classes.Classroom,
                 FromDate = dates.ElementAt(0).ToString("dd/MM/yyyy"),
@@ -983,7 +983,7 @@ namespace DataAccess.Repository
             return schedulesResponse;
         }
 
-        public async Task<ScheduleResponse> GetSchedulesBySubjectTeacher(string teacherID, string fromDate, string schoolYear)
+        public async Task<SchedulesResponse> GetSchedulesBySubjectTeacher(string teacherID, string fromDate, string schoolYear)
         {
             Account teacher = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(teacherID.ToLower()) && a.IsActive) ?? throw new NotFoundException("Không tìm thấy tài khoản giáo viên");
@@ -1001,7 +1001,7 @@ namespace DataAccess.Repository
                 .ThenBy(s => s.SlotByDate)
                 .ToListAsync();
 
-            ScheduleResponse schedulesResponse = new()
+            SchedulesResponse schedulesResponse = new()
             {
                 Class = "",
                 FromDate = dates.ElementAt(0).ToString("dd/MM/yyyy"),
@@ -1066,7 +1066,7 @@ namespace DataAccess.Repository
             return schedulesResponse;
         }
 
-        public async Task<ScheduleResponse> GetSchedulesByHomeroomTeacher(string teacherID, string classname, string fromDate, string schoolYear)
+        public async Task<SchedulesResponse> GetSchedulesByHomeroomTeacher(string teacherID, string classname, string fromDate, string schoolYear)
         {
             Account teacher = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(teacherID.ToLower()) && a.IsActive) ?? throw new NotFoundException("Không tìm thấy tài khoản giáo viên");
@@ -1090,7 +1090,7 @@ namespace DataAccess.Repository
                 .ThenBy(s => s.SlotByDate)
                 .ToListAsync();
 
-            ScheduleResponse schedulesResponse = new()
+            SchedulesResponse schedulesResponse = new()
             {
                 Class = "",
                 FromDate = dates.ElementAt(0).ToString("dd/MM/yyyy"),
@@ -1291,6 +1291,63 @@ namespace DataAccess.Repository
                 + " của lớp học " + classes.Classroom + " năm học " + classes.SchoolYear.Name,
                 Type = LogName.UPDATE.ToString(),
             });
+        }
+
+        public async Task<ScheduleResponse> GetScheduleTeacher(string scheduleID)
+        {
+            Schedule schedule = await _context.Schedules
+                .Include(s => s.Classes)
+                .Include(s => s.Teacher)
+                .Include(s => s.Subject)
+                .ThenInclude(s => s.LessonPlans)
+                .FirstOrDefaultAsync(s => Guid.Equals(s.ID, new Guid(scheduleID))) ?? throw new NotFoundException("Tiết học không tồn tại");
+
+            LessonPlans lesson = schedule.Subject.LessonPlans.FirstOrDefault(l => l.Slot == schedule.SlotByLessonPlans);
+
+            return new ScheduleResponse()
+            {
+                ID = scheduleID,
+                Subject = schedule.Subject.Name,
+                Classname = schedule.Classes.Classroom,
+                Classroom = schedule.Subject.Name.Equals("Chào cờ") ? "Sân chào cờ" : "Phòng " + schedule.Classes.Classroom,
+                IsAttendance = !string.IsNullOrEmpty(schedule.Rank),
+                Slot = schedule.SlotByDate,
+                SlotByLessonPlans = schedule.SlotByLessonPlans,
+                SlotTime = GetSlotTime(schedule.SlotByDate),
+                Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : !string.IsNullOrEmpty(schedule.Rank) ? "Có mặt" : "Vắng",
+                Teacher = schedule.TeacherID,
+                Title = lesson != null ? lesson.Title : "",
+            };
+        }
+
+        public async Task<ScheduleResponse> GetScheduleStudent(string studentID, string scheduleID)
+        {
+            Schedule schedule = await _context.Schedules
+                .Include(s => s.Classes)
+                .Include(s => s.Teacher)
+                .Include(s => s.Subject)
+                .ThenInclude(s => s.LessonPlans)
+                .Include(s => s.Attendances)
+                .ThenInclude(s => s.AccountStudent)
+                .FirstOrDefaultAsync(s => Guid.Equals(s.ID, new Guid(scheduleID))) ?? throw new NotFoundException("Tiết học không tồn tại");
+
+            LessonPlans lesson = schedule.Subject.LessonPlans.FirstOrDefault(l => l.Slot == schedule.SlotByLessonPlans);
+            Attendance attendance = schedule.Attendances.FirstOrDefault(a => a.AccountStudent.ID.ToLower().Equals(studentID.ToLower()));
+
+            return new ScheduleResponse()
+            {
+                ID = scheduleID,
+                Subject = schedule.Subject.Name,
+                Classname = schedule.Classes.Classroom,
+                Classroom = schedule.Subject.Name.Equals("Chào cờ") ? "Sân chào cờ" : "Phòng " + schedule.Classes.Classroom,
+                IsAttendance = attendance != null ? attendance.Present ? true : false : false,
+                Slot = schedule.SlotByDate,
+                SlotByLessonPlans = schedule.SlotByLessonPlans,
+                SlotTime = GetSlotTime(schedule.SlotByDate),
+                Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : attendance != null ? attendance.Present ? "Có mặt" : "Vắng" : "Vắng",
+                Teacher = schedule.TeacherID,
+                Title = lesson != null ? lesson.Title : "",
+            };
         }
 
         private List<DateTime> GetDatesToNextSunday(DateTime startDate)

@@ -19,6 +19,102 @@ namespace SEP490_API.Controllers
             _scheduleRepository = scheduleRepository;
         }
 
+        [HttpGet("Student/{studentID}/{scheduleID}")]
+        public async Task<IActionResult> GetScheduleTeacher(string studentID, string scheduleID)
+        {
+            try
+            {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Schedule")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Any())
+                        .ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+                    return BadRequest(errors);
+                }
+
+                return Ok(await _scheduleRepository.GetScheduleStudent(studentID, scheduleID));
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(ex.Message)
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
+        [HttpGet("Teacher/{scheduleID}")]
+        public async Task<IActionResult> GetScheduleTeacher(string scheduleID)
+        {
+            try
+            {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Schedule")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Any())
+                        .ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+                    return BadRequest(errors);
+                }
+
+                return Ok(await _scheduleRepository.GetScheduleTeacher(scheduleID));
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(ex.Message)
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
         [HttpGet("Student")]
         public async Task<IActionResult> GetScheduleByStudent(string studentID, string fromDate, string schoolYear)
         {
