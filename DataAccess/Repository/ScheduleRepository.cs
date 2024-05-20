@@ -5,6 +5,7 @@ using BusinessObject.Interfaces;
 using ClosedXML.Excel;
 using DataAccess.Context;
 using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.VariantTypes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -14,6 +15,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DataAccess.Repository
 {
@@ -959,8 +961,8 @@ namespace DataAccess.Repository
                             Classroom = schedule.Subject.Name.Equals("Chào cờ") ? "Sân chào cờ" : "Phòng " + classes.Classroom,
                             SlotTime = GetSlotTime(i),
                             SlotByLessonPlans = schedule.SlotByLessonPlans,
-                            Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : schedule.Attendances.FirstOrDefault(a => a.StudentID.Equals(studentID)).Present ? "Có mặt" : "Vắng",
-                            IsAttendance = schedule.Attendances.FirstOrDefault(a => a.StudentID.Equals(studentID)).Present,
+                            Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : schedule.Attendances.Count > 0 ? schedule.Attendances.FirstOrDefault(a => a.StudentID.Equals(studentID)).Present ? "Có mặt" : "Vắng" : "Vắng",
+                            IsAttendance = schedule.Attendances.Count > 0 ? schedule.Attendances.FirstOrDefault(a => a.StudentID.Equals(studentID)).Present : false,
                             Teacher = schedule.Teacher.Username,
                             Subject = schedule.Subject.Name
                         });
@@ -1188,6 +1190,7 @@ namespace DataAccess.Repository
 
             Classes classes = await _context.Classes
                 .Include(c => c.SchoolYear)
+                .Include(c => c.StudentClasses)
                 .FirstOrDefaultAsync(c => Guid.Equals(c.ID, request.ClassID)) ?? throw new NotFoundException("Lớp học không tồn tại");
 
             Schedule scheduleExist = await _context.Schedules
@@ -1200,9 +1203,11 @@ namespace DataAccess.Repository
                 throw new ArgumentException("Tiết học đã tồn tại");
             }
 
+            Guid scheduleID = Guid.NewGuid();
+
             Schedule schedule = new()
             {
-                ID = Guid.NewGuid(),
+                ID = scheduleID,
                 ClassID = request.ClassID,
                 SubjectID = request.SubjectID,
                 TeacherID = request.TeacherID,
@@ -1214,6 +1219,23 @@ namespace DataAccess.Repository
             };
 
             await _context.Schedules.AddAsync(schedule);
+
+            List<Attendance> attendances = new();
+
+            foreach (var item in classes.StudentClasses)
+            {
+                attendances.Add(new()
+                {
+                    ID = Guid.NewGuid(),
+                    Date = request.Date,
+                    Present = false,
+                    ScheduleID = scheduleID,
+                    StudentID = item.StudentID,
+                });
+            }
+
+            await _context.Attendances.AddRangeAsync(attendances);
+
             await _context.SaveChangesAsync();
 
             await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
@@ -1222,6 +1244,52 @@ namespace DataAccess.Repository
                 Note = "Người dùng " + account.Username + " vừa thực hiện xóa thời khóa biểu tiết " + request.SlotByDate + " " + GetVietnameseDayOfWeek(request.Date.DayOfWeek)
                 + " của lớp học " + classes.Classroom + " năm học " + classes.SchoolYear.Name,
                 Type = LogName.DELETE.ToString(),
+            });
+        }
+
+        public async Task UpdateSchedule(string accountID, string scheduleID, ScheduleRequest request)
+        {
+            Schedule schedule = await _context.Schedules
+                .FirstOrDefaultAsync(s => Guid.Equals(s.ID, new Guid(scheduleID))) ?? throw new NotFoundException("Tiết học không tồn tại");
+
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(accountID.ToLower())) ?? throw new NotFoundException("Tài khoản của bạn không tồn tại");
+
+            Account teacher = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(request.TeacherID.ToLower())) ?? throw new NotFoundException("Giáo viên bộ môn không tồn tại");
+
+            Subject subject = await _context.Subjects
+                .FirstOrDefaultAsync(s => Guid.Equals(s.ID, request.SubjectID)) ?? throw new NotFoundException("Môn học không tồn tại");
+
+            Classes classes = await _context.Classes
+                .Include(c => c.SchoolYear)
+                .FirstOrDefaultAsync(c => Guid.Equals(c.ID, request.ClassID)) ?? throw new NotFoundException("Lớp học không tồn tại");
+
+            Schedule scheduleExist = await _context.Schedules
+                .FirstOrDefaultAsync(s => s.TeacherID.ToLower().Equals(request.TeacherID.ToLower())
+                && Guid.Equals(s.ClassID, request.ClassID)
+                && s.SlotByDate == request.SlotByDate);
+
+            if (scheduleExist != null)
+            {
+                throw new ArgumentException("Tiết học đã tồn tại");
+            }
+
+            schedule.ClassID = request.ClassID;
+            schedule.SubjectID = request.SubjectID;
+            schedule.TeacherID = request.TeacherID;
+            schedule.SlotByDate = request.SlotByDate;
+            schedule.SlotByLessonPlans = request.SlotByLessonPlans;
+            schedule.Date = request.Date;
+
+            await _context.SaveChangesAsync();
+
+            await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
+            {
+                AccountID = accountID,
+                Note = "Người dùng " + account.Username + " vừa thực hiện cập nhật thời khóa biểu tiết " + request.SlotByDate + " " + GetVietnameseDayOfWeek(request.Date.DayOfWeek)
+                + " của lớp học " + classes.Classroom + " năm học " + classes.SchoolYear.Name,
+                Type = LogName.UPDATE.ToString(),
             });
         }
 

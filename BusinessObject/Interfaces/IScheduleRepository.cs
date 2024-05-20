@@ -11,6 +11,7 @@ namespace BusinessObject.Interfaces
     public interface IScheduleRepository
     {
         public Task AddSchedule(string accountID, ScheduleRequest request);
+        public Task UpdateSchedule(string accountID, string scheduleID, ScheduleRequest request);
         public Task AddScheduleByExcel(string accountID, ScheduleExcelRequest request);
         public Task<ScheduleResponse> GetSchedulesByStudent(string studentID, string fromDate, string schoolYear);
         public Task<ScheduleResponse> GetSchedulesBySubjectTeacher(string teacherID, string fromDate, string schoolYear);

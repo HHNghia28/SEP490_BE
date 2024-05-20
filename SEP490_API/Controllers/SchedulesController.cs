@@ -277,6 +277,63 @@ namespace SEP490_API.Controllers
             }
         }
 
+        [HttpPut("{scheduleID}")]
+        public async Task<IActionResult> Update(string scheduleID, ScheduleRequest request)
+        {
+            try
+            {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Update Schedule")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
+                string accountId = User.Claims.FirstOrDefault(c => c.Type == "ID")?.Value;
+
+                if (string.IsNullOrEmpty(accountId))
+                {
+                    return Unauthorized("");
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Any())
+                        .ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+                    return BadRequest(errors);
+                }
+
+                await _scheduleRepository.UpdateSchedule(accountId, scheduleID, request);
+
+                return Ok("Cập nhật thời khóa biểu thành công");
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(ex.Message)
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
         [HttpDelete("{scheduleID}")]
         public async Task<IActionResult> Delete(string scheduleID)
         {
