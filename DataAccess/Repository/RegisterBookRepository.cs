@@ -17,10 +17,12 @@ namespace DataAccess.Repository
     public class RegisterBookRepository : IRegisterBookRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly IActivityLogRepository _activityLogRepository;
 
-        public RegisterBookRepository(ApplicationDbContext context)
+        public RegisterBookRepository(ApplicationDbContext context, IActivityLogRepository activityLogRepository)
         {
             _context = context;
+            _activityLogRepository = activityLogRepository;
         }
 
         public async Task<RegistersBookResponse> GetRegistersBook(string classID, string fromDate)
@@ -85,6 +87,30 @@ namespace DataAccess.Repository
             response.Details = responseDetails;
 
             return response;
+        }
+
+        public async Task UpdateRegisterBook(string accountID, RegisterBookUpdateRequest request)
+        {
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(accountID.ToLower())) ?? throw new ArgumentException("Tài khoản của bạn không tồn tại");
+
+            Schedule schedule = await _context.Schedules
+                .Include(s => s.Classes)
+                .FirstOrDefaultAsync(s => Guid.Equals(s.ID, new Guid(request.ID))) ?? throw new ArgumentException("Tiết học không tồn tại");
+
+            schedule.Note = request.Note;
+            schedule.Rank = request.Rating;
+
+            await _context.SaveChangesAsync();
+
+            await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
+            {
+                AccountID = accountID,
+                Note = "Người dùng " + account.Username + " vừa thực hiện cập nhật sổ đầu bài tiết " + schedule.SlotByDate 
+                + " ngày " + schedule.Date.ToString("dd/MM/yyyy") + " lớp " + schedule.Classes.Classroom,
+                Type = LogName.UPDATE.ToString(),
+            });
         }
 
         private List<DateTime> GetDatesToNextSunday(DateTime startDate)

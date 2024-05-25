@@ -10,5 +10,6 @@ namespace BusinessObject.Interfaces
     public interface IRegisterBookRepository
     {
         public Task<RegistersBookResponse> GetRegistersBook(string classID, string fromDate);
+        public Task UpdateRegisterBook(string accountID, RegisterBookUpdateRequest request);
     }
 }
