@@ -14,7 +14,7 @@ namespace BusinessObject.Interfaces
         public Task<ScheduleResponse> GetScheduleStudent(string studentID, string scheduleID);
         public Task AddSchedule(string accountID, ScheduleRequest request);
         public Task UpdateSchedule(string accountID, string scheduleID, ScheduleRequest request);
-        public Task AddScheduleByExcel(string accountID, ScheduleExcelRequest request);
+        public Task AddScheduleByExcel(string accountID, ExcelRequest request);
         public Task<SchedulesResponse> GetSchedulesByStudent(string studentID, string fromDate, string schoolYear);
         public Task<SchedulesResponse> GetSchedulesBySubjectTeacher(string teacherID, string fromDate, string schoolYear);
         public Task<SchedulesResponse> GetSchedulesByHomeroomTeacher(string teacherID, string classname, string fromDate, string schoolYear);

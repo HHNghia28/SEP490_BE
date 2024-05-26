@@ -30,12 +30,12 @@ namespace DataAccess.Repository
             _activityLogRepository = activityLogRepository;
         }
 
-        public async Task AddScheduleByExcel(string accountID, ScheduleExcelRequest request)
+        public async Task AddScheduleByExcel(string accountID, ExcelRequest request)
         {
             Account account = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(accountID.ToLower())) ?? throw new NotFoundException("Tài khoản của bạn không tồn tại");
 
-            IFormFile file = request.ScheduleFile;
+            IFormFile file = request.File;
             if (file != null && file.Length > 0)
             {
                 using (var stream = new MemoryStream())

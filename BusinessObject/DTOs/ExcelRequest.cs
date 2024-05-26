@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace BusinessObject.DTOs
 {
-    public class ScheduleExcelRequest
+    public class ExcelRequest
     {
         [Required(ErrorMessage = "File không được bỏ trống")]
-        public IFormFile? ScheduleFile { get; set; }
+        public IFormFile? File { get; set; }
     }
 }

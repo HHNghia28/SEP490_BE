@@ -317,7 +317,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPost("Excel")]
-        public async Task<IActionResult> CreateByExcel([FromForm] ScheduleExcelRequest request)
+        public async Task<IActionResult> CreateByExcel([FromForm] ExcelRequest request)
         {
             try
             {

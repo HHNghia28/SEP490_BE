@@ -13,19 +13,24 @@ namespace BusinessObject.Entities
         [Key]
         public Guid ID { get; set; }
 
-        public Guid ComponentScoreID { get; set; }
-
         [MaxLength(50)]
         public string StudentID { get; set; }
 
         public Guid SchoolYearID { get; set; }
 
+        [Required]
+        [MaxLength(250)]
+        public string Name { get; set; }
+
+        [Required]
+        public decimal ScoreFactor { get; set; }
+
+        [Required]
+        [MaxLength(250)]
+        public string Semester { get; set; }
+
         [MaxLength(10)]
         public string Score { get; set; }
-
-        // Navigation properties
-        [ForeignKey("ComponentScoreID")]
-        public virtual ComponentScore ComponentScore { get; set; }
 
         [ForeignKey("StudentID")]
         public virtual AccountStudent AccountStudent { get; set; }
