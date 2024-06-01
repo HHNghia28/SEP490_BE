@@ -29,6 +29,10 @@ namespace DataAccess.Repository
                 .FirstOrDefaultAsync(a => a.ID.ToLower()
                 .Equals(accountID.ToLower())) ?? throw new ArgumentException("Tài khoản của bạn không tồn tại");
 
+            Account teacher = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower()
+                .Equals(request.TeacherID.ToLower())) ?? throw new ArgumentException("Tài khoản giáo viên chủ nhiệm không tồn tại");
+
             Guid schoolYearID = Guid.NewGuid();
             SchoolYear schoolYear = await _context.SchoolYears
                 .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(request.SchoolYear.ToLower()));

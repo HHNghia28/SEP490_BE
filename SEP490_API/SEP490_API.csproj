@@ -27,4 +27,9 @@
     <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\Avatar\" />
+    <Folder Include="wwwroot\Logs\" />
+  </ItemGroup>
+
 </Project>

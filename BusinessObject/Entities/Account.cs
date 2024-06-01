@@ -36,5 +36,6 @@ namespace BusinessObject.Entities
 
         public ICollection<AccountRole> AccountRoles { get; set; }
         public ICollection<AccountPermission> AccountPermissions { get; set; }
+        public ICollection<Classes> Classes { get; set; }
     }
 }

@@ -48,16 +48,28 @@ namespace DataAccess.Context
             modelBuilder.Entity<StudentClasses>()
                 .HasKey(ap => new { ap.StudentID, ap.ClassID });
 
+            modelBuilder.Entity<Classes>()
+                .HasOne(c => c.Teacher)
+                .WithMany(a => a.Classes)
+                .HasForeignKey(c => c.TeacherID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<StudentClasses>()
+                .HasOne(sc => sc.Classes)
+                .WithMany(c => c.StudentClasses)
+                .HasForeignKey(sc => sc.ClassID)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Schedule>()
-                .HasOne(s => s.Classes) // chỉ định quan hệ một-đến-nhiều
-                .WithMany(c => c.Schedules) // Classes có nhiều Schedules
-                .HasForeignKey(s => s.ClassID) // khóa ngoại là ClassID
+                .HasOne(s => s.Classes)
+                .WithMany(c => c.Schedules)
+                .HasForeignKey(s => s.ClassID)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Schedule>()
-                .HasOne(s => s.Subject) // chỉ định quan hệ một-đến-nhiều
-                .WithMany(c => c.Schedules) // Classes có nhiều Schedules
-                .HasForeignKey(s => s.SubjectID) // khóa ngoại là ClassID
+                .HasOne(s => s.Subject)
+                .WithMany(c => c.Schedules)
+                .HasForeignKey(s => s.SubjectID)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Permission>()

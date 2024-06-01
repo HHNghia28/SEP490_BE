@@ -14,6 +14,7 @@ namespace BusinessObject.Entities
         public Guid ID { get; set; }
 
         [Required]
+        [MaxLength(50)]
         public string TeacherID { get; set; }
 
         public string Classroom { get; set; }
@@ -25,7 +26,9 @@ namespace BusinessObject.Entities
         public bool IsActive { get; set; }
 
         // Navigation properties
+        [ForeignKey("TeacherID")]
         public virtual Account Teacher { get; set; }
+        [ForeignKey("SchoolYearID")]
         public virtual SchoolYear SchoolYear { get; set; }
         public virtual ICollection<StudentClasses> StudentClasses { get; set; }
         public virtual ICollection<Schedule> Schedules { get; set; }

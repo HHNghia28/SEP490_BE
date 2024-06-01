@@ -239,9 +239,11 @@ namespace SEP490_API.Migrations
                 columns: table => new
                 {
                     ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ComponentScoreID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StudentID = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     SchoolYearID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    ScoreFactor = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Semester = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     Score = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false)
                 },
                 constraints: table =>
@@ -251,12 +253,6 @@ namespace SEP490_API.Migrations
                         name: "FK_StudentScores_AccountStudents_StudentID",
                         column: x => x.StudentID,
                         principalTable: "AccountStudents",
-                        principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_StudentScores_ComponentScores_ComponentScoreID",
-                        column: x => x.ComponentScoreID,
-                        principalTable: "ComponentScores",
                         principalColumn: "ID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -342,7 +338,7 @@ namespace SEP490_API.Migrations
                 columns: table => new
                 {
                     ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TeacherID = table.Column<string>(type: "nvarchar(50)", nullable: false),
+                    TeacherID = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Classroom = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SchoolYearID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
@@ -355,7 +351,7 @@ namespace SEP490_API.Migrations
                         column: x => x.TeacherID,
                         principalTable: "Accounts",
                         principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Classes_SchoolYears_SchoolYearID",
                         column: x => x.SchoolYearID,
@@ -465,7 +461,7 @@ namespace SEP490_API.Migrations
                         column: x => x.ClassID,
                         principalTable: "Classes",
                         principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -558,10 +554,10 @@ namespace SEP490_API.Migrations
                 columns: new[] { "ID", "Address", "Avatar", "Birthday", "Email", "Fullname", "Gender", "IsBachelor", "IsDoctor", "IsMaster", "IsProfessor", "Nation", "Phone" },
                 values: new object[,]
                 {
-                    { new Guid("033f2b95-93aa-46cc-94f2-89a74a865175"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 5, 13, 22, 55, 27, 954, DateTimeKind.Local).AddTicks(5652), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" },
-                    { new Guid("2cef2fe7-0047-4811-ab43-e608103b3ec3"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 5, 13, 22, 55, 27, 612, DateTimeKind.Local).AddTicks(7212), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" },
-                    { new Guid("3d63767e-e98f-490c-8e34-d7c65fb3aacc"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 5, 13, 22, 55, 27, 783, DateTimeKind.Local).AddTicks(5108), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" },
-                    { new Guid("f64b2a6a-ee14-4653-9053-5cfc8a83dc27"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 5, 13, 22, 55, 27, 441, DateTimeKind.Local).AddTicks(2398), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" }
+                    { new Guid("302fad5c-67cf-4a68-aaf5-00558cb665fe"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 6, 1, 20, 4, 18, 286, DateTimeKind.Local).AddTicks(1497), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" },
+                    { new Guid("3cf74805-9957-4d2a-a3e8-5f25876ea91a"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 6, 1, 20, 4, 17, 924, DateTimeKind.Local).AddTicks(5489), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" },
+                    { new Guid("a5526543-668a-45bb-a9fc-8fd3f8ada8c6"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 6, 1, 20, 4, 18, 97, DateTimeKind.Local).AddTicks(4001), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" },
+                    { new Guid("ddb39091-9636-4eb5-a5e2-ca475708a60e"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 6, 1, 20, 4, 18, 462, DateTimeKind.Local).AddTicks(9996), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" }
                 });
 
             migrationBuilder.InsertData(
@@ -569,10 +565,10 @@ namespace SEP490_API.Migrations
                 columns: new[] { "ID", "IsActive", "Password", "RefreshToken", "RefreshTokenExpires", "UserID", "Username" },
                 values: new object[,]
                 {
-                    { "GV0001", true, "$2a$11$HtGmr2ooQQRA2dUleyh6r.krFTYwuIDlqyftJ6C5.2/HkMJ35GXji", "", new DateTime(2024, 5, 13, 22, 55, 27, 612, DateTimeKind.Local).AddTicks(6808), new Guid("f64b2a6a-ee14-4653-9053-5cfc8a83dc27"), "Admin" },
-                    { "GV0002", true, "$2a$11$Am3biJaZat4t3aJv.THxfu/39ONZ9i9mqsPlum4Ouw1RqnADlqe92", "", new DateTime(2024, 5, 13, 22, 55, 27, 783, DateTimeKind.Local).AddTicks(4797), new Guid("2cef2fe7-0047-4811-ab43-e608103b3ec3"), "HomeroomTeacher" },
-                    { "GV0003", true, "$2a$11$IUfoDLVT7kx2TELn630zkOwiYK3dnzR7V7jgF1mm9EC6JojdXrwe.", "", new DateTime(2024, 5, 13, 22, 55, 27, 954, DateTimeKind.Local).AddTicks(5445), new Guid("3d63767e-e98f-490c-8e34-d7c65fb3aacc"), "SubjectTeacher" },
-                    { "GV0004", true, "$2a$11$MfRolm3JxuNY2W77C40CTug6qtLuBo2Iick/5SABQDW/d2k6XLiwe", "", new DateTime(2024, 5, 13, 22, 55, 28, 130, DateTimeKind.Local).AddTicks(8695), new Guid("033f2b95-93aa-46cc-94f2-89a74a865175"), "Supervisor" }
+                    { "GV0001", true, "$2a$11$F/MdwANR2536EeOfJ7lSPen0yxTK4uj.6e/ZEGPmzTSX.TFCM.Dxm", "", new DateTime(2024, 6, 1, 20, 4, 18, 97, DateTimeKind.Local).AddTicks(3554), new Guid("3cf74805-9957-4d2a-a3e8-5f25876ea91a"), "Admin" },
+                    { "GV0002", true, "$2a$11$bVMTa3zkzBZzWIuGQlL1YuLGIHtOYDHktvrCYAjYSChLE.eKDfGJ6", "", new DateTime(2024, 6, 1, 20, 4, 18, 286, DateTimeKind.Local).AddTicks(1129), new Guid("a5526543-668a-45bb-a9fc-8fd3f8ada8c6"), "HomeroomTeacher" },
+                    { "GV0003", true, "$2a$11$Owkuc.rb8F5WtB4C/MMLGe/r04N4w7uSTS.mJOAm6bxiR19minyCe", "", new DateTime(2024, 6, 1, 20, 4, 18, 462, DateTimeKind.Local).AddTicks(9764), new Guid("302fad5c-67cf-4a68-aaf5-00558cb665fe"), "SubjectTeacher" },
+                    { "GV0004", true, "$2a$11$I0zdptfxal.M5EL4h/Ff5OAP8cBfklXhlHUYJEuAIR2JRvY2Zp.Ui", "", new DateTime(2024, 6, 1, 20, 4, 18, 636, DateTimeKind.Local).AddTicks(7072), new Guid("ddb39091-9636-4eb5-a5e2-ca475708a60e"), "Supervisor" }
                 });
 
             migrationBuilder.InsertData(
@@ -763,11 +759,6 @@ namespace SEP490_API.Migrations
                 column: "ClassID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StudentScores_ComponentScoreID",
-                table: "StudentScores",
-                column: "ComponentScoreID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_StudentScores_SchoolYearID",
                 table: "StudentScores",
                 column: "SchoolYearID");
@@ -792,6 +783,9 @@ namespace SEP490_API.Migrations
 
             migrationBuilder.DropTable(
                 name: "Attendances");
+
+            migrationBuilder.DropTable(
+                name: "ComponentScores");
 
             migrationBuilder.DropTable(
                 name: "LessonsPlans");
@@ -821,19 +815,16 @@ namespace SEP490_API.Migrations
                 name: "AccountStudents");
 
             migrationBuilder.DropTable(
-                name: "ComponentScores");
+                name: "Classes");
 
             migrationBuilder.DropTable(
-                name: "Classes");
+                name: "Subjects");
 
             migrationBuilder.DropTable(
                 name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "Students");
-
-            migrationBuilder.DropTable(
-                name: "Subjects");
 
             migrationBuilder.DropTable(
                 name: "Accounts");

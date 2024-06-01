@@ -251,7 +251,7 @@ namespace DataAccess.Repository
             }
 
             Guid guid = Guid.NewGuid();
-            string accountID = request.Username;
+            string accountID = request.Username.Trim();
 
             string avt = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png";
 
@@ -343,14 +343,11 @@ namespace DataAccess.Repository
             Account accountExist = await _context.Accounts
                 .Include(a => a.User)
                 .Include(a => a.AccountPermissions)
+                .ThenInclude(a => a.Permission)
                 .Include(a => a.AccountRoles)
+                .ThenInclude(a => a.Role)
                 .FirstOrDefaultAsync(a => a.ID.ToLower()
-                .Equals(accountID.ToLower().Trim()));
-
-            if (accountExist == null)
-            {
-                throw new NotFoundException("Tài khoản không tồn tại");
-            }
+                .Equals(accountID.ToLower().Trim())) ?? throw new NotFoundException("Tài khoản không tồn tại");
 
             string avt = accountExist.User.Avatar;
 
@@ -373,39 +370,51 @@ namespace DataAccess.Repository
             accountExist.User.IsProfessor = request.IsProfessor;
             accountExist.User.Avatar = avt;
 
+            if (request.Roles != null && request.Roles.Count > 0)
+            {
+                _context.Roles.RemoveRange(accountExist.AccountRoles.Select(a => a.Role));
+            }
+
+            if (request.Permissions != null && request.Permissions.Count > 0)
+            {
+                _context.Permissions.RemoveRange(accountExist.AccountPermissions.Select(a => a.Permission));
+            }
+
             List<AccountRole> roles = new();
 
-            foreach (var role in request.Roles)
-            {
-                Role role1 = await _context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower().Equals(role.ToLower()));
-
-                if (role1 != null)
+            if (request.Roles != null && request.Roles.Count > 0)
+                foreach (var role in request.Roles)
                 {
-                    roles.Add(new()
+                    Role role1 = await _context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower().Equals(role.ToLower()));
+
+                    if (role1 != null)
                     {
-                        AccountID = accountID,
-                        RoleID = role1.ID
-                    });
+                        roles.Add(new()
+                        {
+                            AccountID = accountID,
+                            RoleID = role1.ID
+                        });
+                    }
                 }
-            }
 
             await _context.AccountRoles.AddRangeAsync(roles);
 
             List<AccountPermission> permissions = new();
 
-            foreach (var role in request.Permissions)
-            {
-                Permission per = await _context.Permissions.FirstOrDefaultAsync(r => r.Name.ToLower().Equals(role.ToLower()));
-
-                if (per != null)
+            if (request.Permissions != null && request.Permissions.Count > 0)
+                foreach (var role in request.Permissions)
                 {
-                    permissions.Add(new()
+                    Permission per = await _context.Permissions.FirstOrDefaultAsync(r => r.Name.ToLower().Equals(role.ToLower()));
+
+                    if (per != null)
                     {
-                        AccountID = accountID,
-                        PermissionID = per.ID
-                    });
+                        permissions.Add(new()
+                        {
+                            AccountID = accountID,
+                            PermissionID = per.ID
+                        });
+                    }
                 }
-            }
 
             await _context.AccountPermissions.AddRangeAsync(permissions);
             await _context.SaveChangesAsync();
