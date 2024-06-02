@@ -32,6 +32,10 @@ namespace BusinessObject.Entities
         [MaxLength(10)]
         public string Score { get; set; }
 
+        public int IndexColumn { get; set; }
+        [MaxLength(250)]
+        public string Subject { get; set; }
+
         [ForeignKey("StudentID")]
         public virtual AccountStudent AccountStudent { get; set; }
 

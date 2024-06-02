@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTOs;
+﻿using Azure.Core;
+using BusinessObject.DTOs;
 using BusinessObject.Exceptions;
 using BusinessObject.Interfaces;
 using DataAccess.Repository;
@@ -16,6 +17,50 @@ namespace SEP490_API.Controllers
         public ScoresController(IScoreRepository scoreRepository)
         {
             _scoreRepository = scoreRepository;
+        }
+
+        [HttpGet("Template")]
+        public async Task<IActionResult> ExportToExcel(string className, string schoolYear, string semester, string subjectName, string component)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Any())
+                        .ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+                    return BadRequest(errors);
+                }
+
+
+                var fileContent = await _scoreRepository.GenerateExcelFile(className, schoolYear, semester, subjectName, component);
+                return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", className.ToLower() + "_" + component.ToLower()+ ".xlsx");
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(ex.Message)
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete()
+        {
+            await _scoreRepository.DeleteScore();
+            return Ok("");
         }
 
         [HttpPost("Excel")]

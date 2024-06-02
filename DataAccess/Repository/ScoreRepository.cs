@@ -60,6 +60,7 @@ namespace DataAccess.Repository
                             string strSemester = "";
                             string strSubject = "";
                             string strScore = "";
+                            int indexCol = 0;
                             Dictionary<string, string> strScores = new Dictionary<string, string>();
 
                             for (int i = 0; i < data.Count; i++)
@@ -76,7 +77,7 @@ namespace DataAccess.Repository
                                         i++;
                                         strSchoolYear = data.ElementAt(i);
                                         break;
-                                    case "Học kì":
+                                    case "Học kỳ":
                                         i++;
                                         strSemester = data.ElementAt(i);
                                         break;
@@ -87,6 +88,10 @@ namespace DataAccess.Repository
                                     case "Cột điểm":
                                         i++;
                                         strScore = data.ElementAt(i);
+                                        break;
+                                    case "Lần thứ":
+                                        i++;
+                                        indexCol = int.Parse(data.ElementAt(i).ToString());
                                         break;
                                     case "Danh sách":
                                         i++;
@@ -129,6 +134,17 @@ namespace DataAccess.Repository
                                 && c.Semester.ToLower().Equals(strSemester.ToLower()) 
                                 && Guid.Equals(subject.ID, c.Subject.ID)) ?? throw new NotFoundException("Điểm thành phần không tồn tại");
 
+                            StudentScores studentScores1 = await _context.StudentScores
+                                .FirstOrDefaultAsync(s => s.StudentID.ToLower().Equals(students.ElementAt(0).ID.ToLower())
+                                && s.Name.ToLower().Equals(componentScore.Name.ToLower())
+                                && s.Semester.ToLower().Equals(componentScore.Semester.ToLower())
+                                && s.IndexColumn == indexCol);
+
+                            if (studentScores1 != null)
+                            {
+                                throw new ArgumentException("Cột điểm " + studentScores1.Name + " lần thứ " + studentScores1.IndexColumn + " đã tồn tại");
+                            }
+
                             List<StudentScores> check = await _context.StudentScores
                                 .Where(s => s.StudentID.ToLower().Equals(students.ElementAt(0).ID.ToLower())
                                 && s.Name.ToLower().Equals(componentScore.Name.ToLower())
@@ -145,7 +161,9 @@ namespace DataAccess.Repository
                                 Score = strScores[item.ID.ToLower()],
                                 ScoreFactor = componentScore.ScoreFactor,
                                 Semester = strSemester,
-                                StudentID = item.ID
+                                StudentID = item.ID,
+                                IndexColumn = indexCol,
+                                Subject = subject.Name
                             })
                             .ToList();
 
@@ -160,6 +178,68 @@ namespace DataAccess.Repository
                             });
                         }
                     }
+                }
+            }
+        }
+
+        public async Task DeleteScore()
+        {
+            _context.StudentScores.RemoveRange(await _context.StudentScores.ToListAsync());
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<byte[]> GenerateExcelFile(string className, string schoolYear, string semester, string subjectName, string component)
+        {
+            Classes classes = await _context.Classes
+                                .Include(c => c.SchoolYear)
+                                .FirstOrDefaultAsync(c => c.Classroom.ToLower().Equals(className.ToLower())
+                                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
+
+            Subject subject = await _context.Subjects
+                                .Include(s => s.ComponentScores)
+                                .FirstOrDefaultAsync(s => s.IsActive && s.Name.ToLower().Equals(subjectName.ToLower())
+                                && s.Grade.Equals(className.Substring(0, 2))) ?? throw new NotFoundException("Môn học không tồn tại");
+
+            ComponentScore componentScore = await _context.ComponentScores
+                .Include(c => c.Subject)
+                .FirstOrDefaultAsync(c => c.Name.ToLower().Equals(component.ToLower())
+                && c.Semester.ToLower().Equals(semester.ToLower())
+                && Guid.Equals(subject.ID, c.Subject.ID)) ?? throw new NotFoundException("Điểm thành phần không tồn tại");
+
+            List<StudentClasses> students = await _context.StudentClasses
+                .Where(s => Guid.Equals(s.ClassID, classes.ID)).ToListAsync();
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add(classes.Classroom);
+
+                // Tạo tiêu đề cột
+                worksheet.Cell(1, 1).Value = "Lớp";
+                worksheet.Cell(2, 1).Value = "Năm học";
+                worksheet.Cell(3, 1).Value = "Học kỳ";
+                worksheet.Cell(4, 1).Value = "Môn học";
+                worksheet.Cell(5, 1).Value = "Cột điểm";
+                worksheet.Cell(6, 1).Value = "Lần thứ";
+                worksheet.Cell(1, 2).Value = classes.Classroom;
+                worksheet.Cell(2, 2).Value = schoolYear;
+                worksheet.Cell(3, 2).Value = semester;
+                worksheet.Cell(4, 2).Value = subject.Name;
+                worksheet.Cell(5, 2).Value = componentScore.Name;
+                worksheet.Cell(6, 2).Value = 1;
+
+                worksheet.Cell(8, 1).Value = "Danh sách";
+
+                for (int i = 0; i < students.Count; i++)
+                {
+                    worksheet.Cell(9 + i, 1).Value = students.ElementAt(i).StudentID;
+                    worksheet.Cell(9 + i, 2).Value = 0;
+                }
+
+                // Lưu file Excel vào MemoryStream
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    return stream.ToArray();
                 }
             }
         }

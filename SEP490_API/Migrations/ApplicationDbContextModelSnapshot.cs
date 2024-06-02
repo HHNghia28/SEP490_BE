@@ -64,40 +64,40 @@ namespace SEP490_API.Migrations
                         {
                             ID = "GV0001",
                             IsActive = true,
-                            Password = "$2a$11$F/MdwANR2536EeOfJ7lSPen0yxTK4uj.6e/ZEGPmzTSX.TFCM.Dxm",
+                            Password = "$2a$11$SlZq30KnHe0WettcYRib0eOAQrdrhEAAG91mn4GetFGWAEtZZ.JFi",
                             RefreshToken = "",
-                            RefreshTokenExpires = new DateTime(2024, 6, 1, 20, 4, 18, 97, DateTimeKind.Local).AddTicks(3554),
-                            UserID = new Guid("3cf74805-9957-4d2a-a3e8-5f25876ea91a"),
+                            RefreshTokenExpires = new DateTime(2024, 6, 2, 9, 8, 18, 381, DateTimeKind.Local).AddTicks(9171),
+                            UserID = new Guid("be5243c9-98b2-4a0b-930c-067391e1ea4b"),
                             Username = "Admin"
                         },
                         new
                         {
                             ID = "GV0002",
                             IsActive = true,
-                            Password = "$2a$11$bVMTa3zkzBZzWIuGQlL1YuLGIHtOYDHktvrCYAjYSChLE.eKDfGJ6",
+                            Password = "$2a$11$5Ta.IAXIuV7OWnDK1Hblo.0/JXGL7uEkuqHSA4uy5oVifPJNcaYqq",
                             RefreshToken = "",
-                            RefreshTokenExpires = new DateTime(2024, 6, 1, 20, 4, 18, 286, DateTimeKind.Local).AddTicks(1129),
-                            UserID = new Guid("a5526543-668a-45bb-a9fc-8fd3f8ada8c6"),
+                            RefreshTokenExpires = new DateTime(2024, 6, 2, 9, 8, 18, 563, DateTimeKind.Local).AddTicks(2),
+                            UserID = new Guid("9b5a9c9d-ed46-4c51-bd1c-f2605de9045e"),
                             Username = "HomeroomTeacher"
                         },
                         new
                         {
                             ID = "GV0003",
                             IsActive = true,
-                            Password = "$2a$11$Owkuc.rb8F5WtB4C/MMLGe/r04N4w7uSTS.mJOAm6bxiR19minyCe",
+                            Password = "$2a$11$8b6L6f437kYtzv513e4mQOc7gyqsswB3AQfbRFsCnwr2iUgL4IjuO",
                             RefreshToken = "",
-                            RefreshTokenExpires = new DateTime(2024, 6, 1, 20, 4, 18, 462, DateTimeKind.Local).AddTicks(9764),
-                            UserID = new Guid("302fad5c-67cf-4a68-aaf5-00558cb665fe"),
+                            RefreshTokenExpires = new DateTime(2024, 6, 2, 9, 8, 18, 757, DateTimeKind.Local).AddTicks(563),
+                            UserID = new Guid("be323332-1d22-4730-8c5e-306da5b7ddf9"),
                             Username = "SubjectTeacher"
                         },
                         new
                         {
                             ID = "GV0004",
                             IsActive = true,
-                            Password = "$2a$11$I0zdptfxal.M5EL4h/Ff5OAP8cBfklXhlHUYJEuAIR2JRvY2Zp.Ui",
+                            Password = "$2a$11$YugIFNCzs4/hEvuFlCeNT.sQSydgMj6pLbtXLc10/QC4.9gEVRBMO",
                             RefreshToken = "",
-                            RefreshTokenExpires = new DateTime(2024, 6, 1, 20, 4, 18, 636, DateTimeKind.Local).AddTicks(7072),
-                            UserID = new Guid("ddb39091-9636-4eb5-a5e2-ca475708a60e"),
+                            RefreshTokenExpires = new DateTime(2024, 6, 2, 9, 8, 18, 928, DateTimeKind.Local).AddTicks(5920),
+                            UserID = new Guid("ee0ee8bc-0ee7-49ae-afc5-7ae8378a7bb6"),
                             Username = "Supervisor"
                         });
                 });
@@ -1244,6 +1244,9 @@ namespace SEP490_API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("IndexColumn")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(250)
@@ -1269,6 +1272,11 @@ namespace SEP490_API.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.HasKey("ID");
 
@@ -1365,10 +1373,10 @@ namespace SEP490_API.Migrations
                     b.HasData(
                         new
                         {
-                            ID = new Guid("3cf74805-9957-4d2a-a3e8-5f25876ea91a"),
+                            ID = new Guid("be5243c9-98b2-4a0b-930c-067391e1ea4b"),
                             Address = "600 Nguyễn Văn Cừ",
                             Avatar = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png",
-                            Birthday = new DateTime(2024, 6, 1, 20, 4, 17, 924, DateTimeKind.Local).AddTicks(5489),
+                            Birthday = new DateTime(2024, 6, 2, 9, 8, 18, 207, DateTimeKind.Local).AddTicks(5173),
                             Email = "admin@fpt.edu.vn",
                             Fullname = "Lê Văn Admin",
                             Gender = "Nam",
@@ -1381,10 +1389,10 @@ namespace SEP490_API.Migrations
                         },
                         new
                         {
-                            ID = new Guid("a5526543-668a-45bb-a9fc-8fd3f8ada8c6"),
+                            ID = new Guid("9b5a9c9d-ed46-4c51-bd1c-f2605de9045e"),
                             Address = "600 Nguyễn Văn Cừ",
                             Avatar = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png",
-                            Birthday = new DateTime(2024, 6, 1, 20, 4, 18, 97, DateTimeKind.Local).AddTicks(4001),
+                            Birthday = new DateTime(2024, 6, 2, 9, 8, 18, 381, DateTimeKind.Local).AddTicks(9477),
                             Email = "admin@fpt.edu.vn",
                             Fullname = "Lê Văn Admin",
                             Gender = "Nam",
@@ -1397,10 +1405,10 @@ namespace SEP490_API.Migrations
                         },
                         new
                         {
-                            ID = new Guid("302fad5c-67cf-4a68-aaf5-00558cb665fe"),
+                            ID = new Guid("be323332-1d22-4730-8c5e-306da5b7ddf9"),
                             Address = "600 Nguyễn Văn Cừ",
                             Avatar = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png",
-                            Birthday = new DateTime(2024, 6, 1, 20, 4, 18, 286, DateTimeKind.Local).AddTicks(1497),
+                            Birthday = new DateTime(2024, 6, 2, 9, 8, 18, 563, DateTimeKind.Local).AddTicks(241),
                             Email = "admin@fpt.edu.vn",
                             Fullname = "Lê Văn Admin",
                             Gender = "Nam",
@@ -1413,10 +1421,10 @@ namespace SEP490_API.Migrations
                         },
                         new
                         {
-                            ID = new Guid("ddb39091-9636-4eb5-a5e2-ca475708a60e"),
+                            ID = new Guid("ee0ee8bc-0ee7-49ae-afc5-7ae8378a7bb6"),
                             Address = "600 Nguyễn Văn Cừ",
                             Avatar = "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png",
-                            Birthday = new DateTime(2024, 6, 1, 20, 4, 18, 462, DateTimeKind.Local).AddTicks(9996),
+                            Birthday = new DateTime(2024, 6, 2, 9, 8, 18, 757, DateTimeKind.Local).AddTicks(793),
                             Email = "admin@fpt.edu.vn",
                             Fullname = "Lê Văn Admin",
                             Gender = "Nam",
