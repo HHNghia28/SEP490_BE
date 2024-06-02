@@ -41,5 +41,6 @@ namespace BusinessObject.Entities
 
         [ForeignKey("RoleID")]
         public virtual Role Role { get; set; }
+        public ICollection<StudentScores> Scores { get; set; }
     }
 }

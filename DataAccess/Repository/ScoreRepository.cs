@@ -173,7 +173,7 @@ namespace DataAccess.Repository
                             await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
                             {
                                 AccountID = accountID,
-                                Note = "Người dùng " + account.Username + " vừa thực hiện nhập điểm " + strScore.ToLower() + " của lớp " + classes.Classroom,
+                                Note = "Người dùng " + account.Username + " vừa thực hiện nhập điểm " + strScore.ToLower() + " lần thứ " + indexCol + " của lớp " + classes.Classroom,
                                 Type = LogName.CREATE.ToString(),
                             });
                         }
@@ -182,13 +182,7 @@ namespace DataAccess.Repository
             }
         }
 
-        public async Task DeleteScore()
-        {
-            _context.StudentScores.RemoveRange(await _context.StudentScores.ToListAsync());
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task<byte[]> GenerateExcelFile(string className, string schoolYear, string semester, string subjectName, string component)
+        public async Task<byte[]> GenerateExcelFile(string className, string schoolYear, string semester, string subjectName, string component, int indexCol = 1)
         {
             Classes classes = await _context.Classes
                                 .Include(c => c.SchoolYear)
@@ -207,7 +201,16 @@ namespace DataAccess.Repository
                 && Guid.Equals(subject.ID, c.Subject.ID)) ?? throw new NotFoundException("Điểm thành phần không tồn tại");
 
             List<StudentClasses> students = await _context.StudentClasses
+                .Include(s => s.AccountStudent)
+                .ThenInclude(s => s.Scores)
                 .Where(s => Guid.Equals(s.ClassID, classes.ID)).ToListAsync();
+
+            List<StudentScores> scores = await _context.StudentScores
+                .Where(s => Guid.Equals(s.SchoolYearID, classes.SchoolYearID)
+                && s.Subject.ToLower().Equals(subject.Name.ToLower())
+                && s.Name.ToLower().Equals(componentScore.Name.ToLower())
+                && s.IndexColumn == indexCol)
+                .ToListAsync();
 
             using (var workbook = new XLWorkbook())
             {
@@ -231,8 +234,10 @@ namespace DataAccess.Repository
 
                 for (int i = 0; i < students.Count; i++)
                 {
+                    StudentScores score = scores.FirstOrDefault(s => s.StudentID.ToLower().Equals(students.ElementAt(i).StudentID.ToLower()));
+
                     worksheet.Cell(9 + i, 1).Value = students.ElementAt(i).StudentID;
-                    worksheet.Cell(9 + i, 2).Value = 0;
+                    worksheet.Cell(9 + i, 2).Value = scores!= null && score != null ? int.Parse(score.Score) : 0;
                 }
 
                 // Lưu file Excel vào MemoryStream
@@ -240,6 +245,144 @@ namespace DataAccess.Repository
                 {
                     workbook.SaveAs(stream);
                     return stream.ToArray();
+                }
+            }
+        }
+
+        public async Task UpdateScoreByExcel(string accountID, ExcelRequest request)
+        {
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(accountID.ToLower())) ?? throw new NotFoundException("Tài khoản của bạn không tồn tại");
+
+            IFormFile file = request.File;
+            if (file != null && file.Length > 0)
+            {
+                using (var stream = new MemoryStream())
+                {
+                    file.CopyTo(stream);
+
+                    stream.Position = 0;
+
+                    using (var workbook = new XLWorkbook(stream))
+                    {
+                        foreach (var worksheet in workbook.Worksheets)
+                        {
+                            List<string> data = new();
+
+                            for (int row = 1; row <= worksheet.LastRowUsed().RowNumber(); row++)
+                            {
+                                for (int col = 1; col <= worksheet.LastColumnUsed().ColumnNumber(); col++)
+                                {
+                                    var cell = worksheet.Cell(row, col);
+                                    data.Add(cell.Value.ToString());
+                                }
+                            }
+
+                            string str = "";
+                            string strClass = "";
+                            string strSchoolYear = "";
+                            string strSemester = "";
+                            string strSubject = "";
+                            string strScore = "";
+                            int indexCol = 0;
+                            Dictionary<string, string> strScores = new Dictionary<string, string>();
+
+                            for (int i = 0; i < data.Count; i++)
+                            {
+                                str = data.ElementAt(i);
+
+                                switch (str)
+                                {
+                                    case "Lớp":
+                                        i++;
+                                        strClass = data.ElementAt(i);
+                                        break;
+                                    case "Năm học":
+                                        i++;
+                                        strSchoolYear = data.ElementAt(i);
+                                        break;
+                                    case "Học kỳ":
+                                        i++;
+                                        strSemester = data.ElementAt(i);
+                                        break;
+                                    case "Môn học":
+                                        i++;
+                                        strSubject = data.ElementAt(i);
+                                        break;
+                                    case "Cột điểm":
+                                        i++;
+                                        strScore = data.ElementAt(i);
+                                        break;
+                                    case "Lần thứ":
+                                        i++;
+                                        indexCol = int.Parse(data.ElementAt(i).ToString());
+                                        break;
+                                    case "Danh sách":
+                                        i++;
+                                        for (int j = i; j < data.Count - 1; j++)
+                                        {
+                                            i++;
+                                            str = data.ElementAt(i);
+
+                                            if (!string.IsNullOrEmpty(str))
+                                            {
+                                                i++;
+                                                j++;
+                                                int s = int.Parse(data.ElementAt(i));
+                                                if (s < 0 || s > 10) throw new ArgumentException("Điểm phải nằm trong thang điểm 10");
+                                                strScores.Add(str.ToLower(), data.ElementAt(i));
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+
+                            Classes classes = await _context.Classes
+                                .Include(c => c.SchoolYear)
+                                .FirstOrDefaultAsync(c => c.Classroom.ToLower().Equals(strClass.ToLower())
+                                    && c.SchoolYear.Name.ToLower().Equals(strSchoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
+
+                            List<AccountStudent> students = await _context.AccountStudents
+                                .Where(a => strScores.Keys.Contains(a.ID.ToLower()))
+                                .ToListAsync();
+
+                            if (students.Count <= 0) throw new NotFoundException("Không tìm thấy học sinh nào");
+
+                            Subject subject = await _context.Subjects
+                                .FirstOrDefaultAsync(s => s.IsActive && s.Name.ToLower().Equals(strSubject.ToLower())
+                                && s.Grade.Equals(strClass.Substring(0, 2))) ?? throw new NotFoundException("Môn học không tồn tại");
+
+                            ComponentScore componentScore = await _context.ComponentScores
+                                .Include(c => c.Subject)
+                                .FirstOrDefaultAsync(c => c.Name.ToLower().Equals(strScore.ToLower())
+                                && c.Semester.ToLower().Equals(strSemester.ToLower())
+                                && Guid.Equals(subject.ID, c.Subject.ID)) ?? throw new NotFoundException("Điểm thành phần không tồn tại");
+
+                            List<StudentScores> scores = await _context.StudentScores
+                                .Where(s => Guid.Equals(s.SchoolYearID, classes.SchoolYearID)
+                                && s.Subject.ToLower().Equals(subject.Name.ToLower())
+                                && s.Name.ToLower().Equals(componentScore.Name.ToLower())
+                                && s.IndexColumn == indexCol)
+                                .ToListAsync();
+
+                            if (scores.Count <= 0) throw new NotFoundException("Điểm thành phần không tồn tại");
+
+                            foreach (var item in scores)
+                            {
+                                string score = strScores[item.StudentID.ToString().ToLower()] ?? item.Score;
+                                item.Score = score;
+                            }
+
+                            await _context.SaveChangesAsync();
+
+                            await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
+                            {
+                                AccountID = accountID,
+                                Note = "Người dùng " + account.Username + " vừa thực hiện cập nhật điểm " + strScore.ToLower() + " lần thứ " + indexCol + " của lớp " + classes.Classroom,
+                                Type = LogName.UPDATE.ToString(),
+                            });
+                        }
+                    }
                 }
             }
         }
