@@ -72,6 +72,7 @@ builder.Services.AddTransient<IScheduleRepository, ScheduleRepository>();
 builder.Services.AddTransient<IRegisterBookRepository, RegisterBookRepository>();
 builder.Services.AddTransient<IAttendanceRepository, AttendenceRepository>();
 builder.Services.AddTransient<IScoreRepository, ScoreRepository>();
+builder.Services.AddTransient<INotificationRepository, NotificationRepository>();
 
 builder.Services.AddTransient<IImageService, ImageService>();
 

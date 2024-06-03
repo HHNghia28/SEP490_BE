@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessObject.Entities
+namespace BusinessObject.DTOs
 {
-    public class Notification
+    public class NotificationResponse
     {
         [Key]
         public Guid ID { get; set; }
@@ -21,13 +21,10 @@ namespace BusinessObject.Entities
 
         [Required]
         public string Thumbnail { get; set; }
-        public DateTime CreateAt { get; set; } = DateTime.Now;
-        public DateTime UpdateAt { get; set; } = DateTime.Now;
 
         [ForeignKey("Account")]
         public string CreateBy { get; set; }
-
-        [ForeignKey("CreateBy")]
-        public virtual Account Account { get; set; }
+        public string CreateAt { get; set; }
+        public string UpdateAt { get; set; }
     }
 }

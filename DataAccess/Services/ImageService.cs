@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -18,14 +19,14 @@ namespace DataAccess.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<string> UploadImage(IFormFile file)
+        public async Task<string> UploadImage(IFormFile file, string folder = "Avatar")
         {
             if (file == null || file.Length == 0)
             {
                 return "";
             }
 
-            var folderName = Path.Combine("wwwroot", "Avatar");
+            var folderName = Path.Combine("wwwroot", folder);
             var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
 
             if (!Directory.Exists(pathToSave))
