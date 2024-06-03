@@ -10,6 +10,7 @@ namespace BusinessObject.Interfaces
     public interface IAttendanceRepository
     {
         public Task<IEnumerable<AttendenceResponse>> GetAttendenceBySlot(string slotID);
+        public Task<IEnumerable<AttendenceResponse>> GetAttendenceStudent(string studentID, string subjectName, string schoolYear);
         public Task UpdateAttendence(string accountID, List<AttendenceRequest> requests);
     }
 }

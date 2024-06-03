@@ -3,6 +3,7 @@ using BusinessObject.Entities;
 using BusinessObject.Exceptions;
 using BusinessObject.Interfaces;
 using DataAccess.Context;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -39,6 +40,30 @@ namespace DataAccess.Repository
                 })
                 .ToListAsync();
 
+        }
+
+        public async Task<IEnumerable<AttendenceResponse>> GetAttendenceStudent(string studentID, string subjectName, string schoolYear)
+        {
+            return await _context.Attendances
+                .Include(a => a.AccountStudent)
+                .ThenInclude(a => a.Student)
+                .Include(a => a.Schedule)
+                .ThenInclude(a => a.Classes)
+                .ThenInclude(a => a.SchoolYear)
+                .Include(a => a.Schedule)
+                .ThenInclude(a => a.Subject)
+                .Where(a => a.AccountStudent.ID.ToLower().Equals(studentID.ToLower())
+                && a.Schedule.Subject.Name.Equals(subjectName.ToLower())
+                && a.Schedule.Classes.SchoolYear.Name.Equals(schoolYear.ToLower()))
+                .Select(item => new AttendenceResponse()
+                {
+                    AttendenceID = item.ID.ToString(),
+                    StudentID = item.StudentID,
+                    StudentName = item.AccountStudent.Student.Fullname,
+                    Avatar = item.AccountStudent.Student.Avatar,
+                    Present = item.Present
+                })
+                .ToListAsync();
         }
 
         public async Task UpdateAttendence(string accountID, List<AttendenceRequest> requests)
