@@ -11,16 +11,16 @@ namespace SEP490_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AttendenceController : ControllerBase
+    public class AttendanceController : ControllerBase
     {
         private readonly IAttendanceRepository _attendanceRepository;
 
-        public AttendenceController(IAttendanceRepository attendanceRepository)
+        public AttendanceController(IAttendanceRepository attendanceRepository)
         {
             _attendanceRepository = attendanceRepository;
         }
 
-        [HttpGet("GetAttendenceBySlot/{slotID}")]
+        [HttpGet("GetAttendanceBySlot/{slotID}")]
         public async Task<IActionResult> GetAttendenceBySlot(string slotID)
         {
             try
@@ -30,7 +30,7 @@ namespace SEP490_API.Controllers
                     return Unauthorized("");
                 }
 
-                if (!(User.IsInRole("Admin") || User.IsInRole("Get Attendence")))
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Attendance")))
                 {
                     return new ObjectResult("")
                     {
@@ -68,7 +68,7 @@ namespace SEP490_API.Controllers
             }
         }
 
-        [HttpGet("GetAttendenceByStudent")]
+        [HttpGet("GetAttendanceByStudent")]
         public async Task<IActionResult> GetAttendenceBySlot(string studentID, string subjectName, string schoolYear)
         {
             try
@@ -78,7 +78,7 @@ namespace SEP490_API.Controllers
                     return Unauthorized("");
                 }
 
-                if (!(User.IsInRole("Admin") || User.IsInRole("Get Attendence")))
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Attendance")))
                 {
                     return new ObjectResult("")
                     {
@@ -126,7 +126,7 @@ namespace SEP490_API.Controllers
                     return Unauthorized("");
                 }
 
-                if (!(User.IsInRole("Admin") || User.IsInRole("Get Attendence")))
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Attendance")))
                 {
                     return new ObjectResult("")
                     {
