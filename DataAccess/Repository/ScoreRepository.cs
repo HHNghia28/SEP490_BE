@@ -249,6 +249,275 @@ namespace DataAccess.Repository
             }
         }
 
+        public async Task<ScoresResponse> GetScoresByClassBySubject(string className, string subjectName, string schoolYear)
+        {
+            Classes classes = await _context.Classes
+                                .Include(c => c.StudentClasses)
+                                .ThenInclude(c => c.AccountStudent)
+                                .ThenInclude(c => c.Student)
+                                .Include(c => c.SchoolYear)
+                                .Include(c => c.Teacher)
+                                .ThenInclude(c => c.User)
+                                .FirstOrDefaultAsync(c => c.Classroom.ToLower().Equals(className.ToLower())
+                                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
+
+            Subject subject = await _context.Subjects
+                                .Include(s => s.ComponentScores)
+                                .FirstOrDefaultAsync(s => s.IsActive && s.Name.ToLower().Equals(subjectName.ToLower())
+                                && s.Grade.Equals(className.Substring(0, 2))) ?? throw new NotFoundException("Môn học không tồn tại");
+
+            List<StudentScores> studentScores = await _context.StudentScores
+                .Where(s => classes.StudentClasses.Select(a => a.StudentID).Contains(s.StudentID)
+                && s.Subject.ToLower().Equals(subject.Name.ToLower()))
+                .ToListAsync();
+
+            List<ScoreResponse> scores = new List<ScoreResponse>();
+
+            Dictionary<double, int> ranks = new();
+
+            foreach (var item in classes.StudentClasses)
+            {
+                List<StudentScores> details = studentScores
+                    .Where(s => s.StudentID.ToLower().Equals(item.StudentID.ToLower()))
+                    .ToList();
+
+                List<ScoreDetailResponse> scoreDetails = details
+                    .Select(item1 => new ScoreDetailResponse()
+                    {
+                        Key = item1.Name,
+                        Semester = item1.Semester,
+                        Value = double.Parse(item1.Score)
+                    })
+                    .ToList();
+
+                double sum = 0;
+                decimal count = 0;
+
+                foreach (var item1 in details)
+                {
+                    if (double.TryParse(item1.Score, out double score))
+                    {
+                        sum += score * (double)item1.ScoreFactor;
+                        count += item1.ScoreFactor;
+                    }
+                    else
+                    {
+                        // Handle the case where the score is not a valid double
+                        // For example, log the error or set a default value
+                    }
+                }
+
+                double average = double.IsNaN((double)Math.Round(sum / (double)count)) ? 0 : (double)Math.Round(sum / (double)count);
+
+                if (!ranks.ContainsKey(average))
+                {
+                    ranks.Add(average, 0);
+                }
+
+                scores.Add(new ScoreResponse()
+                {
+                    ID = item.StudentID,
+                    FullName = item.AccountStudent.Student.Fullname,
+                    Average = double.IsNaN((double)Math.Round(sum / (double)count)) ? 0 : (double)Math.Round(sum / (double)count),
+                    Scores = scoreDetails
+                });
+            }
+
+            Dictionary<double, int> uniqueDict = new();
+            foreach (var kvp in ranks)
+            {
+                if (!uniqueDict.ContainsKey(kvp.Key))
+                {
+                    uniqueDict[kvp.Key] = kvp.Value;
+                }
+            }
+
+            // Step 2: Sort the dictionary by keys in descending order
+            var sortedDict = uniqueDict
+                .OrderByDescending(kvp => kvp.Key)
+                .ToList();
+
+            // Step 3: Assign new values based on the order
+            Dictionary<double, int> resultDict = new Dictionary<double, int>();
+            for (int i = 0; i < sortedDict.Count; i++)
+            {
+                resultDict[sortedDict[i].Key] = i + 1;  // Value starts from 1 and increments
+            }
+
+            foreach (var item in scores)
+            {
+                item.Rank = resultDict[item.Average];
+            }
+
+            return new ScoresResponse()
+            {
+                Class = classes.Classroom,
+                SchoolYear = schoolYear,
+                Subject =subject.Name,
+                TeacherName = classes.Teacher.User.Fullname,
+                Score = scores
+            };
+        }
+
+        public async Task<ScoreStudentResponse> GetScoresByStudentAllSubject(string studentID, string schoolYear)
+        {
+            AccountStudent student = await _context.AccountStudents
+                .Include(a => a.Student)
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(studentID.ToLower())
+                && a.IsActive) ?? throw new NotFoundException("Học sinh không tồn tại");
+
+            Classes classes = await _context.Classes
+                                .Include(c => c.StudentClasses)
+                                .ThenInclude(c => c.AccountStudent)
+                                .ThenInclude(c => c.Student)
+                                .Include(c => c.SchoolYear)
+                                .Include(c => c.Teacher)
+                                .ThenInclude(c => c.User)
+                                .FirstOrDefaultAsync(c => c.StudentClasses.Select(c => c.StudentID.ToLower()).Contains(studentID.ToLower())
+                                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
+
+            List<Subject> subjects = await _context.Subjects
+                .Include(s => s.ComponentScores)
+                .Include(s => s.Schedules)
+                .Where(s => s.Schedules.Select(s => s.ClassID.ToString().ToLower()).Contains(classes.ID.ToString().ToLower())
+                && s.ComponentScores.Count > 0)
+                .ToListAsync();
+
+            List<ScoreSubjectResponse> scores = new();
+
+            foreach (var item in subjects)
+            {
+                List<StudentScores> studentScores = await _context.StudentScores
+                .Where(s => classes.StudentClasses.Select(a => a.StudentID).Contains(s.StudentID)
+                && s.Subject.ToLower().Equals(item.Name.ToLower())
+                && s.StudentID.ToLower().Equals(student.ID.ToLower()))
+                .ToListAsync();
+
+                List<ScoreDetailResponse> scoreDetails = studentScores
+                    .Select(item1 => new ScoreDetailResponse()
+                    {
+                        Key = item1.Name,
+                        Semester = item1.Semester,
+                        Value = double.Parse(item1.Score)
+                    })
+                    .ToList();
+
+                double sum = 0;
+                decimal count = 0;
+
+                foreach (var item1 in studentScores)
+                {
+                    if (double.TryParse(item1.Score, out double score))
+                    {
+                        sum += score * (double)item1.ScoreFactor;
+                        count += item1.ScoreFactor;
+                    }
+                    else
+                    {
+                        // Handle the case where the score is not a valid double
+                        // For example, log the error or set a default value
+                    }
+                }
+
+                scores.Add(new ScoreSubjectResponse()
+                {
+                    Subject = item.Name,
+                    Average = double.IsNaN((double)Math.Round(sum / (double)count)) ? 0 : (double)Math.Round(sum / (double)count),
+                    Scores = scoreDetails,
+                });
+            }
+
+            ScoreStudentResponse response = new ScoreStudentResponse()
+            {
+                ClassName = classes.Classroom,
+                FullName = student.Student.Fullname,
+                SchoolYear = schoolYear,
+                Details = scores
+            };
+
+            return response;
+        }
+
+        public async Task<ScoreStudentResponse> GetScoresByStudentBySubject(string studentID, string subject, string schoolYear)
+        {
+            AccountStudent student = await _context.AccountStudents
+                .Include(a => a.Student)
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(studentID.ToLower())
+                && a.IsActive) ?? throw new NotFoundException("Học sinh không tồn tại");
+
+            Classes classes = await _context.Classes
+                                .Include(c => c.StudentClasses)
+                                .ThenInclude(c => c.AccountStudent)
+                                .ThenInclude(c => c.Student)
+                                .Include(c => c.SchoolYear)
+                                .Include(c => c.Teacher)
+                                .ThenInclude(c => c.User)
+                                .FirstOrDefaultAsync(c => c.StudentClasses.Select(c => c.StudentID.ToLower()).Contains(studentID.ToLower())
+                                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
+
+            List<Subject> subjects = await _context.Subjects
+                .Include(s => s.ComponentScores)
+                .Include(s => s.Schedules)
+                .Where(s => s.Schedules.Select(s => s.ClassID.ToString().ToLower()).Contains(classes.ID.ToString().ToLower())
+                && s.ComponentScores.Count > 0
+                && s.Name.ToLower().Equals(subject.ToLower()))
+                .ToListAsync();
+
+            List<ScoreSubjectResponse> scores = new();
+
+            foreach (var item in subjects)
+            {
+                List<StudentScores> studentScores = await _context.StudentScores
+                .Where(s => classes.StudentClasses.Select(a => a.StudentID).Contains(s.StudentID)
+                && s.Subject.ToLower().Equals(item.Name.ToLower())
+                && s.StudentID.ToLower().Equals(student.ID.ToLower()))
+                .ToListAsync();
+
+                List<ScoreDetailResponse> scoreDetails = studentScores
+                    .Select(item1 => new ScoreDetailResponse()
+                    {
+                        Key = item1.Name,
+                        Semester = item1.Semester,
+                        Value = double.Parse(item1.Score)
+                    })
+                    .ToList();
+
+                double sum = 0;
+                decimal count = 0;
+
+                foreach (var item1 in studentScores)
+                {
+                    if (double.TryParse(item1.Score, out double score))
+                    {
+                        sum += score * (double)item1.ScoreFactor;
+                        count += item1.ScoreFactor;
+                    }
+                    else
+                    {
+                        // Handle the case where the score is not a valid double
+                        // For example, log the error or set a default value
+                    }
+                }
+
+                scores.Add(new ScoreSubjectResponse()
+                {
+                    Subject = item.Name,
+                    Average = double.IsNaN((double)Math.Round(sum / (double)count)) ? 0 : (double)Math.Round(sum / (double)count),
+                    Scores = scoreDetails,
+                });
+            }
+
+            ScoreStudentResponse response = new ScoreStudentResponse()
+            {
+                ClassName = classes.Classroom,
+                FullName = student.Student.Fullname,
+                SchoolYear = schoolYear,
+                Details = scores
+            };
+
+            return response;
+        }
+
         public async Task UpdateScoreByExcel(string accountID, ExcelRequest request)
         {
             Account account = await _context.Accounts
