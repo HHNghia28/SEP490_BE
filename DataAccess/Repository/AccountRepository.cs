@@ -402,7 +402,8 @@ namespace DataAccess.Repository
                 avt = await _imageService.UploadImage(request.Avatar);
             }
 
-            accountExist.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            if (!string.IsNullOrEmpty(request.Password))
+                accountExist.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
             accountExist.User.Address = request.Address;
             accountExist.User.Fullname = request.Fullname;
             accountExist.User.Birthday = request.Birthday;
@@ -695,7 +696,8 @@ namespace DataAccess.Repository
                 avt = await _imageService.UploadImage(request.Avatar);
             }
 
-            account.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            if (!string.IsNullOrEmpty(request.Password))
+                account.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
             account.Student.Fullname = request.Fullname;
             account.Student.Address = request.Address;
             account.Student.Email = request.Email;
