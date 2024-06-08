@@ -23,14 +23,14 @@ namespace DataAccess.Repository
         public async Task<IEnumerable<ActivityLogResponse>> GetLog()
         {
             return await _context.ActivityLogs
+                .OrderByDescending(item => item.Date)
                 .Select(item => new  ActivityLogResponse()
                 {
                     ID = item.ID,
-                    Date = item.Date,
+                    Date = item.Date.ToString("dd/MM/yyyy"),
                     Note = item.Note,
                     Type = item.Type
                 })
-                .OrderByDescending(item => item.Date)
                 .ToListAsync();
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,5 +14,8 @@ namespace BusinessObject.DTOs
         public string StudentName { get; set; }
         public string Avatar {  get; set; }
         public bool Present { get; set; }
+        public string Date {  get; set; }
+        public string Subject { get; set; }
+        public string Status { get; set; }
     }
 }

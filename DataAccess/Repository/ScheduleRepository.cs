@@ -1426,6 +1426,95 @@ namespace DataAccess.Repository
             return "";
         }
 
+        public async Task<SchedulesResponse> GetSchedulesByClass(string className, string fromDate, string schoolYear)
+        {
+            Classes classes = await _context.Classes
+                .AsNoTracking()
+                .Include(c => c.Teacher)
+                .Include(c => c.SchoolYear)
+                .Include(c => c.StudentClasses)
+                .ThenInclude(c => c.AccountStudent)
+                .Where(c => c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower()))
+                .FirstOrDefaultAsync(c => c.IsActive && c.Classroom.ToLower().Equals(className.ToLower())) ?? throw new NotFoundException("Không tìm thấy lớp học");
+
+            List<DateTime> dates = GetDatesToNextSunday(DateTime.ParseExact(fromDate, "dd/MM/yyyy", CultureInfo.InvariantCulture));
+
+            List<Schedule> schedules = await _context.Schedules
+                .AsNoTracking()
+                .Include(s => s.Classes)
+                .Include(s => s.Teacher)
+                .Include(s => s.Subject)
+                .Include(s => s.Attendances)
+                .Where(s => Guid.Equals(s.ClassID, classes.ID) && dates.Contains(s.Date))
+                .OrderBy(s => s.Date)
+                .ThenBy(s => s.SlotByDate)
+                .ToListAsync();
+
+            SchedulesResponse schedulesResponse = new()
+            {
+                Class = classes.Classroom,
+                FromDate = dates.ElementAt(0).ToString("dd/MM/yyyy"),
+                ToDate = dates.ElementAt(dates.Count - 1).ToString("dd/MM/yyyy"),
+                MainTeacher = classes.Teacher.Username,
+                SchoolYear = schoolYear
+            };
+
+            List<ScheduleDetailResponse> scheduleDetailResponse = new();
+
+            foreach (var item in dates)
+            {
+                List<ScheduleSlotResponse> slotResponses = new();
+
+                for (int i = 1; i < 11; i++)
+                {
+                    Schedule schedule = schedules.FirstOrDefault(s => s.SlotByDate == i && s.Date == item);
+
+                    if (schedule == null)
+                    {
+                        slotResponses.Add(new ScheduleSlotResponse()
+                        {
+                            ID = Guid.NewGuid().ToString(),
+                            Slot = i,
+                            Classroom = "",
+                            SlotTime = GetSlotTime(i),
+                            SlotByLessonPlans = 0,
+                            Status = "",
+                            IsAttendance = false,
+                            Teacher = "",
+                            Subject = ""
+                        });
+                    }
+                    else
+                    {
+                        slotResponses.Add(new ScheduleSlotResponse()
+                        {
+                            ID = schedule.ID.ToString(),
+                            Slot = schedule.SlotByDate,
+                            Classroom = schedule.Subject.Name.Equals("Chào cờ") ? "Sân chào cờ" : "Phòng " + schedule.Classes.Classroom,
+                            SlotTime = GetSlotTime(i),
+                            SlotByLessonPlans = schedule.SlotByLessonPlans,
+                            Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : !string.IsNullOrEmpty(schedule.Rank) ? "Có mặt" : "Vắng",
+                            IsAttendance = !string.IsNullOrEmpty(schedule.Rank),
+                            Teacher = schedule.Teacher.Username,
+                            Subject = schedule.Subject.Name
+                        });
+                    }
+                }
+
+                scheduleDetailResponse.Add(new ScheduleDetailResponse()
+                {
+                    ID = Guid.NewGuid().ToString(),
+                    Date = item.ToString("dd/MM/yyyy"),
+                    WeekDate = GetVietnameseDayOfWeek(item.DayOfWeek),
+                    Slots = slotResponses,
+                });
+            }
+
+            schedulesResponse.Details = scheduleDetailResponse;
+
+            return schedulesResponse;
+        }
+
         private class ScheduleSubject
         {
             public Guid SubjectID { get; set; }

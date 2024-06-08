@@ -13,5 +13,8 @@ namespace BusinessObject.DTOs
         public string AccessToken { get; set; }
         public string? RefreshToken { get; set; }
         public List<string> Permissions { get; set; }
+        public List<string> Roles { get; set; }
+        public List<string> SchoolYears { get; set; }
+        public Dictionary<string, List<string>> Classes { get; set; }
     }
 }

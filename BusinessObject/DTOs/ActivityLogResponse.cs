@@ -13,6 +13,6 @@ namespace BusinessObject.DTOs
         public Guid ID { get; set; }
         public string Type { get; set; }
         public string Note { get; set; }
-        public DateTime Date { get; set; }
+        public string Date { get; set; }
     }
 }

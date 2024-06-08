@@ -163,6 +163,54 @@ namespace SEP490_API.Controllers
             }
         }
 
+        [HttpGet("Class")]
+        public async Task<IActionResult> GetScheduleByClass(string className, string fromDate, string schoolYear)
+        {
+            try
+            {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Schedule")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Any())
+                        .ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+                    return BadRequest(errors);
+                }
+
+                return Ok(await _scheduleRepository.GetSchedulesByClass(className, fromDate, schoolYear));
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(ex.Message)
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
         [HttpGet("SubjectTeacher")]
         public async Task<IActionResult> GetScheduleBySubjectTeacher(string teacherID, string fromDate, string schoolYear)
         {

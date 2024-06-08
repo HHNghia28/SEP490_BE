@@ -35,6 +35,10 @@ namespace DataAccess.Repository
 
         public async Task<LoginResponse> Login(LoginRequest request)
         {
+            List<SchoolYear> schoolYears = await _context.SchoolYears
+                .Include(s => s.Classes)
+                .ToListAsync();
+
             Account accountExist = await _context.Accounts
                 .Include(a => a.User)
                 .Include(a => a.AccountRoles)
@@ -56,6 +60,36 @@ namespace DataAccess.Repository
                 .FirstOrDefaultAsync(a => a.Username.ToLower()
                 .Equals(request.Username.ToLower()) && a.IsActive)
                 ?? throw new ArgumentException("Tên đăng nhập hoặc tài khoản không chính xác");
+
+                schoolYears = await _context.SchoolYears
+                                    .Include(s => s.Classes)
+                                    .ThenInclude(c => c.StudentClasses)
+                                    .Where(s => s.Classes.Any(c => c.StudentClasses.Any(sc => sc.StudentID.ToLower().Equals(accountStudentExist.ID.ToLower()))))
+                                    .ToListAsync();
+
+                var filteredSchoolYears = new List<SchoolYear>();
+
+                foreach (var schoolYear in schoolYears)
+                {
+                    var filteredSchoolYear = new SchoolYear
+                    {
+                        ID = schoolYear.ID,
+                        Name = schoolYear.Name,
+                        Classes = schoolYear.Classes
+                            .Where(c => c.StudentClasses.Any(sc => sc.StudentID.ToLower() == accountStudentExist.ID.ToLower()))
+                            .Select(c => new Classes
+                            {
+                                ID = c.ID,
+                                Classroom = c.Classroom,
+                                StudentClasses = c.StudentClasses
+                                    .Where(sc => sc.StudentID.ToLower() == accountStudentExist.ID.ToLower())
+                                    .ToList()
+                            })
+                            .ToList()
+                    };
+
+                    filteredSchoolYears.Add(filteredSchoolYear);
+                }
 
                 if (!accountStudentExist.IsActive)
                 {
@@ -94,6 +128,12 @@ namespace DataAccess.Repository
                         Avatar = accountStudentExist.Student.Avatar
                     },
                     Permissions = roleStudents,
+                    Roles = new List<string>() { accountStudentExist.Role.Name },
+                    SchoolYears = filteredSchoolYears.Select(s => s.Name).ToList(),
+                    Classes = filteredSchoolYears.ToDictionary(
+                                item => item.Name,
+                                item => item.Classes.Select(c => c.Classroom).ToList()
+                            )
                 };
 
                 loginResponseS.AccessToken = CreateToken(loginResponseS, 60 * 60 * 24 * 30, roleStudents);
@@ -147,6 +187,12 @@ namespace DataAccess.Repository
                     Avatar = accountExist.User.Avatar
                 },
                 Permissions = roles,
+                Roles = accountExist.AccountRoles.Select(a => a.Role.Name).ToList(),
+                SchoolYears = schoolYears.Select(s => s.Name).ToList(),
+                Classes = schoolYears.ToDictionary(
+                                item => item.Name,
+                                item => item.Classes.Select(c => c.Classroom).ToList()
+                            )
             };
 
             loginResponse.AccessToken = CreateToken(loginResponse, 60 * 60 * 24 * 30, roles);

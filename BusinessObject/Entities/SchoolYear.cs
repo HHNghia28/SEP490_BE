@@ -16,5 +16,7 @@ namespace BusinessObject.Entities
         [Required]
         [MaxLength(50)]
         public string Name { get; set; }
+
+        public ICollection<Classes> Classes { get; set; }
     }
 }

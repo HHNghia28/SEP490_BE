@@ -77,6 +77,14 @@ namespace DataAccess.Repository
 
             foreach (var item in request.Students)
             {
+                StudentClasses studentClasses1 = await _context.StudentClasses
+                    .Include(s => s.Classes)
+                    .ThenInclude(s => s.SchoolYear)
+                    .FirstOrDefaultAsync(s => s.StudentID.ToLower().Equals(item.ToLower())
+                    && s.Classes.SchoolYear.Name.ToLower().Equals(request.SchoolYear.ToLower()));
+
+                if (studentClasses1 != null) throw new ArgumentException("Học sinh " + item + " đã có lớp");
+
                 studentClasses.Add(new StudentClasses()
                 {
                     StudentID = item,

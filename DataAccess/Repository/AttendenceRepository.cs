@@ -27,16 +27,23 @@ namespace DataAccess.Repository
         public async Task<IEnumerable<AttendenceResponse>> GetAttendenceBySlot(string slotID)
         {
             return await _context.Attendances
+                .AsNoTracking()
+                .Include(a => a.Schedule)
+                .ThenInclude(a => a.Subject)
                 .Include(a => a.AccountStudent)
                 .ThenInclude(a => a.Student)
                 .Where(a => Guid.Equals(a.ScheduleID, new Guid(slotID)))
+                .OrderBy(item => item.Schedule.Date)
                 .Select(item => new AttendenceResponse()
                 {
                     AttendenceID = item.ID.ToString(),
                     StudentID = item.StudentID,
                     StudentName = item.AccountStudent.Student.Fullname,
                     Avatar = item.AccountStudent.Student.Avatar,
-                    Present = item.Present
+                    Present = item.Present,
+                    Date = item.Schedule.Date.ToString("dd/MM/yyyy"),
+                    Subject = item.Schedule.Subject.Name,
+                    Status = item.Schedule.Date > DateTime.Now ? "Chưa bắt đầu" : item.Present ? "Có mặt" : "Vắng",
                 })
                 .ToListAsync();
 
@@ -45,6 +52,7 @@ namespace DataAccess.Repository
         public async Task<IEnumerable<AttendenceResponse>> GetAttendenceStudent(string studentID, string subjectName, string schoolYear)
         {
             return await _context.Attendances
+                .AsNoTracking()
                 .Include(a => a.AccountStudent)
                 .ThenInclude(a => a.Student)
                 .Include(a => a.Schedule)
@@ -55,13 +63,17 @@ namespace DataAccess.Repository
                 .Where(a => a.AccountStudent.ID.ToLower().Equals(studentID.ToLower())
                 && a.Schedule.Subject.Name.Equals(subjectName.ToLower())
                 && a.Schedule.Classes.SchoolYear.Name.Equals(schoolYear.ToLower()))
+                .OrderBy(item => item.Schedule.Date)
                 .Select(item => new AttendenceResponse()
                 {
                     AttendenceID = item.ID.ToString(),
                     StudentID = item.StudentID,
                     StudentName = item.AccountStudent.Student.Fullname,
                     Avatar = item.AccountStudent.Student.Avatar,
-                    Present = item.Present
+                    Present = item.Present,
+                    Date = item.Schedule.Date.ToString("dd/MM/yyyy"),
+                    Subject = item.Schedule.Subject.Name,
+                    Status = item.Schedule.Date > DateTime.Now ? "Chưa bắt đầu" : item.Present ? "Có mặt" : "Vắng",
                 })
                 .ToListAsync();
         }
