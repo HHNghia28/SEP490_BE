@@ -17,5 +17,6 @@ namespace BusinessObject.DTOs
         public string Status { get; set; }
         public bool IsAttendance { get; set; }
         public string Teacher { get; set; }
+        public string? SubjectID { get; set; }
     }
 }

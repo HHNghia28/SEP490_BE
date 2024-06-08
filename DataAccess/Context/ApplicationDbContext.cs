@@ -318,6 +318,11 @@ namespace DataAccess.Context
                     new RolePermission()
                     {
                         RoleID = 2,
+                        PermissionID = 7
+                    },
+                    new RolePermission()
+                    {
+                        RoleID = 2,
                         PermissionID = 9
                     },
                     new RolePermission()

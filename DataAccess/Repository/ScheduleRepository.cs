@@ -964,7 +964,8 @@ namespace DataAccess.Repository
                             Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : schedule.Attendances.Count > 0 ? schedule.Attendances.FirstOrDefault(a => a.StudentID.Equals(studentID)).Present ? "Có mặt" : "Vắng" : "Vắng",
                             IsAttendance = schedule.Attendances.Count > 0 ? schedule.Attendances.FirstOrDefault(a => a.StudentID.Equals(studentID)).Present : false,
                             Teacher = schedule.Teacher.Username,
-                            Subject = schedule.Subject.Name
+                            Subject = schedule.Subject.Name,
+                            SubjectID = schedule.SubjectID.ToString(),
                         });
                     }
                 }
@@ -1047,7 +1048,8 @@ namespace DataAccess.Repository
                             Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : !string.IsNullOrEmpty(schedule.Rank) ? "Có mặt" : "Vắng",
                             IsAttendance = !string.IsNullOrEmpty(schedule.Rank),
                             Teacher = schedule.Teacher.Username,
-                            Subject = schedule.Subject.Name
+                            Subject = schedule.Subject.Name,
+                            SubjectID = schedule.SubjectID.ToString(),
                         });
                     }
                 }
@@ -1136,7 +1138,8 @@ namespace DataAccess.Repository
                             Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : !string.IsNullOrEmpty(schedule.Rank) ? "Có mặt" : "Vắng",
                             IsAttendance = !string.IsNullOrEmpty(schedule.Rank),
                             Teacher = schedule.Teacher.Username,
-                            Subject = schedule.Subject.Name
+                            Subject = schedule.Subject.Name,
+                            SubjectID = schedule.SubjectID.ToString(),
                         });
                     }
                 }
@@ -1496,7 +1499,8 @@ namespace DataAccess.Repository
                             Status = schedule.Date > DateTime.Now ? "Chưa bắt đầu" : !string.IsNullOrEmpty(schedule.Rank) ? "Có mặt" : "Vắng",
                             IsAttendance = !string.IsNullOrEmpty(schedule.Rank),
                             Teacher = schedule.Teacher.Username,
-                            Subject = schedule.Subject.Name
+                            Subject = schedule.Subject.Name,
+                            SubjectID = schedule.SubjectID.ToString(),
                         });
                     }
                 }
