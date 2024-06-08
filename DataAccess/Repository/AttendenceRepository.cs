@@ -3,6 +3,7 @@ using BusinessObject.Entities;
 using BusinessObject.Exceptions;
 using BusinessObject.Interfaces;
 using DataAccess.Context;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -32,8 +33,11 @@ namespace DataAccess.Repository
                 .ThenInclude(a => a.Subject)
                 .Include(a => a.AccountStudent)
                 .ThenInclude(a => a.Student)
+                .Include(a => a.Schedule)
+                .ThenInclude(a => a.Teacher)
                 .Where(a => Guid.Equals(a.ScheduleID, new Guid(slotID)))
                 .OrderBy(item => item.Schedule.Date)
+                .ThenBy(item => item.Schedule.SlotByLessonPlans)
                 .Select(item => new AttendenceResponse()
                 {
                     AttendenceID = item.ID.ToString(),
@@ -44,6 +48,8 @@ namespace DataAccess.Repository
                     Date = item.Schedule.Date.ToString("dd/MM/yyyy"),
                     Subject = item.Schedule.Subject.Name,
                     Status = item.Schedule.Date > DateTime.Now ? "Chưa bắt đầu" : item.Present ? "Có mặt" : "Vắng",
+                    Teacher = item.Schedule.Teacher.Username,
+                    Slot = item.Schedule.SlotByLessonPlans
                 })
                 .ToListAsync();
 
@@ -60,10 +66,13 @@ namespace DataAccess.Repository
                 .ThenInclude(a => a.SchoolYear)
                 .Include(a => a.Schedule)
                 .ThenInclude(a => a.Subject)
+                .Include(a => a.Schedule)
+                .ThenInclude(a => a.Teacher)
                 .Where(a => a.AccountStudent.ID.ToLower().Equals(studentID.ToLower())
                 && a.Schedule.Subject.Name.Equals(subjectName.ToLower())
                 && a.Schedule.Classes.SchoolYear.Name.Equals(schoolYear.ToLower()))
                 .OrderBy(item => item.Schedule.Date)
+                .ThenBy(item => item.Schedule.SlotByLessonPlans)
                 .Select(item => new AttendenceResponse()
                 {
                     AttendenceID = item.ID.ToString(),
@@ -74,8 +83,94 @@ namespace DataAccess.Repository
                     Date = item.Schedule.Date.ToString("dd/MM/yyyy"),
                     Subject = item.Schedule.Subject.Name,
                     Status = item.Schedule.Date > DateTime.Now ? "Chưa bắt đầu" : item.Present ? "Có mặt" : "Vắng",
+                    Teacher = item.Schedule.Teacher.Username,
+                    Slot = item.Schedule.SlotByLessonPlans
                 })
                 .ToListAsync();
+        }
+
+        public async Task<Dictionary<string, Dictionary<string, object>>> GetAttendenceStudentAllSubject(string studentID, string schoolYear)
+        {
+            AccountStudent student = await _context.AccountStudents
+                .Include(a => a.Student)
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(studentID.ToLower())
+                && a.IsActive) ?? throw new NotFoundException("Học sinh không tồn tại");
+
+            Classes classes = await _context.Classes
+                .Include(c => c.StudentClasses)
+                .ThenInclude(c => c.AccountStudent)
+                .ThenInclude(c => c.Student)
+                .Include(c => c.SchoolYear)
+                .Include(c => c.Teacher)
+                .ThenInclude(c => c.User)
+                .FirstOrDefaultAsync(c => c.StudentClasses.Select(c => c.StudentID.ToLower()).Contains(studentID.ToLower())
+                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
+
+            List<Subject> subjects = await _context.Subjects
+                .Include(s => s.ComponentScores)
+                .Include(s => s.Schedules)
+                .Where(s => s.Schedules.Select(s => s.ClassID.ToString().ToLower()).Contains(classes.ID.ToString().ToLower())
+                    && s.ComponentScores.Count > 0)
+                .ToListAsync();
+
+            Dictionary<string, Dictionary<string, object>> response = new();
+
+            foreach (var subject in subjects)
+            {
+                var attendances = await _context.Attendances
+                    .AsNoTracking()
+                    .Include(a => a.AccountStudent)
+                    .ThenInclude(a => a.Student)
+                    .Include(a => a.Schedule)
+                    .ThenInclude(a => a.Classes)
+                    .ThenInclude(a => a.SchoolYear)
+                    .Include(a => a.Schedule)
+                    .ThenInclude(a => a.Subject)
+                    .Where(a => a.AccountStudent.ID.ToLower().Equals(studentID.ToLower())
+                        && a.Schedule.Subject.Name.ToLower().Equals(subject.Name.ToLower())
+                        && a.Schedule.Classes.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower()))
+                    .OrderBy(a => a.Schedule.Date)
+                    .ToListAsync();
+
+                int daysPresent = 0;
+                int daysAbsent = 0;
+                int daysNotStarted = 0;
+                DateTime? startDate = null;
+                DateTime? endDate = null;
+
+                if (attendances.Any())
+                {
+                    startDate = attendances.First().Schedule.Date;
+                    endDate = attendances.Last().Schedule.Date;
+                }
+
+                foreach (var attendance in attendances)
+                {
+                    if (attendance.Schedule.Date > DateTime.Now)
+                    {
+                        daysNotStarted++;
+                    }
+                    else if (attendance.Present)
+                    {
+                        daysPresent++;
+                    }
+                    else
+                    {
+                        daysAbsent++;
+                    }
+                }
+
+                response.Add(subject.Name, new Dictionary<string, object>
+                {
+                    { "Có mặt", daysPresent },
+                    { "Vắng", daysAbsent },
+                    { "Chưa bắt đầu", daysNotStarted },
+                    { "Ngày bắt đầu", startDate?.ToString("dd/MM/yyyy") },
+                    { "Ngày kết thúc", endDate?.ToString("dd/MM/yyyy") }
+                });
+            }
+
+            return response;
         }
 
         public async Task UpdateAttendence(string accountID, List<AttendenceRequest> requests)

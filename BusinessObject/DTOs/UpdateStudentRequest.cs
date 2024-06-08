@@ -11,7 +11,7 @@ namespace BusinessObject.DTOs
     public class UpdateStudentRequest
     {
 
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         [Required(ErrorMessage = "Họ tên là bắt buộc")]
         [StringLength(50, ErrorMessage = "Họ tên không được vượt quá 50 ký tự")]
