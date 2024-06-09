@@ -631,7 +631,8 @@ namespace DataAccess.Repository
                                 .Where(s => Guid.Equals(s.SchoolYearID, classes.SchoolYearID)
                                 && s.Subject.ToLower().Equals(subject.Name.ToLower())
                                 && s.Name.ToLower().Equals(componentScore.Name.ToLower())
-                                && s.IndexColumn == indexCol)
+                                && s.IndexColumn == indexCol
+                                && s.Semester.ToLower().Equals(strSemester.ToLower()))
                                 .ToListAsync();
 
                             if (scores.Count <= 0) throw new NotFoundException("Điểm thành phần không tồn tại");

@@ -64,6 +64,7 @@ namespace DataAccess.Repository
                             bool IsSemester2 = false;
                             int currentIndex = 0;
                             Dictionary<string, int> subjectS2 = new();
+                            Guid schoolYearID = Guid.NewGuid();
 
                             List<string> data = new();
 
@@ -392,7 +393,6 @@ namespace DataAccess.Repository
                                     if (IsSemester2) break;
                                 }
 
-                                Guid schoolYearID = Guid.NewGuid();
                                 SchoolYear schoolY = await _context.SchoolYears
                                     .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(schoolYear.ToLower()));
 
@@ -773,7 +773,6 @@ namespace DataAccess.Repository
                                     }
                                 }
 
-                                Guid schoolYearID = Guid.NewGuid();
                                 SchoolYear schoolY = await _context.SchoolYears
                                     .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(schoolYear.ToLower()));
 
@@ -866,6 +865,47 @@ namespace DataAccess.Repository
                             }
 
                             await _context.Attendances.AddRangeAsync(attendances);
+
+                            List<StudentScores> scores = new();
+
+                            List<Subject> subjects = await _context.Subjects
+                                .Include(s => s.ComponentScores)
+                                .Where(s => scheduleSubjectsS2.Select(s2 => s2.SubjectID).Contains(s.ID)).ToListAsync();
+
+                            List<StudentScores> scoreExits = await _context.StudentScores
+                                .Where(s => Guid.Equals(schoolYearID, s.SchoolYearID) 
+                                && subjects.Select(s => s.Name.ToLower()).Contains(s.Subject.ToLower())
+                                && studentClass.StudentClasses.Select(c => c.StudentID).Contains(s.StudentID)).ToListAsync();
+
+                            if (scoreExits.Count > 0)
+                                _context.StudentScores.RemoveRange(scoreExits);
+
+                            foreach (var item1 in studentClass.StudentClasses)
+                            {
+                                foreach (var item2 in subjects)
+                                {
+                                    foreach (var item3 in item2.ComponentScores)
+                                    {
+                                        for (int i = 1; i < item3.Count + 1; i++)
+                                        {
+                                            scores.Add(new StudentScores()
+                                            {
+                                                ID = Guid.NewGuid(),
+                                                IndexColumn = i,
+                                                Name = item3.Name,
+                                                SchoolYearID = schoolYearID,
+                                                Score = "0",
+                                                ScoreFactor = item3.ScoreFactor,
+                                                Semester = item3.Semester,
+                                                StudentID = item1.StudentID,
+                                                Subject = item2.Name
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+
+                            await _context.StudentScores.AddRangeAsync(scores);
 
                             await _context.SaveChangesAsync();
 
