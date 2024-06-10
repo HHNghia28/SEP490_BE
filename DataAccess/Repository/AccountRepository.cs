@@ -37,6 +37,7 @@ namespace DataAccess.Repository
         {
             List<SchoolYear> schoolYears = await _context.SchoolYears
                 .Include(s => s.Classes)
+                .OrderBy(s => s.Name)
                 .ToListAsync();
 
             Account accountExist = await _context.Accounts
@@ -131,9 +132,13 @@ namespace DataAccess.Repository
                     Roles = new List<string>() { accountStudentExist.Role.Name },
                     SchoolYears = filteredSchoolYears.Select(s => s.Name).ToList(),
                     Classes = filteredSchoolYears.ToDictionary(
-                                item => item.Name,
-                                item => item.Classes.Select(c => c.Classroom).ToList()
-                            )
+                    item => item.Name,
+                    item => item.Classes.Where(c => c.IsActive).Select(c => new Dictionary<string, string>
+                    {
+                        { "ID", c.ID.ToString() },
+                        { "Classroom", c.Classroom }
+                    }).ToList()
+                )
                 };
 
                 loginResponseS.AccessToken = CreateToken(loginResponseS, 60 * 60 * 24 * 30, roleStudents);
@@ -190,9 +195,13 @@ namespace DataAccess.Repository
                 Roles = accountExist.AccountRoles.Select(a => a.Role.Name).ToList(),
                 SchoolYears = schoolYears.Select(s => s.Name).ToList(),
                 Classes = schoolYears.ToDictionary(
-                                item => item.Name,
-                                item => item.Classes.Select(c => c.Classroom).ToList()
-                            )
+                            item => item.Name,
+                            item => item.Classes.Where(c => c.IsActive).Select(c => new Dictionary<string, string>
+                            {
+                                { "ID", c.ID.ToString() },
+                                { "Classroom", c.Classroom }
+                            }).ToList()
+                        )
             };
 
             loginResponse.AccessToken = CreateToken(loginResponse, 60 * 60 * 24 * 30, roles);
@@ -419,12 +428,12 @@ namespace DataAccess.Repository
 
             if (request.Roles != null && request.Roles.Count > 0)
             {
-                _context.Roles.RemoveRange(accountExist.AccountRoles.Select(a => a.Role));
+                _context.AccountRoles.RemoveRange(accountExist.AccountRoles);
             }
 
             if (request.Permissions != null && request.Permissions.Count > 0)
             {
-                _context.Permissions.RemoveRange(accountExist.AccountPermissions.Select(a => a.Permission));
+                _context.AccountPermissions.RemoveRange(accountExist.AccountPermissions);
             }
 
             List<AccountRole> roles = new();

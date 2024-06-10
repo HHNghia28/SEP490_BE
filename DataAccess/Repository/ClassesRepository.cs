@@ -130,7 +130,7 @@ namespace DataAccess.Repository
             });
         }
 
-        public async Task<ClassResponse> GetClass(string classID)
+        public async Task<ClassResponse> GetClass(string className, string schoolYear)
         {
             Classes classes = await _context.Classes
                 .Include(c => c.SchoolYear)
@@ -138,7 +138,8 @@ namespace DataAccess.Repository
                 .Include(c => c.StudentClasses)
                 .ThenInclude(c => c.AccountStudent)
                 .ThenInclude(c => c.Student)
-                .FirstOrDefaultAsync(c => c.ID.ToString().ToLower().Equals(classID.ToLower()));
+                .FirstOrDefaultAsync(c => c.Classroom.ToLower().Equals(className.ToLower())
+                                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
 
             if (classes == null)
             {
@@ -174,6 +175,8 @@ namespace DataAccess.Repository
                 .Include(c => c.SchoolYear)
                 .Include(c => c.Teacher)
                 .Where(c => c.IsActive)
+                .OrderBy(c => c.SchoolYear.Name)
+                .ThenBy(c => c.Classroom)
                 .Select(item => new ClassesResponse()
                 {
                     ID = item.ID,

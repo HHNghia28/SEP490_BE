@@ -66,8 +66,8 @@ namespace SEP490_API.Controllers
             }
         }
 
-        [HttpGet("{classID}")]
-        public async Task<IActionResult> Get(string classID)
+        [HttpGet("{className}")]
+        public async Task<IActionResult> Get(string className, string schoolYear)
         {
             try
             {
@@ -95,7 +95,7 @@ namespace SEP490_API.Controllers
                     return BadRequest(errors);
                 }
 
-                return Ok(await _classesRepository.GetClass(classID));
+                return Ok(await _classesRepository.GetClass(className, schoolYear));
             }
             catch (NotFoundException ex)
             {
@@ -171,7 +171,7 @@ namespace SEP490_API.Controllers
             }
         }
 
-        [HttpPut("{classID}")]
+        [HttpPut]
         public async Task<IActionResult> Update(string classID, ClassesRequest request)
         {
             try
@@ -207,7 +207,7 @@ namespace SEP490_API.Controllers
                     return BadRequest(errors);
                 }
 
-                await _classesRepository.UpdateClasses(accountId, classID,request);
+                await _classesRepository.UpdateClasses(accountId, classID, request);
 
                 return Ok("Chỉnh sửa lớp thành công");
             }

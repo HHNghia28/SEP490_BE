@@ -129,18 +129,18 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddHttpClient();
 
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
-    .WriteTo.File(
-        path: "./wwwroot/Logs/log-.txt", 
-        rollingInterval: RollingInterval.Day,
-        retainedFileCountLimit: expiresDay,
-        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
-        shared: true
-    )
-    .CreateBootstrapLogger();
+//Log.Logger = new LoggerConfiguration()
+//    .MinimumLevel.Debug()
+//    .WriteTo.File(
+//        path: "./wwwroot/Logs/log-.txt", 
+//        rollingInterval: RollingInterval.Day,
+//        retainedFileCountLimit: expiresDay,
+//        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
+//        shared: true
+//    )
+//    .CreateBootstrapLogger();
 
-builder.Host.UseSerilog();
+//builder.Host.UseSerilog();
 
 var app = builder.Build();
 

@@ -15,6 +15,6 @@ namespace BusinessObject.DTOs
         public List<string> Permissions { get; set; }
         public List<string> Roles { get; set; }
         public List<string> SchoolYears { get; set; }
-        public Dictionary<string, List<string>> Classes { get; set; }
+        public Dictionary<string, List<Dictionary<string, string>>> Classes { get; set; }
     }
 }
