@@ -190,7 +190,7 @@ namespace DataAccess.Repository
                         .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(request.Name.ToLower().Trim())
                         && s.Grade.ToLower().Equals(request.Grade.ToLower().Trim()) && s.IsActive);
 
-                    if (subjectExist != null)
+                    if (subjectName != null)
                     {
                         throw new ArgumentException("Môn học đã tồn tại");
                     }
