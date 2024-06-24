@@ -10,6 +10,7 @@ namespace BusinessObject.DTOs
     {
         public string Key { get; set; }
         public double Value { get; set; }
+        public int IndexCol { get; set; }
         public string Semester { get; set; }
     }
 }

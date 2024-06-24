@@ -894,7 +894,7 @@ namespace DataAccess.Repository
                                                 IndexColumn = i,
                                                 Name = item3.Name,
                                                 SchoolYearID = schoolYearID,
-                                                Score = "0",
+                                                Score = "-1",
                                                 ScoreFactor = item3.ScoreFactor,
                                                 Semester = item3.Semester,
                                                 StudentID = item1.StudentID,

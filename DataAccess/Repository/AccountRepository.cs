@@ -132,12 +132,12 @@ namespace DataAccess.Repository
                     Roles = new List<string>() { accountStudentExist.Role.Name },
                     SchoolYears = filteredSchoolYears.Select(s => s.Name).ToList(),
                     Classes = filteredSchoolYears.ToDictionary(
-                    item => item.Name,
-                    item => item.Classes.Where(c => c.IsActive).Select(c => new Dictionary<string, string>
-                    {
-                        { "ID", c.ID.ToString() },
-                        { "Classroom", c.Classroom }
-                    }).ToList()
+                        item => item.Name,
+                        item => item.Classes.Where(c => c.IsActive).Select(c => new Dictionary<string, string>
+                        {
+                            { "ID", c.ID.ToString() },
+                            { "Classroom", c.Classroom }
+                        }).ToList()
                 )
                 };
 

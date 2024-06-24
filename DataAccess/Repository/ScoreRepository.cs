@@ -100,7 +100,7 @@ namespace DataAccess.Repository
                                             i++;
                                             str = data.ElementAt(i);
 
-                                            if(!string.IsNullOrEmpty(str))
+                                            if (!string.IsNullOrEmpty(str))
                                             {
                                                 i++;
                                                 j++;
@@ -131,7 +131,7 @@ namespace DataAccess.Repository
                             ComponentScore componentScore = await _context.ComponentScores
                                 .Include(c => c.Subject)
                                 .FirstOrDefaultAsync(c => c.Name.ToLower().Equals(strScore.ToLower())
-                                && c.Semester.ToLower().Equals(strSemester.ToLower()) 
+                                && c.Semester.ToLower().Equals(strSemester.ToLower())
                                 && Guid.Equals(subject.ID, c.Subject.ID)) ?? throw new NotFoundException("Điểm thành phần không tồn tại");
 
                             StudentScores studentScores1 = await _context.StudentScores
@@ -228,7 +228,7 @@ namespace DataAccess.Repository
                 worksheet.Cell(3, 2).Value = semester;
                 worksheet.Cell(4, 2).Value = subject.Name;
                 worksheet.Cell(5, 2).Value = componentScore.Name;
-                worksheet.Cell(6, 2).Value = 1;
+                worksheet.Cell(6, 2).Value = indexCol;
 
                 worksheet.Cell(8, 1).Value = "Danh sách";
 
@@ -237,7 +237,7 @@ namespace DataAccess.Repository
                     StudentScores score = scores.FirstOrDefault(s => s.StudentID.ToLower().Equals(students.ElementAt(i).StudentID.ToLower()));
 
                     worksheet.Cell(9 + i, 1).Value = students.ElementAt(i).StudentID;
-                    worksheet.Cell(9 + i, 2).Value = scores!= null && score != null ? int.Parse(score.Score) : 0;
+                    worksheet.Cell(9 + i, 2).Value = scores != null && score != null ? int.Parse(score.Score) : 0;
                 }
 
                 // Lưu file Excel vào MemoryStream
@@ -286,7 +286,8 @@ namespace DataAccess.Repository
                     {
                         Key = item1.Name,
                         Semester = item1.Semester,
-                        Value = double.Parse(item1.Score)
+                        Value = double.Parse(item1.Score),
+                        IndexCol = item1.IndexColumn
                     })
                     .ToList();
 
@@ -353,7 +354,7 @@ namespace DataAccess.Repository
             {
                 Class = classes.Classroom,
                 SchoolYear = schoolYear,
-                Subject =subject.Name,
+                Subject = subject.Name,
                 TeacherName = classes.Teacher.User.Fullname,
                 Score = scores
             };
@@ -398,7 +399,8 @@ namespace DataAccess.Repository
                     {
                         Key = item1.Name,
                         Semester = item1.Semester,
-                        Value = double.Parse(item1.Score)
+                        Value = double.Parse(item1.Score),
+                        IndexCol = item1.IndexColumn
                     })
                     .ToList();
 
@@ -478,7 +480,8 @@ namespace DataAccess.Repository
                     {
                         Key = item1.Name,
                         Semester = item1.Semester,
-                        Value = double.Parse(item1.Score)
+                        Value = double.Parse(item1.Score),
+                        IndexCol = item1.IndexColumn
                     })
                     .ToList();
 
@@ -608,6 +611,8 @@ namespace DataAccess.Repository
 
                             Classes classes = await _context.Classes
                                 .Include(c => c.SchoolYear)
+                                .Include(c => c.StudentClasses)
+                                .ThenInclude(c => c.AccountStudent)
                                 .FirstOrDefaultAsync(c => c.Classroom.ToLower().Equals(strClass.ToLower())
                                     && c.SchoolYear.Name.ToLower().Equals(strSchoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
 
@@ -628,12 +633,16 @@ namespace DataAccess.Repository
                                 && Guid.Equals(subject.ID, c.Subject.ID)) ?? throw new NotFoundException("Điểm thành phần không tồn tại");
 
                             List<StudentScores> scores = await _context.StudentScores
-                                .Where(s => Guid.Equals(s.SchoolYearID, classes.SchoolYearID)
-                                && s.Subject.ToLower().Equals(subject.Name.ToLower())
-                                && s.Name.ToLower().Equals(componentScore.Name.ToLower())
-                                && s.IndexColumn == indexCol
-                                && s.Semester.ToLower().Equals(strSemester.ToLower()))
+                                .Include(s => s.SchoolYear)
+                                    .ThenInclude(sy => sy.Classes)
+                                .Where(s => s.SchoolYearID == classes.SchoolYearID
+                                    && s.Subject.ToLower() == subject.Name.ToLower()
+                                    && s.Name.ToLower() == componentScore.Name.ToLower()
+                                    && s.IndexColumn == indexCol
+                                    && s.Semester.ToLower() == strSemester.ToLower()
+                                    && classes.StudentClasses.Select(a => a.AccountStudent.ID).Contains(s.StudentID))
                                 .ToListAsync();
+
 
                             if (scores.Count <= 0) throw new NotFoundException("Điểm thành phần không tồn tại");
 
