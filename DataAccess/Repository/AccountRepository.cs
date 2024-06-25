@@ -82,6 +82,7 @@ namespace DataAccess.Repository
                             {
                                 ID = c.ID,
                                 Classroom = c.Classroom,
+                                IsActive = c.IsActive,
                                 StudentClasses = c.StudentClasses
                                     .Where(sc => sc.StudentID.ToLower() == accountStudentExist.ID.ToLower())
                                     .ToList()
