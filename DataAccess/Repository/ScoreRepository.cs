@@ -267,8 +267,10 @@ namespace DataAccess.Repository
                                 && s.Grade.Equals(className.Substring(0, 2))) ?? throw new NotFoundException("Môn học không tồn tại");
 
             List<StudentScores> studentScores = await _context.StudentScores
+                .Include(s => s.SchoolYear)
                 .Where(s => classes.StudentClasses.Select(a => a.StudentID).Contains(s.StudentID)
-                && s.Subject.ToLower().Equals(subject.Name.ToLower()))
+                && s.Subject.ToLower().Equals(subject.Name.ToLower())
+                && s.SchoolYear.Name.ToLower().Equals(classes.SchoolYear.Name.ToLower()))
                 .ToListAsync();
 
             List<ScoreResponse> scores = new List<ScoreResponse>();
@@ -289,6 +291,9 @@ namespace DataAccess.Repository
                         Value = double.Parse(item1.Score),
                         IndexCol = item1.IndexColumn
                     })
+                    .OrderBy(s => s.Semester)
+                    .ThenBy(s => s.Key)
+                    .ThenBy(s => s.IndexCol)
                     .ToList();
 
                 double sum = 0;
@@ -389,9 +394,11 @@ namespace DataAccess.Repository
             foreach (var item in subjects)
             {
                 List<StudentScores> studentScores = await _context.StudentScores
+                    .Include(s => s.SchoolYear)
                 .Where(s => classes.StudentClasses.Select(a => a.StudentID).Contains(s.StudentID)
                 && s.Subject.ToLower().Equals(item.Name.ToLower())
-                && s.StudentID.ToLower().Equals(student.ID.ToLower()))
+                && s.StudentID.ToLower().Equals(student.ID.ToLower())
+                && s.SchoolYear.Name.ToLower().Equals(classes.SchoolYear.Name.ToLower()))
                 .ToListAsync();
 
                 List<ScoreDetailResponse> scoreDetails = studentScores
@@ -402,6 +409,9 @@ namespace DataAccess.Repository
                         Value = double.Parse(item1.Score),
                         IndexCol = item1.IndexColumn
                     })
+                    .OrderBy(s => s.Semester)
+                    .ThenBy(s => s.Key)
+                    .ThenBy(s => s.IndexCol)
                     .ToList();
 
                 double sum = 0;
@@ -469,10 +479,11 @@ namespace DataAccess.Repository
 
             foreach (var item in subjects)
             {
-                List<StudentScores> studentScores = await _context.StudentScores
+                List<StudentScores> studentScores = await _context.StudentScores.Include(s => s.SchoolYear)
                 .Where(s => classes.StudentClasses.Select(a => a.StudentID).Contains(s.StudentID)
                 && s.Subject.ToLower().Equals(item.Name.ToLower())
-                && s.StudentID.ToLower().Equals(student.ID.ToLower()))
+                && s.StudentID.ToLower().Equals(student.ID.ToLower())
+                && s.SchoolYear.Name.ToLower().Equals(classes.SchoolYear.Name.ToLower()))
                 .ToListAsync();
 
                 List<ScoreDetailResponse> scoreDetails = studentScores
@@ -483,6 +494,9 @@ namespace DataAccess.Repository
                         Value = double.Parse(item1.Score),
                         IndexCol = item1.IndexColumn
                     })
+                    .OrderBy(s => s.Semester)
+                    .ThenBy(s => s.Key)
+                    .ThenBy(s => s.IndexCol)
                     .ToList();
 
                 double sum = 0;
