@@ -13,6 +13,7 @@ namespace BusinessObject.Interfaces
         public Task AddScoreByExcel(string accountID, ExcelRequest request);
         public Task UpdateScoreByExcel(string accountID, ExcelRequest request);
         public Task<ScoresResponse> GetScoresByClassBySubject(string className, string subjectName, string schoolYear);
+        Task<AverageScoresResponse> GetAverageScoresByClass(string className, string schoolYear);
         public Task<ScoreStudentResponse> GetScoresByStudentAllSubject(string studentID, string schoolYear);
         public Task<ScoreStudentResponse> GetScoresByStudentBySubject(string studentID, string subject, string schoolYear);
     }

@@ -535,6 +535,81 @@ namespace DataAccess.Repository
             return response;
         }
 
+        public async Task<AverageScoresResponse> GetAverageScoresByClass(string className, string schoolYear)
+        {
+            Classes classes = await _context.Classes
+                                .Include(c => c.StudentClasses)
+                                .ThenInclude(c => c.AccountStudent)
+                                .ThenInclude(c => c.Student)
+                                .Include(c => c.SchoolYear)
+                                .Include(c => c.Teacher)
+                                .ThenInclude(c => c.User)
+                                .FirstOrDefaultAsync(c => c.Classroom.ToLower().Equals(className.ToLower())
+                                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
+
+            List<Subject> subjects = await _context.Subjects
+                .Include(s => s.ComponentScores)
+                .Include(s => s.Schedules)
+                .Where(s => s.Schedules.Select(s => s.ClassID.ToString().ToLower()).Contains(classes.ID.ToString().ToLower())
+                && s.ComponentScores.Count > 0)
+                .ToListAsync();
+
+            List<StudentScores> studentScores = await _context.StudentScores
+                .Include(s => s.SchoolYear)
+                .Where(s => classes.StudentClasses.Select(a => a.StudentID).Contains(s.StudentID)
+                && s.SchoolYear.Name.ToLower().Equals(classes.SchoolYear.Name.ToLower()))
+                .ToListAsync();
+
+            List<AverageScoreResponse> averages = new List<AverageScoreResponse>();
+
+            foreach (var studentClass in classes.StudentClasses)
+            {
+                var studentSubjectScores = studentScores
+                    .Where(s => s.StudentID.ToLower().Equals(studentClass.StudentID.ToLower()))
+                    .GroupBy(s => s.Subject);
+
+                List<SubjectAverageResponse> subjectAverages = new List<SubjectAverageResponse>();
+
+                foreach (var subjectGroup in studentSubjectScores)
+                {
+                    double subjectSum = 0;
+                    decimal subjectCount = 0;
+
+                    foreach (var scoreItem in subjectGroup)
+                    {
+                        if (double.TryParse(scoreItem.Score, out double score))
+                        {
+                            subjectSum += score * (double)scoreItem.ScoreFactor;
+                            subjectCount += scoreItem.ScoreFactor;
+                        }
+                    }
+
+                    double subjectAverage = double.IsNaN((double)Math.Round(subjectSum / (double)subjectCount)) ? 0 : (double)Math.Round(subjectSum / (double)subjectCount);
+
+                    subjectAverages.Add(new SubjectAverageResponse()
+                    {
+                        Subject = subjectGroup.Key,
+                        Average = subjectAverage
+                    });
+                }
+
+                averages.Add(new AverageScoreResponse()
+                {
+                    ID = studentClass.StudentID,
+                    FullName = studentClass.AccountStudent.Student.Fullname,
+                    SubjectAverages = subjectAverages
+                });
+            }
+
+            return new AverageScoresResponse()
+            {
+                Class = classes.Classroom,
+                SchoolYear = schoolYear,
+                TeacherName = classes.Teacher.User.Fullname,
+                Averages = averages
+            };
+        }
+
         public async Task UpdateScoreByExcel(string accountID, ExcelRequest request)
         {
             Account account = await _context.Accounts
@@ -614,9 +689,15 @@ namespace DataAccess.Repository
                                             {
                                                 i++;
                                                 j++;
-                                                int s = int.Parse(data.ElementAt(i));
-                                                if (s < 0 || s > 10) throw new ArgumentException("Điểm phải nằm trong thang điểm 10");
-                                                strScores.Add(str.ToLower(), data.ElementAt(i));
+                                                if (decimal.TryParse(data.ElementAt(i), out decimal s))
+                                                {
+                                                    if (s < 0 || s > 10) throw new ArgumentException("Điểm phải nằm trong thang điểm 10");
+                                                    strScores.Add(str.ToLower(), s.ToString());
+                                                }
+                                                else
+                                                {
+                                                    throw new ArgumentException("Điểm không hợp lệ");
+                                                }
                                             }
                                         }
                                         break;
