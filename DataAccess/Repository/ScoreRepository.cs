@@ -252,19 +252,19 @@ namespace DataAccess.Repository
         public async Task<ScoresResponse> GetScoresByClassBySubject(string className, string subjectName, string schoolYear)
         {
             Classes classes = await _context.Classes
-                                .Include(c => c.StudentClasses)
-                                .ThenInclude(c => c.AccountStudent)
-                                .ThenInclude(c => c.Student)
-                                .Include(c => c.SchoolYear)
-                                .Include(c => c.Teacher)
-                                .ThenInclude(c => c.User)
-                                .FirstOrDefaultAsync(c => c.Classroom.ToLower().Equals(className.ToLower())
-                                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
+                .Include(c => c.StudentClasses)
+                .ThenInclude(c => c.AccountStudent)
+                .ThenInclude(c => c.Student)
+                .Include(c => c.SchoolYear)
+                .Include(c => c.Teacher)
+                .ThenInclude(c => c.User)
+                .FirstOrDefaultAsync(c => c.Classroom.ToLower().Equals(className.ToLower())
+                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
 
             Subject subject = await _context.Subjects
-                                .Include(s => s.ComponentScores)
-                                .FirstOrDefaultAsync(s => s.IsActive && s.Name.ToLower().Equals(subjectName.ToLower())
-                                && s.Grade.Equals(className.Substring(0, 2))) ?? throw new NotFoundException("Môn học không tồn tại");
+                .Include(s => s.ComponentScores)
+                .FirstOrDefaultAsync(s => s.IsActive && s.Name.ToLower().Equals(subjectName.ToLower())
+                && s.Grade.Equals(className.Substring(0, 2))) ?? throw new NotFoundException("Môn học không tồn tại");
 
             List<StudentScores> studentScores = await _context.StudentScores
                 .Include(s => s.SchoolYear)
@@ -277,85 +277,76 @@ namespace DataAccess.Repository
 
             Dictionary<double, int> ranks = new();
 
-            foreach (var item in classes.StudentClasses)
+            foreach (var studentClass in classes.StudentClasses)
             {
-                List<StudentScores> details = studentScores
-                    .Where(s => s.StudentID.ToLower().Equals(item.StudentID.ToLower()))
+                var studentScoresBySubject = studentScores
+                    .Where(s => s.StudentID.ToLower().Equals(studentClass.StudentID.ToLower()))
                     .ToList();
 
-                List<ScoreDetailResponse> scoreDetails = details
-                    .Select(item1 => new ScoreDetailResponse()
+                var scoreDetails = studentScoresBySubject
+                    .Select(s => new ScoreDetailResponse
                     {
-                        Key = item1.Name,
-                        Semester = item1.Semester,
-                        Value = double.Parse(item1.Score),
-                        IndexCol = item1.IndexColumn
+                        Key = s.Name,
+                        Semester = s.Semester,
+                        Value = double.Parse(s.Score),
+                        IndexCol = s.IndexColumn
                     })
                     .OrderBy(s => s.Semester)
                     .ThenBy(s => s.Key)
                     .ThenBy(s => s.IndexCol)
                     .ToList();
 
-                double sum = 0;
-                decimal count = 0;
+                double sumSemester1 = 0, sumSemester2 = 0, totalSum = 0;
+                decimal countSemester1 = 0, countSemester2 = 0, totalCount = 0;
 
-                foreach (var item1 in details)
+                foreach (var score in studentScoresBySubject)
                 {
-                    if (double.TryParse(item1.Score, out double score))
+                    if (double.TryParse(score.Score, out double scoreValue))
                     {
-                        sum += score * (double)item1.ScoreFactor;
-                        count += item1.ScoreFactor;
-                    }
-                    else
-                    {
-                        // Handle the case where the score is not a valid double
-                        // For example, log the error or set a default value
+                        if (score.Semester == "Học kỳ I")
+                        {
+                            sumSemester1 += scoreValue * (double)score.ScoreFactor;
+                            countSemester1 += score.ScoreFactor;
+                        }
+                        else if (score.Semester == "Học kỳ II")
+                        {
+                            sumSemester2 += scoreValue * (double)score.ScoreFactor;
+                            countSemester2 += score.ScoreFactor;
+                        }
+
+                        totalSum += scoreValue * (double)score.ScoreFactor;
+                        totalCount += score.ScoreFactor;
                     }
                 }
 
-                double average = double.IsNaN((double)Math.Round(sum / (double)count)) ? 0 : (double)Math.Round(sum / (double)count);
+                double averageSemester1 = countSemester1 > 0 ? (double)Math.Round(sumSemester1 / (double)countSemester1, 2) : 0;
+                double averageSemester2 = countSemester2 > 0 ? (double)Math.Round(sumSemester2 / (double)countSemester2, 2) : 0;
+                double averageYear = totalCount > 0 ? (double)Math.Round(totalSum / (double)totalCount, 2) : 0;
 
-                if (!ranks.ContainsKey(average))
+                if (!ranks.ContainsKey(averageYear))
                 {
-                    ranks.Add(average, 0);
+                    ranks[averageYear] = 0;
                 }
 
-                scores.Add(new ScoreResponse()
+                scores.Add(new ScoreResponse
                 {
-                    ID = item.StudentID,
-                    FullName = item.AccountStudent.Student.Fullname,
-                    Average = double.IsNaN((double)Math.Round(sum / (double)count)) ? 0 : (double)Math.Round(sum / (double)count),
+                    ID = studentClass.StudentID,
+                    FullName = studentClass.AccountStudent.Student.Fullname,
+                    AverageSemester1 = averageSemester1,
+                    AverageSemester2 = averageSemester2,
+                    AverageYear = averageYear,
                     Scores = scoreDetails
                 });
             }
 
-            Dictionary<double, int> uniqueDict = new();
-            foreach (var kvp in ranks)
+            Dictionary<double, int> uniqueDict = ranks.OrderByDescending(kvp => kvp.Key).Select((kvp, index) => new { kvp.Key, Rank = index + 1 }).ToDictionary(x => x.Key, x => x.Rank);
+
+            foreach (var score in scores)
             {
-                if (!uniqueDict.ContainsKey(kvp.Key))
-                {
-                    uniqueDict[kvp.Key] = kvp.Value;
-                }
+                score.Rank = uniqueDict[score.AverageYear];
             }
 
-            // Step 2: Sort the dictionary by keys in descending order
-            var sortedDict = uniqueDict
-                .OrderByDescending(kvp => kvp.Key)
-                .ToList();
-
-            // Step 3: Assign new values based on the order
-            Dictionary<double, int> resultDict = new Dictionary<double, int>();
-            for (int i = 0; i < sortedDict.Count; i++)
-            {
-                resultDict[sortedDict[i].Key] = i + 1;  // Value starts from 1 and increments
-            }
-
-            foreach (var item in scores)
-            {
-                item.Rank = resultDict[item.Average];
-            }
-
-            return new ScoresResponse()
+            return new ScoresResponse
             {
                 Class = classes.Classroom,
                 SchoolYear = schoolYear,

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -861,15 +862,31 @@ namespace DataAccess.Repository
         }
         private string CreateUsername(string fullName, string suffix)
         {
-            var nameParts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            string RemoveDiacritics(string text)
+            {
+                var normalizedString = text.Normalize(NormalizationForm.FormD);
+                var stringBuilder = new StringBuilder();
+
+                foreach (var c in normalizedString)
+                {
+                    var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                    if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                    {
+                        stringBuilder.Append(c);
+                    }
+                }
+
+                return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
+            }
+
+            var nameParts = RemoveDiacritics(fullName).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
             if (nameParts.Length < 2)
             {
-                throw new ArgumentException("The full name must have at least two parts.", nameof(fullName));
+                throw new ArgumentException("Tên đầy đủ phải có ít nhất hai phần.", nameof(fullName));
             }
 
             var firstName = nameParts.Last();
-
             var initials = nameParts.Take(nameParts.Length - 1)
                                     .Select(p => p[0].ToString().ToUpperInvariant());
 
