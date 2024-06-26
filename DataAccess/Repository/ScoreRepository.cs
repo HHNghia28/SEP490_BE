@@ -572,24 +572,43 @@ namespace DataAccess.Repository
 
                 foreach (var subjectGroup in studentSubjectScores)
                 {
-                    double subjectSum = 0;
-                    decimal subjectCount = 0;
+                    double subjectSumWholeYear = 0;
+                    decimal subjectCountWholeYear = 0;
+                    double subjectSumSemester1 = 0;
+                    decimal subjectCountSemester1 = 0;
+                    double subjectSumSemester2 = 0;
+                    decimal subjectCountSemester2 = 0;
 
                     foreach (var scoreItem in subjectGroup)
                     {
                         if (double.TryParse(scoreItem.Score, out double score))
                         {
-                            subjectSum += score * (double)scoreItem.ScoreFactor;
-                            subjectCount += scoreItem.ScoreFactor;
+                            subjectSumWholeYear += score * (double)scoreItem.ScoreFactor;
+                            subjectCountWholeYear += scoreItem.ScoreFactor;
+
+                            if (scoreItem.Semester.Equals("Học kỳ I", StringComparison.OrdinalIgnoreCase))
+                            {
+                                subjectSumSemester1 += score * (double)scoreItem.ScoreFactor;
+                                subjectCountSemester1 += scoreItem.ScoreFactor;
+                            }
+                            else if (scoreItem.Semester.Equals("Học kỳ II", StringComparison.OrdinalIgnoreCase))
+                            {
+                                subjectSumSemester2 += score * (double)scoreItem.ScoreFactor;
+                                subjectCountSemester2 += scoreItem.ScoreFactor;
+                            }
                         }
                     }
 
-                    double subjectAverage = double.IsNaN((double)Math.Round(subjectSum / (double)subjectCount)) ? 0 : (double)Math.Round(subjectSum / (double)subjectCount);
+                    double averageWholeYear = subjectCountWholeYear == 0 ? 0 : (double)Math.Round(subjectSumWholeYear / (double)subjectCountWholeYear);
+                    double averageSemester1 = subjectCountSemester1 == 0 ? 0 : (double)Math.Round(subjectSumSemester1 / (double)subjectCountSemester1);
+                    double averageSemester2 = subjectCountSemester2 == 0 ? 0 : (double)Math.Round(subjectSumSemester2 / (double)subjectCountSemester2);
 
                     subjectAverages.Add(new SubjectAverageResponse()
                     {
                         Subject = subjectGroup.Key,
-                        Average = subjectAverage
+                        AverageWholeYear = averageWholeYear,
+                        AverageSemester1 = averageSemester1,
+                        AverageSemester2 = averageSemester2
                     });
                 }
 

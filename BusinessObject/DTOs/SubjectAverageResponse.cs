@@ -9,6 +9,8 @@ namespace BusinessObject.DTOs
     public class SubjectAverageResponse
     {
         public string Subject { get; set; }
-        public double Average { get; set; }
+        public double AverageWholeYear { get; set; }
+        public double AverageSemester1 { get; set; }
+        public double AverageSemester2 { get; set; }
     }
 }

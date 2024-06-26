@@ -22,5 +22,6 @@ namespace BusinessObject.Interfaces
         Task<StudentResponse> GetStudent(string accountID);
         Task DeleteStudent(string accountID);
         Task UpdateStudent(string accountID, UpdateStudentRequest request);
+        Task AddStudentByExcel(string accountID, ExcelRequest request);
     }
 }
