@@ -19,7 +19,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAllTeacher()
         {
             try
             {
@@ -67,7 +67,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("{accountID}")]
-        public async Task<IActionResult> Get(string accountID)
+        public async Task<IActionResult> GetTeacher(string accountID)
         {
             try
             {
@@ -115,7 +115,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] RegisterTeacherRequest request)
+        public async Task<IActionResult> CreateTeacher([FromForm] RegisterTeacherRequest request)
         {
             try
             {
@@ -165,7 +165,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPut("{accountID}")]
-        public async Task<IActionResult> Update(string accountID, [FromForm] UpdateTeacherRequest request)
+        public async Task<IActionResult> UpdateTeacher(string accountID, [FromForm] UpdateTeacherRequest request)
         {
             try
             {
@@ -215,7 +215,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpDelete("{accountID}")]
-        public async Task<IActionResult> Delete(string accountID)
+        public async Task<IActionResult> DeleteTeacher(string accountID)
         {
             try
             {

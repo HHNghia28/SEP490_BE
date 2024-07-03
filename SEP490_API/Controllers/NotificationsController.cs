@@ -19,7 +19,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAllNotification()
         {
             try
             {
@@ -67,7 +67,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("{notiID}")]
-        public async Task<IActionResult> Get(string notiID)
+        public async Task<IActionResult> GetNotification(string notiID)
         {
             try
             {
@@ -115,7 +115,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] NotificationRequest request)
+        public async Task<IActionResult> CreateNotification([FromForm] NotificationRequest request)
         {
             try
             {
@@ -172,7 +172,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpDelete("{notiID}")]
-        public async Task<IActionResult> Delete(string notiID)
+        public async Task<IActionResult> DeleteNotification(string notiID)
         {
             try
             {
@@ -229,7 +229,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPut("{notiID}")]
-        public async Task<IActionResult> Update(string notiID, [FromForm] NotificationRequest request)
+        public async Task<IActionResult> UpdateNotification(string notiID, [FromForm] NotificationRequest request)
         {
             try
             {

@@ -18,7 +18,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAllLogs()
         {
             try
             {

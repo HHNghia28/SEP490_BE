@@ -308,7 +308,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(ScheduleRequest request)
+        public async Task<IActionResult> CreateSchedule(ScheduleRequest request)
         {
             try
             {
@@ -365,7 +365,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPost("Excel")]
-        public async Task<IActionResult> CreateByExcel([FromForm] ExcelRequest request)
+        public async Task<IActionResult> CreateScheduleByExcel([FromForm] ExcelRequest request)
         {
             try
             {
@@ -422,7 +422,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPut("{scheduleID}")]
-        public async Task<IActionResult> Update(string scheduleID, ScheduleRequest request)
+        public async Task<IActionResult> UpdateSchedule(string scheduleID, ScheduleRequest request)
         {
             try
             {
@@ -479,7 +479,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpDelete("{scheduleID}")]
-        public async Task<IActionResult> Delete(string scheduleID)
+        public async Task<IActionResult> DeleteSchedule(string scheduleID)
         {
             try
             {

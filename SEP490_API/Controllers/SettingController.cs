@@ -19,7 +19,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetSetting()
         {
             try
             {
@@ -44,7 +44,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Create(SettingRequest request)
+        public async Task<IActionResult> CreateSetting(SettingRequest request)
         {
             try
             {

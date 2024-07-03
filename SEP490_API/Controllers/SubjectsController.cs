@@ -19,7 +19,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAllSubject()
         {
             try
             {
@@ -67,7 +67,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("{subjectID}")]
-        public async Task<IActionResult> Get(string subjectID)
+        public async Task<IActionResult> GetSubject(string subjectID)
         {
             try
             {
@@ -115,7 +115,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(SubjectRequest request)
+        public async Task<IActionResult> CreateSubject(SubjectRequest request)
         {
             try
             {
@@ -172,7 +172,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpDelete("{subjectID}")]
-        public async Task<IActionResult> Delete(string subjectID)
+        public async Task<IActionResult> DeleteSubject(string subjectID)
         {
             try
             {
@@ -229,7 +229,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPut("{subjectID}")]
-        public async Task<IActionResult> Update(string subjectID,[FromBody] SubjectRequest request)
+        public async Task<IActionResult> UpdateSubject(string subjectID,[FromBody] SubjectRequest request)
         {
             try
             {

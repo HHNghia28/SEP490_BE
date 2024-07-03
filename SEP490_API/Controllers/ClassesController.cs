@@ -19,7 +19,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAllClass()
         {
             try
             {
@@ -67,7 +67,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("{className}")]
-        public async Task<IActionResult> Get(string className, string schoolYear)
+        public async Task<IActionResult> GetClass(string className, string schoolYear)
         {
             try
             {
@@ -115,7 +115,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(ClassesRequest request)
+        public async Task<IActionResult> CreateClass(ClassesRequest request)
         {
             try
             {
@@ -172,7 +172,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update(string classID, ClassesRequest request)
+        public async Task<IActionResult> UpdateClass(string classID, ClassesRequest request)
         {
             try
             {
@@ -229,7 +229,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpDelete("{classID}")]
-        public async Task<IActionResult> Delete(string classID)
+        public async Task<IActionResult> DeleteClass(string classID)
         {
             try
             {

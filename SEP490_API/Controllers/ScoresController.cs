@@ -20,7 +20,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("ByClassAllSubject")]
-        public async Task<IActionResult> GetByClassAllSubject(string className, string schoolYear)
+        public async Task<IActionResult> GetScoresByClassAllSubject(string className, string schoolYear)
         {
             try
             {
@@ -68,7 +68,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("ByClassBySubject")]
-        public async Task<IActionResult> GetByClassBySubject(string className, string subjectName, string schoolYear)
+        public async Task<IActionResult> GetScoresByClassBySubject(string className, string subjectName, string schoolYear)
         {
             try
             {
@@ -116,7 +116,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("ByStudentAllSubject")]
-        public async Task<IActionResult> GetByStudentAllSubject(string studentID, string schoolYear)
+        public async Task<IActionResult> GetScoresByStudentAllSubject(string studentID, string schoolYear)
         {
             try
             {
@@ -166,7 +166,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("ByStudentBySubject")]
-        public async Task<IActionResult> GetByStudentBySubject(string studentID, string subject, string schoolYear)
+        public async Task<IActionResult> GetScoresByStudentBySubject(string studentID, string subject, string schoolYear)
         {
             try
             {
@@ -217,7 +217,7 @@ namespace SEP490_API.Controllers
 
 
         [HttpGet("Template")]
-        public async Task<IActionResult> ExportToExcel(string className, string schoolYear, string semester, string subjectName, string component, int indexCol = 1)
+        public async Task<IActionResult> ExportScoresToExcel(string className, string schoolYear, string semester, string subjectName, string component, int indexCol = 1)
         {
             try
             {
@@ -255,7 +255,7 @@ namespace SEP490_API.Controllers
 
 
         [HttpPost("Excel")]
-        public async Task<IActionResult> CreateByExcel([FromForm] ExcelRequest request)
+        public async Task<IActionResult> CreateScoresByExcel([FromForm] ExcelRequest request)
         {
             try
             {
@@ -313,7 +313,7 @@ namespace SEP490_API.Controllers
 
 
         [HttpPut("Excel")]
-        public async Task<IActionResult> UpdateByExcel([FromForm] ExcelRequest request)
+        public async Task<IActionResult> UpdateScoresByExcel([FromForm] ExcelRequest request)
         {
             try
             {
