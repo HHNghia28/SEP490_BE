@@ -67,7 +67,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> GetRegistersBook(RegisterBookUpdateRequest request)
+        public async Task<IActionResult> UpdateRegistersBook(RegisterBookUpdateRequest request)
         {
             try
             {

@@ -69,7 +69,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("GetAttendanceByStudent")]
-        public async Task<IActionResult> GetAttendenceBySlot(string studentID, string subjectName, string schoolYear)
+        public async Task<IActionResult> GetAttendanceByStudent(string studentID, string subjectName, string schoolYear)
         {
             try
             {
@@ -117,7 +117,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("GetAttendanceByStudentAllSubject")]
-        public async Task<IActionResult> GetAttendenceBySlot(string studentID, string schoolYear)
+        public async Task<IActionResult> GetAttendanceByStudentAllSubject(string studentID, string schoolYear)
         {
             try
             {
@@ -165,7 +165,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> GetAttendenceBySlot(List<AttendenceRequest> requests)
+        public async Task<IActionResult> UpdateAttendance(List<AttendenceRequest> requests)
         {
             try
             {

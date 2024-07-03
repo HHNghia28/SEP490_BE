@@ -20,7 +20,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("ByClassAllSubject")]
-        public async Task<IActionResult> ByClassAllSubject(string className, string schoolYear)
+        public async Task<IActionResult> GetByClassAllSubject(string className, string schoolYear)
         {
             try
             {
@@ -68,7 +68,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("ByClassBySubject")]
-        public async Task<IActionResult> ByClassBySubject(string className, string subjectName, string schoolYear)
+        public async Task<IActionResult> GetByClassBySubject(string className, string subjectName, string schoolYear)
         {
             try
             {
@@ -116,7 +116,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("ByStudentAllSubject")]
-        public async Task<IActionResult> ByStudentAllSubject(string studentID, string schoolYear)
+        public async Task<IActionResult> GetByStudentAllSubject(string studentID, string schoolYear)
         {
             try
             {
@@ -166,7 +166,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("ByStudentBySubject")]
-        public async Task<IActionResult> ByStudentBySubject(string studentID, string subject, string schoolYear)
+        public async Task<IActionResult> GetByStudentBySubject(string studentID, string subject, string schoolYear)
         {
             try
             {

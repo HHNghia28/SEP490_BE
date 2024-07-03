@@ -20,7 +20,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("Student/{studentID}/{scheduleID}")]
-        public async Task<IActionResult> GetScheduleTeacher(string studentID, string scheduleID)
+        public async Task<IActionResult> GetScheduleStudent(string studentID, string scheduleID)
         {
             try
             {
@@ -68,7 +68,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("Teacher/{scheduleID}")]
-        public async Task<IActionResult> GetScheduleTeacher(string scheduleID)
+        public async Task<IActionResult> GetSchedule(string scheduleID)
         {
             try
             {
