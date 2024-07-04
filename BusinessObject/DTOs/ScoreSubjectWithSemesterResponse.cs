@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace BusinessObject.DTOs
 {
-    public class SubjectAverageResponse
+    public class ScoreSubjectWithSemesterResponse
     {
         public string Subject { get; set; }
-        public string AverageWholeYear { get; set; }
-        public string AverageSemester1 { get; set; }
-        public string AverageSemester2 { get; set; }
+        public string Semester1Average { get; set; }
+        public string Semester2Average { get; set; }
+        public string YearAverage { get; set; }
     }
 }

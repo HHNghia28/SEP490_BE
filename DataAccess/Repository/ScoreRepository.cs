@@ -104,9 +104,26 @@ namespace DataAccess.Repository
                                             {
                                                 i++;
                                                 j++;
-                                                int s = int.Parse(data.ElementAt(i));
-                                                if (s < 0 || s > 10) throw new ArgumentException("Điểm phải nằm trong thang điểm 10");
-                                                strScores.Add(str.ToLower(), data.ElementAt(i));
+                                                string score = data.ElementAt(i);
+
+                                                // Convert the score to lowercase for comparison
+                                                string lowerScore = score.ToLower();
+
+                                                // Check if the score is a valid integer or one of the special cases
+                                                if (int.TryParse(score, out int s))
+                                                {
+                                                    if (s < 0 || s > 10)
+                                                    {
+                                                        throw new ArgumentException("Điểm phải nằm trong thang điểm 10");
+                                                    }
+                                                }
+                                                else if (lowerScore != "đ" && lowerScore != "cđ")
+                                                {
+                                                    throw new ArgumentException("Điểm phải nằm trong thang điểm 10 hoặc là Đ, đ, CĐ, cđ");
+                                                }
+
+                                                // Add the score to the dictionary
+                                                strScores.Add(str.ToLower(), score);
                                             }
                                         }
                                         break;
@@ -237,7 +254,7 @@ namespace DataAccess.Repository
                     StudentScores score = scores.FirstOrDefault(s => s.StudentID.ToLower().Equals(students.ElementAt(i).StudentID.ToLower()));
 
                     worksheet.Cell(9 + i, 1).Value = students.ElementAt(i).StudentID;
-                    worksheet.Cell(9 + i, 2).Value = scores != null && score != null ? int.Parse(score.Score) : 0;
+                    worksheet.Cell(9 + i, 2).Value = scores != null && score != null ? double.Parse(score.Score) : 0;
                 }
 
                 // Lưu file Excel vào MemoryStream
@@ -288,7 +305,7 @@ namespace DataAccess.Repository
                     {
                         Key = s.Name,
                         Semester = s.Semester,
-                        Value = double.Parse(s.Score),
+                        Value = s.Score,
                         IndexCol = s.IndexColumn
                     })
                     .OrderBy(s => s.Semester)
@@ -299,29 +316,74 @@ namespace DataAccess.Repository
                 double sumSemester1 = 0, sumSemester2 = 0, totalSum = 0;
                 decimal countSemester1 = 0, countSemester2 = 0, totalCount = 0;
 
+                bool allPassSemester1 = true, allPassSemester2 = true, allPassYear = true;
+                bool hasNegativeOneScore_Sem1 = false, hasNegativeOneScore_Sem2 = false, hasNegativeOneScore_Year = false;
+
                 foreach (var score in studentScoresBySubject)
                 {
-                    if (double.TryParse(score.Score, out double scoreValue))
+                    if (score.Score.Equals("Đ", StringComparison.OrdinalIgnoreCase) || score.Score.Equals("CĐ", StringComparison.OrdinalIgnoreCase))
                     {
+                        if (score.Semester == "Học kỳ I")
+                        {
+                            if (score.Score != "Đ")
+                            {
+                                allPassSemester1 = false;
+                            }
+                        }
+                        else if (score.Semester == "Học kỳ II")
+                        {
+                            if (score.Score != "Đ")
+                            {
+                                allPassSemester2 = false;
+                            }
+                        }
+
+                        if (score.Score != "Đ")
+                        {
+                            allPassYear = false;
+                        }
+                    }
+                    else if (double.TryParse(score.Score, out double scoreValue))
+                    {
+                        if (scoreValue == -1)
+                        {
+                            hasNegativeOneScore_Year = true;
+                            if (score.Semester == "Học kỳ I")
+                            {
+                                hasNegativeOneScore_Sem1 = true;
+                            }
+                            else if (score.Semester == "Học kỳ II")
+                            {
+                                hasNegativeOneScore_Sem2 = true;
+                            }
+                        }
+
                         if (score.Semester == "Học kỳ I")
                         {
                             sumSemester1 += scoreValue * (double)score.ScoreFactor;
                             countSemester1 += score.ScoreFactor;
+                            allPassSemester1 = false;
                         }
                         else if (score.Semester == "Học kỳ II")
                         {
                             sumSemester2 += scoreValue * (double)score.ScoreFactor;
                             countSemester2 += score.ScoreFactor;
+                            allPassSemester2 = false;
                         }
 
                         totalSum += scoreValue * (double)score.ScoreFactor;
                         totalCount += score.ScoreFactor;
+                        allPassYear = false;
                     }
                 }
 
                 double averageSemester1 = countSemester1 > 0 ? (double)Math.Round(sumSemester1 / (double)countSemester1, 2) : 0;
                 double averageSemester2 = countSemester2 > 0 ? (double)Math.Round(sumSemester2 / (double)countSemester2, 2) : 0;
                 double averageYear = totalCount > 0 ? (double)Math.Round(totalSum / (double)totalCount, 2) : 0;
+
+                string averageSemester1Str = hasNegativeOneScore_Sem1 ? "0" : (allPassSemester1 ? "Đ" : (countSemester1 == 0 ? "CĐ" : averageSemester1.ToString("F2")));
+                string averageSemester2Str = hasNegativeOneScore_Sem2 ? "0" : (allPassSemester2 ? "Đ" : (countSemester2 == 0 ? "CĐ" : averageSemester2.ToString("F2")));
+                string averageYearStr = hasNegativeOneScore_Year ? "0" : (allPassYear ? "Đ" : (totalCount == 0 ? "CĐ" : averageYear.ToString("F2")));
 
                 if (!ranks.ContainsKey(averageYear))
                 {
@@ -332,9 +394,9 @@ namespace DataAccess.Repository
                 {
                     ID = studentClass.StudentID,
                     FullName = studentClass.AccountStudent.Student.Fullname,
-                    AverageSemester1 = averageSemester1,
-                    AverageSemester2 = averageSemester2,
-                    AverageYear = averageYear,
+                    AverageSemester1 = averageSemester1Str,
+                    AverageSemester2 = averageSemester2Str,
+                    AverageYear = averageYearStr,
                     Scores = scoreDetails
                 });
             }
@@ -343,7 +405,18 @@ namespace DataAccess.Repository
 
             foreach (var score in scores)
             {
-                score.Rank = uniqueDict[score.AverageYear];
+                if (double.TryParse(score.AverageYear, out double avgYear))
+                {
+                    score.Rank = uniqueDict[avgYear];
+                }
+                else if (score.AverageYear == "Đ")
+                {
+                    score.Rank = 1; // Assuming rank 1 for all "Đ"
+                }
+                else
+                {
+                    score.Rank = uniqueDict.Values.Max() + 1; // Rank "CĐ" lowest
+                }
             }
 
             return new ScoresResponse
@@ -364,14 +437,14 @@ namespace DataAccess.Repository
                 && a.IsActive) ?? throw new NotFoundException("Học sinh không tồn tại");
 
             Classes classes = await _context.Classes
-                                .Include(c => c.StudentClasses)
-                                .ThenInclude(c => c.AccountStudent)
-                                .ThenInclude(c => c.Student)
-                                .Include(c => c.SchoolYear)
-                                .Include(c => c.Teacher)
-                                .ThenInclude(c => c.User)
-                                .FirstOrDefaultAsync(c => c.StudentClasses.Select(c => c.StudentID.ToLower()).Contains(studentID.ToLower())
-                                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
+                .Include(c => c.StudentClasses)
+                .ThenInclude(c => c.AccountStudent)
+                .ThenInclude(c => c.Student)
+                .Include(c => c.SchoolYear)
+                .Include(c => c.Teacher)
+                .ThenInclude(c => c.User)
+                .FirstOrDefaultAsync(c => c.StudentClasses.Select(c => c.StudentID.ToLower()).Contains(studentID.ToLower())
+                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
 
             List<Subject> subjects = await _context.Subjects
                 .Include(s => s.ComponentScores)
@@ -386,18 +459,18 @@ namespace DataAccess.Repository
             {
                 List<StudentScores> studentScores = await _context.StudentScores
                     .Include(s => s.SchoolYear)
-                .Where(s => classes.StudentClasses.Select(a => a.StudentID).Contains(s.StudentID)
-                && s.Subject.ToLower().Equals(item.Name.ToLower())
-                && s.StudentID.ToLower().Equals(student.ID.ToLower())
-                && s.SchoolYear.Name.ToLower().Equals(classes.SchoolYear.Name.ToLower()))
-                .ToListAsync();
+                    .Where(s => classes.StudentClasses.Select(a => a.StudentID).Contains(s.StudentID)
+                    && s.Subject.ToLower().Equals(item.Name.ToLower())
+                    && s.StudentID.ToLower().Equals(student.ID.ToLower())
+                    && s.SchoolYear.Name.ToLower().Equals(classes.SchoolYear.Name.ToLower()))
+                    .ToListAsync();
 
                 List<ScoreDetailResponse> scoreDetails = studentScores
                     .Select(item1 => new ScoreDetailResponse()
                     {
                         Key = item1.Name,
                         Semester = item1.Semester,
-                        Value = double.Parse(item1.Score),
+                        Value = item1.Score,
                         IndexCol = item1.IndexColumn
                     })
                     .OrderBy(s => s.Semester)
@@ -408,24 +481,31 @@ namespace DataAccess.Repository
                 double sum = 0;
                 decimal count = 0;
 
+                bool allPassYear = true;
+
                 foreach (var item1 in studentScores)
                 {
-                    if (double.TryParse(item1.Score, out double score))
+                    if (item1.Score.Equals("Đ", StringComparison.OrdinalIgnoreCase) || item1.Score.Equals("CĐ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (item1.Score != "Đ")
+                        {
+                            allPassYear = false;
+                        }
+                    }
+                    else if (double.TryParse(item1.Score, out double score))
                     {
                         sum += score * (double)item1.ScoreFactor;
                         count += item1.ScoreFactor;
-                    }
-                    else
-                    {
-                        // Handle the case where the score is not a valid double
-                        // For example, log the error or set a default value
+                        allPassYear = false;
                     }
                 }
+
+                string averageYearStr = allPassYear ? "Đ" : (count == 0 ? "CĐ" : (Math.Round(sum / (double)count, 2)).ToString());
 
                 scores.Add(new ScoreSubjectResponse()
                 {
                     Subject = item.Name,
-                    Average = double.IsNaN((double)Math.Round(sum / (double)count)) ? 0 : (double)Math.Round(sum / (double)count),
+                    Average = averageYearStr,
                     Scores = scoreDetails,
                 });
             }
@@ -449,14 +529,14 @@ namespace DataAccess.Repository
                 && a.IsActive) ?? throw new NotFoundException("Học sinh không tồn tại");
 
             Classes classes = await _context.Classes
-                                .Include(c => c.StudentClasses)
-                                .ThenInclude(c => c.AccountStudent)
-                                .ThenInclude(c => c.Student)
-                                .Include(c => c.SchoolYear)
-                                .Include(c => c.Teacher)
-                                .ThenInclude(c => c.User)
-                                .FirstOrDefaultAsync(c => c.StudentClasses.Select(c => c.StudentID.ToLower()).Contains(studentID.ToLower())
-                                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
+                .Include(c => c.StudentClasses)
+                .ThenInclude(c => c.AccountStudent)
+                .ThenInclude(c => c.Student)
+                .Include(c => c.SchoolYear)
+                .Include(c => c.Teacher)
+                .ThenInclude(c => c.User)
+                .FirstOrDefaultAsync(c => c.StudentClasses.Select(c => c.StudentID.ToLower()).Contains(studentID.ToLower())
+                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
 
             List<Subject> subjects = await _context.Subjects
                 .Include(s => s.ComponentScores)
@@ -470,19 +550,20 @@ namespace DataAccess.Repository
 
             foreach (var item in subjects)
             {
-                List<StudentScores> studentScores = await _context.StudentScores.Include(s => s.SchoolYear)
-                .Where(s => classes.StudentClasses.Select(a => a.StudentID).Contains(s.StudentID)
-                && s.Subject.ToLower().Equals(item.Name.ToLower())
-                && s.StudentID.ToLower().Equals(student.ID.ToLower())
-                && s.SchoolYear.Name.ToLower().Equals(classes.SchoolYear.Name.ToLower()))
-                .ToListAsync();
+                List<StudentScores> studentScores = await _context.StudentScores
+                    .Include(s => s.SchoolYear)
+                    .Where(s => classes.StudentClasses.Select(a => a.StudentID).Contains(s.StudentID)
+                    && s.Subject.ToLower().Equals(item.Name.ToLower())
+                    && s.StudentID.ToLower().Equals(student.ID.ToLower())
+                    && s.SchoolYear.Name.ToLower().Equals(classes.SchoolYear.Name.ToLower()))
+                    .ToListAsync();
 
                 List<ScoreDetailResponse> scoreDetails = studentScores
                     .Select(item1 => new ScoreDetailResponse()
                     {
                         Key = item1.Name,
                         Semester = item1.Semester,
-                        Value = double.Parse(item1.Score),
+                        Value = item1.Score,
                         IndexCol = item1.IndexColumn
                     })
                     .OrderBy(s => s.Semester)
@@ -493,24 +574,31 @@ namespace DataAccess.Repository
                 double sum = 0;
                 decimal count = 0;
 
+                bool allPassYear = true;
+
                 foreach (var item1 in studentScores)
                 {
-                    if (double.TryParse(item1.Score, out double score))
+                    if (item1.Score.Equals("Đ", StringComparison.OrdinalIgnoreCase) || item1.Score.Equals("CĐ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (item1.Score != "Đ")
+                        {
+                            allPassYear = false;
+                        }
+                    }
+                    else if (double.TryParse(item1.Score, out double score))
                     {
                         sum += score * (double)item1.ScoreFactor;
                         count += item1.ScoreFactor;
-                    }
-                    else
-                    {
-                        // Handle the case where the score is not a valid double
-                        // For example, log the error or set a default value
+                        allPassYear = false;
                     }
                 }
+
+                string averageYearStr = allPassYear ? "Đ" : (count == 0 ? "CĐ" : (Math.Round(sum / (double)count, 2)).ToString());
 
                 scores.Add(new ScoreSubjectResponse()
                 {
                     Subject = item.Name,
-                    Average = double.IsNaN((double)Math.Round(sum / (double)count)) ? 0 : (double)Math.Round(sum / (double)count),
+                    Average = averageYearStr,
                     Scores = scoreDetails,
                 });
             }
@@ -569,30 +657,90 @@ namespace DataAccess.Repository
                     decimal subjectCountSemester1 = 0;
                     double subjectSumSemester2 = 0;
                     decimal subjectCountSemester2 = 0;
+                    bool allScoresAreD = true;
+                    bool allScoresAreD_Sem1 = true;
+                    bool allScoresAreD_Sem2 = true;
+                    bool hasNegativeOneScore = false;
+                    bool hasNegativeOneScore_Sem1 = false;
+                    bool hasNegativeOneScore_Sem2 = false;
 
                     foreach (var scoreItem in subjectGroup)
                     {
-                        if (double.TryParse(scoreItem.Score, out double score))
+                        string score = scoreItem.Score.ToLower();
+                        if (score == "đ" || score == "cđ")
                         {
-                            subjectSumWholeYear += score * (double)scoreItem.ScoreFactor;
+                            if (score != "đ") allScoresAreD = false;
+                            if (score != "đ" && scoreItem.Semester.Equals("Học kỳ I", StringComparison.OrdinalIgnoreCase)) allScoresAreD_Sem1 = false;
+                            if (score != "đ" && scoreItem.Semester.Equals("Học kỳ II", StringComparison.OrdinalIgnoreCase)) allScoresAreD_Sem2 = false;
+                        }
+                        else if (double.TryParse(scoreItem.Score, out double numericScore))
+                        {
+                            if (numericScore == -1)
+                            {
+                                hasNegativeOneScore = true;
+                                if (scoreItem.Semester.Equals("Học kỳ I", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    hasNegativeOneScore_Sem1 = true;
+                                }
+                                else if (scoreItem.Semester.Equals("Học kỳ II", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    hasNegativeOneScore_Sem2 = true;
+                                }
+                            }
+
+                            subjectSumWholeYear += numericScore * (double)scoreItem.ScoreFactor;
                             subjectCountWholeYear += scoreItem.ScoreFactor;
 
                             if (scoreItem.Semester.Equals("Học kỳ I", StringComparison.OrdinalIgnoreCase))
                             {
-                                subjectSumSemester1 += score * (double)scoreItem.ScoreFactor;
+                                subjectSumSemester1 += numericScore * (double)scoreItem.ScoreFactor;
                                 subjectCountSemester1 += scoreItem.ScoreFactor;
+                                allScoresAreD_Sem1 = false;
                             }
                             else if (scoreItem.Semester.Equals("Học kỳ II", StringComparison.OrdinalIgnoreCase))
                             {
-                                subjectSumSemester2 += score * (double)scoreItem.ScoreFactor;
+                                subjectSumSemester2 += numericScore * (double)scoreItem.ScoreFactor;
                                 subjectCountSemester2 += scoreItem.ScoreFactor;
+                                allScoresAreD_Sem2 = false;
                             }
+                            allScoresAreD = false;
+                        }
+                        else
+                        {
+                            throw new ArgumentException("Điểm không hợp lệ");
                         }
                     }
 
-                    double averageWholeYear = subjectCountWholeYear == 0 ? 0 : (double)Math.Round(subjectSumWholeYear / (double)subjectCountWholeYear);
-                    double averageSemester1 = subjectCountSemester1 == 0 ? 0 : (double)Math.Round(subjectSumSemester1 / (double)subjectCountSemester1);
-                    double averageSemester2 = subjectCountSemester2 == 0 ? 0 : (double)Math.Round(subjectSumSemester2 / (double)subjectCountSemester2);
+                    string averageWholeYear = allScoresAreD ? "Đ" : "CĐ";
+                    string averageSemester1 = allScoresAreD_Sem1 ? "Đ" : "CĐ";
+                    string averageSemester2 = allScoresAreD_Sem2 ? "Đ" : "CĐ";
+
+                    if (hasNegativeOneScore)
+                    {
+                        averageWholeYear = "0";
+                    }
+                    else if (!allScoresAreD)
+                    {
+                        averageWholeYear = subjectCountWholeYear == 0 ? "CĐ" : (Math.Round(subjectSumWholeYear / (double)subjectCountWholeYear, 2)).ToString();
+                    }
+
+                    if (hasNegativeOneScore_Sem1)
+                    {
+                        averageSemester1 = "0";
+                    }
+                    else if (!allScoresAreD_Sem1)
+                    {
+                        averageSemester1 = subjectCountSemester1 == 0 ? "CĐ" : (Math.Round(subjectSumSemester1 / (double)subjectCountSemester1, 2)).ToString();
+                    }
+
+                    if (hasNegativeOneScore_Sem2)
+                    {
+                        averageSemester2 = "0";
+                    }
+                    else if (!allScoresAreD_Sem2)
+                    {
+                        averageSemester2 = subjectCountSemester2 == 0 ? "CĐ" : (Math.Round(subjectSumSemester2 / (double)subjectCountSemester2, 2)).ToString();
+                    }
 
                     subjectAverages.Add(new SubjectAverageResponse()
                     {
@@ -618,6 +766,83 @@ namespace DataAccess.Repository
                 TeacherName = classes.Teacher.User.Fullname,
                 Averages = averages
             };
+        }
+
+        public async Task<List<ScoreSubjectWithSemesterResponse>> GetScoresByStudentWithSemesters(string studentID, string schoolYear)
+        {
+            var student = await _context.AccountStudents
+                .Include(a => a.Student)
+                .FirstOrDefaultAsync(a => a.ID.ToLower() == studentID.ToLower() && a.IsActive)
+                ?? throw new NotFoundException("Học sinh không tồn tại");
+
+            var classes = await _context.Classes
+                .Include(c => c.StudentClasses)
+                .ThenInclude(c => c.AccountStudent)
+                .ThenInclude(c => c.Student)
+                .Include(c => c.SchoolYear)
+                .FirstOrDefaultAsync(c => c.StudentClasses.Any(sc => sc.StudentID.ToLower() == studentID.ToLower())
+                    && c.SchoolYear.Name.ToLower() == schoolYear.ToLower())
+                ?? throw new NotFoundException("Lớp học không tồn tại");
+
+            var subjects = await _context.Subjects
+                .Include(s => s.ComponentScores)
+                .Include(s => s.Schedules)
+                .Where(s => s.Schedules.Any(sc => sc.ClassID == classes.ID) && s.ComponentScores.Any())
+                .ToListAsync();
+
+            var scoreSubjects = new List<ScoreSubjectWithSemesterResponse>();
+
+            foreach (var subject in subjects)
+            {
+                var scores = await _context.StudentScores
+                    .Include(ss => ss.SchoolYear)
+                    .Where(ss => ss.StudentID.ToLower() == student.ID.ToLower()
+                        && ss.Subject.ToLower() == subject.Name.ToLower()
+                        && ss.SchoolYear.Name.ToLower() == schoolYear.ToLower())
+                    .ToListAsync();
+
+                var semester1Score = scores.Where(ss => ss.Semester.Equals("Học kỳ I")).ToList();
+                var semester2Score = scores.Where(ss => ss.Semester.Equals("Học kỳ II")).ToList();
+
+                var semester1Average = CalculateYearAverage(semester1Score);
+                var semester2Average = CalculateYearAverage(semester2Score);
+                var yearAverage = CalculateYearAverage(scores);
+
+                scoreSubjects.Add(new ScoreSubjectWithSemesterResponse
+                {
+                    Subject = subject.Name,
+                    Semester1Average = semester1Average,
+                    Semester2Average = semester2Average,
+                    YearAverage = yearAverage
+                });
+            }
+
+            return scoreSubjects;
+        }
+
+        private string CalculateYearAverage(List<StudentScores> scores)
+        {
+            if (scores.All(ss => ss.Score.Equals("Đ", StringComparison.OrdinalIgnoreCase)))
+                return "Đ";
+            else if (scores.Any(ss => ss.Score.Equals("CĐ", StringComparison.OrdinalIgnoreCase)))
+                return "CĐ";
+
+            double sum = 0;
+            decimal count = 0;
+
+            foreach (var score in scores)
+            {
+                if (double.TryParse(score.Score, out double numericScore))
+                {
+                    sum += numericScore * (double)score.ScoreFactor;
+                    count += score.ScoreFactor;
+                }
+            }
+
+            if (count == 0)
+                return "CĐ";
+            else
+                return Math.Round(sum / (double)count, 2).ToString();
         }
 
         public async Task UpdateScoreByExcel(string accountID, ExcelRequest request)
@@ -699,15 +924,26 @@ namespace DataAccess.Repository
                                             {
                                                 i++;
                                                 j++;
-                                                if (decimal.TryParse(data.ElementAt(i), out decimal s))
+                                                string score = data.ElementAt(i);
+
+                                                // Convert the score to lowercase for comparison
+                                                string lowerScore = score.ToLower();
+
+                                                // Check if the score is a valid integer or one of the special cases
+                                                if (int.TryParse(score, out int s))
                                                 {
-                                                    if (s < 0 || s > 10) throw new ArgumentException("Điểm phải nằm trong thang điểm 10");
-                                                    strScores.Add(str.ToLower(), s.ToString());
+                                                    if (s < 0 || s > 10)
+                                                    {
+                                                        throw new ArgumentException("Điểm phải nằm trong thang điểm 10");
+                                                    }
                                                 }
-                                                else
+                                                else if (lowerScore != "đ" && lowerScore != "cđ")
                                                 {
-                                                    throw new ArgumentException("Điểm không hợp lệ");
+                                                    throw new ArgumentException("Điểm phải nằm trong thang điểm 10 hoặc là Đ, đ, CĐ, cđ");
                                                 }
+
+                                                // Add the score to the dictionary
+                                                strScores.Add(str.ToLower(), score);
                                             }
                                         }
                                         break;

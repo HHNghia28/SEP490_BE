@@ -27,13 +27,17 @@ namespace DataAccess.Repository
         public async Task<IEnumerable<SubjectsResponse>> GetSubjects()
         {
             return await _context.Subjects
+                .Include(s => s.ComponentScores)
                 .Where(s => s.IsActive)
-                .Select(item => new  SubjectsResponse()
+                .Select(item => new SubjectsResponse()
                 {
                     ID = item.ID,
                     Grade = item.Grade,
                     Name = item.Name,
+                    IsMark = item.ComponentScores.Any()
                 })
+                .OrderBy(s => s.Grade)
+                .ThenBy(s => s.Name)
                 .ToListAsync();
         }
 
@@ -80,8 +84,8 @@ namespace DataAccess.Repository
                 ID = subjectExist.ID,
                 Name = subjectExist.Name,
                 Grade = subjectExist.Grade,
-                ComponentScores = componentScores,
-                LessonPlans = lessonPlans
+                ComponentScores = componentScores.OrderBy(c => c.Semester).ThenBy(c => c.Name).ToList(),
+                LessonPlans = lessonPlans.OrderBy(l => l.Slot).ToList()
             };
         }
 

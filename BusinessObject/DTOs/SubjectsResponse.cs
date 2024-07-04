@@ -19,5 +19,6 @@ namespace BusinessObject.DTOs
         [Required]
         [MaxLength(250)]
         public string Grade { get; set; }
+        public bool IsMark { get; set; } = true;
     }
 }

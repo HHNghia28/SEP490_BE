@@ -9,7 +9,7 @@ namespace BusinessObject.DTOs
     public class ScoreSubjectResponse
     {
         public string Subject { get; set; }
-        public double Average { get; set; }
+        public string Average { get; set; }
         public List<ScoreDetailResponse> Scores { get; set; }
     }
 }

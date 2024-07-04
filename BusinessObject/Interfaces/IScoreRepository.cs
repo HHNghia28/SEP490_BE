@@ -16,5 +16,6 @@ namespace BusinessObject.Interfaces
         Task<AverageScoresResponse> GetAverageScoresByClass(string className, string schoolYear);
         public Task<ScoreStudentResponse> GetScoresByStudentAllSubject(string studentID, string schoolYear);
         public Task<ScoreStudentResponse> GetScoresByStudentBySubject(string studentID, string subject, string schoolYear);
+        public Task<List<ScoreSubjectWithSemesterResponse>> GetScoresByStudentWithSemesters(string studentID, string schoolYear);
     }
 }
