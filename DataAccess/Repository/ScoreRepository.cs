@@ -926,10 +926,8 @@ namespace DataAccess.Repository
                                                 j++;
                                                 string score = data.ElementAt(i);
 
-                                                // Convert the score to lowercase for comparison
                                                 string lowerScore = score.ToLower();
 
-                                                // Check if the score is a valid integer or one of the special cases
                                                 if (int.TryParse(score, out int s))
                                                 {
                                                     if (s < 0 || s > 10)
@@ -942,8 +940,7 @@ namespace DataAccess.Repository
                                                     throw new ArgumentException("Điểm phải nằm trong thang điểm 10 hoặc là Đ, đ, CĐ, cđ");
                                                 }
 
-                                                // Add the score to the dictionary
-                                                strScores.Add(str.ToLower(), score);
+                                                strScores.Add(str.ToLower(), score.ToUpper());
                                             }
                                         }
                                         break;
