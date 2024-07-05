@@ -3,7 +3,9 @@ using BusinessObject.DTOs;
 using BusinessObject.Entities;
 using BusinessObject.Exceptions;
 using BusinessObject.Interfaces;
+using ClosedXML.Excel;
 using DataAccess.Context;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -165,6 +167,61 @@ namespace DataAccess.Repository
                 Note = "Người dùng " + account.Username + " vừa thực hiện thêm môn học " + request.Name + " khối " + request.Grade,
                 Type = LogName.CREATE.ToString(),
             });
+        }
+
+        public async Task AddSubjectsByExcel(string accountID, ExcelRequest request)
+        {
+            IFormFile file = request.File;
+            if (file != null && file.Length > 0)
+            {
+                using (var stream = new MemoryStream())
+                {
+                    file.CopyTo(stream);
+                    stream.Position = 0;
+
+                    using (var workbook = new XLWorkbook(stream))
+                    {
+                        foreach (var worksheet in workbook.Worksheets)
+                        {
+                            var subjectRequest = new SubjectRequest
+                            {
+                                Name = worksheet.Cell("B1").GetString(),
+                                Grade = worksheet.Cell("B2").GetString(),
+                                ComponentScores = new List<ComponentScoreRequest>(),
+                                LessonPlans = new List<LessonPlanRequest>()
+                            };
+
+                            int row = 5;
+                            while (!worksheet.Cell(row, 1).GetString().Equals("Giáo án"))
+                            {
+                                var componentScore = new ComponentScoreRequest
+                                {
+                                    Name = worksheet.Cell(row, 1).GetString(),
+                                    ScoreFactor = Decimal.Parse(worksheet.Cell(row, 2).GetString()),
+                                    Count = int.Parse(worksheet.Cell(row, 3).GetString()),
+                                    Semester = worksheet.Cell(row, 4).GetString()
+                                };
+                                subjectRequest.ComponentScores.Add(componentScore);
+                                row++;
+                            }
+
+                            row += 2; 
+                            while (!string.IsNullOrWhiteSpace(worksheet.Cell(row, 1).GetString()))
+                            {
+                                var lessonPlan = new LessonPlanRequest
+                                {
+                                    Slot = int.Parse(worksheet.Cell(row, 1).GetString()),
+                                    Title = worksheet.Cell(row, 2).GetString()
+                                };
+                                subjectRequest.LessonPlans.Add(lessonPlan);
+                                row++;
+                            }
+
+                            await AddSubject(accountID, subjectRequest);
+                        }
+                    }
+                }
+            }
         }
 
         public async Task UpdateSubject(string accountID, string subjectID, SubjectRequest request)

@@ -12,6 +12,7 @@ namespace BusinessObject.Interfaces
         public Task<IEnumerable<SubjectsResponse>> GetSubjects();
         public Task<SubjectResponse> GetSubject(string subjectID);
         public Task AddSubject(string accountID, SubjectRequest request);
+        public Task AddSubjectsByExcel(string accountID, ExcelRequest request);
         public Task UpdateSubject(string accountID, string subjectID, SubjectRequest request);
         public Task DeleteSubject(string accountID, string subjectID);
     }
