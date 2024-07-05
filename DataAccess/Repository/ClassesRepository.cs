@@ -1,8 +1,11 @@
-﻿using BusinessObject.DTOs;
+﻿using Azure.Core;
+using BusinessObject.DTOs;
 using BusinessObject.Entities;
 using BusinessObject.Exceptions;
 using BusinessObject.Interfaces;
+using ClosedXML.Excel;
 using DataAccess.Context;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -101,6 +104,44 @@ namespace DataAccess.Repository
                 Note = "Người dùng " + account.Username + " vừa thực hiện thêm lớp học " + request.Classroom,
                 Type = LogName.CREATE.ToString(),
             });
+        }
+
+        public async Task AddClassesByExcel(string accountID, ExcelRequest request)
+        {
+            IFormFile file = request.File;
+            if (file != null && file.Length > 0)
+            {
+                using (var stream = new MemoryStream())
+                {
+                    file.CopyTo(stream);
+
+                    stream.Position = 0;
+
+                    using (var workbook = new XLWorkbook(stream))
+                    {
+                        foreach (var worksheet in workbook.Worksheets)
+                        {
+                            var classesRequest = new ClassesRequest();
+                            var students = new List<string>();
+
+                            classesRequest.TeacherID = worksheet.Cell("B1").GetString();
+                            classesRequest.SchoolYear = worksheet.Cell("B2").GetString();
+                            classesRequest.Classroom = worksheet.Cell("B3").GetString();
+
+                            int row = 5;
+                            while (!string.IsNullOrWhiteSpace(worksheet.Cell(row, 1).GetString()))
+                            {
+                                students.Add(worksheet.Cell(row, 1).GetString());
+                                row++;
+                            }
+
+                            classesRequest.Students = students;
+
+                            await AddClasses(accountID, classesRequest);
+                        }
+                    }
+                }
+            }
         }
 
         public async Task DeleteClasses(string accountID, string classID)
