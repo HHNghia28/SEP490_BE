@@ -23,5 +23,6 @@ namespace BusinessObject.Interfaces
         Task DeleteStudent(string accountID);
         Task UpdateStudent(string accountID, UpdateStudentRequest request);
         Task AddStudentByExcel(string accountID, ExcelRequest request);
+        Task AddTeacherByExcel(string accountID, ExcelRequest request);
     }
 }

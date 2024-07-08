@@ -114,6 +114,58 @@ namespace SEP490_API.Controllers
             }
         }
 
+        [HttpPost("Excel")]
+        public async Task<IActionResult> CreateTeacherByExcel([FromForm] ExcelRequest request)
+        {
+            try
+            {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Add Teacher")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
+                string accountId = User.Claims.FirstOrDefault(c => c.Type == "ID")?.Value;
+
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Any())
+                        .ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+                    return BadRequest(errors);
+                }
+
+                await _accountRepository.AddTeacherByExcel(accountId, request);
+
+                return Ok("Đăng ký thành công");
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(ex.Message)
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateTeacher([FromForm] RegisterTeacherRequest request)
         {

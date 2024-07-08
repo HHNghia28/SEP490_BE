@@ -846,6 +846,131 @@ namespace DataAccess.Repository
 
         }
 
+        public async Task AddStudentByExcel(string accountID, ExcelRequest request)
+        {
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(accountID.ToLower())) ?? throw new NotFoundException("Tài khoản của bạn không tồn tại");
+
+            IFormFile file = request.File;
+            if (file != null && file.Length > 0)
+            {
+                using (var stream = new MemoryStream())
+                {
+                    file.CopyTo(stream);
+
+                    stream.Position = 0;
+
+                    using (var workbook = new XLWorkbook(stream))
+                    {
+                        foreach (var worksheet in workbook.Worksheets)
+                        {
+                            List<RegisterStudentRequest> registerStudents = new();
+
+                            for (int row = 2; row <= worksheet.LastRowUsed().RowNumber(); row++)
+                            {
+                                var dateString = worksheet.Cell(row, 7).GetString();
+                                DateTime birthday;
+                                if (!DateTime.TryParseExact(dateString, new[] { "d/M/yyyy", "dd/MM/yyyy", "d/MM/yyyy", "dd/M/yyyy" }, null, System.Globalization.DateTimeStyles.None, out birthday))
+                                {
+                                    throw new ArgumentException($"Invalid date format for {dateString}");
+                                }
+
+                                var student = new RegisterStudentRequest()
+                                {
+                                    Fullname = worksheet.Cell(row, 2).GetString(),
+                                    Address = worksheet.Cell(row, 3).GetString(),
+                                    Email = worksheet.Cell(row, 4).GetString(),
+                                    Phone = worksheet.Cell(row, 5).GetString(),
+                                    Gender = worksheet.Cell(row, 6).GetString(),
+                                    Birthday = birthday,
+                                    Nation = worksheet.Cell(row, 8).GetString(),
+                                    IsMartyrs = worksheet.Cell(row, 9).GetString().ToLower().Trim().Equals("có"),
+                                    Birthplace = worksheet.Cell(row, 10).GetString(),
+                                    HomeTown = worksheet.Cell(row, 11).GetString(),
+                                    FatherFullName = worksheet.Cell(row, 12).GetString(),
+                                    FatherPhone = worksheet.Cell(row, 13).GetString(),
+                                    FatherProfession = worksheet.Cell(row, 14).GetString(),
+                                    MotherFullName = worksheet.Cell(row, 15).GetString(),
+                                    MotherPhone = worksheet.Cell(row, 16).GetString(),
+                                    MotherProfession = worksheet.Cell(row, 17).GetString()
+                                };
+
+                                registerStudents.Add(student);
+                            }
+
+                            foreach (var student in registerStudents)
+                            {
+                                await RegisterStudent(student);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public async Task AddTeacherByExcel(string accountID, ExcelRequest request)
+        {
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(accountID.ToLower())) ?? throw new NotFoundException("Tài khoản của bạn không tồn tại");
+
+            IFormFile file = request.File;
+            if (file != null && file.Length > 0)
+            {
+                using (var stream = new MemoryStream())
+                {
+                    file.CopyTo(stream);
+
+                    stream.Position = 0;
+
+                    using (var workbook = new XLWorkbook(stream))
+                    {
+                        foreach (var worksheet in workbook.Worksheets)
+                        {
+                            List<RegisterTeacherRequest> registerTeachers = new();
+
+                            for (int row = 2; row <= worksheet.LastRowUsed().RowNumber(); row++)
+                            {
+                                var dateString = worksheet.Cell(row, 8).GetString();
+                                DateTime birthday;
+                                if (!DateTime.TryParseExact(dateString, new[] { "d/M/yyyy", "dd/MM/yyyy", "d/MM/yyyy", "dd/M/yyyy" }, null, System.Globalization.DateTimeStyles.None, out birthday))
+                                {
+                                    throw new ArgumentException($"Invalid date format for {dateString}");
+                                }
+
+                                var teacher = new RegisterTeacherRequest()
+                                {
+                                    Username = worksheet.Cell(row, 2).GetString(),
+                                    Fullname = worksheet.Cell(row, 3).GetString(),
+                                    Address = worksheet.Cell(row, 4).GetString(),
+                                    Email = worksheet.Cell(row, 5).GetString(),
+                                    Phone = worksheet.Cell(row, 6).GetString(),
+                                    Gender = worksheet.Cell(row, 7).GetString(),
+                                    Birthday = birthday,
+                                    Nation = worksheet.Cell(row, 9).GetString(),
+                                    IsBachelor = worksheet.Cell(row, 10).GetString().ToLower().Trim().Equals("có"),
+                                    IsMaster = worksheet.Cell(row, 11).GetString().ToLower().Trim().Equals("có"),
+                                    IsDoctor = worksheet.Cell(row, 12).GetString().ToLower().Trim().Equals("có"),
+                                    IsProfessor = worksheet.Cell(row, 13).GetString().ToLower().Trim().Equals("có"),
+                                    Roles = new List<string>()
+                                    {
+                                        "Subject Teacher", "Homeroom Teacher"
+                                    },
+                                    Password = "aA@123",
+                                };
+
+                                registerTeachers.Add(teacher);
+                            }
+
+                            foreach (var teacher in registerTeachers)
+                            {
+                                await RegisterTeacher(teacher);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private string CreateNewAccountId()
         {
             var maxId = _context.AccountStudents.Max(a => a.ID);
@@ -1006,66 +1131,5 @@ namespace DataAccess.Repository
             return username;
         }
 
-        public async Task AddStudentByExcel(string accountID, ExcelRequest request)
-        {
-            Account account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(accountID.ToLower())) ?? throw new NotFoundException("Tài khoản của bạn không tồn tại");
-
-            IFormFile file = request.File;
-            if (file != null && file.Length > 0)
-            {
-                using (var stream = new MemoryStream())
-                {
-                    file.CopyTo(stream);
-
-                    stream.Position = 0;
-
-                    using (var workbook = new XLWorkbook(stream))
-                    {
-                        foreach (var worksheet in workbook.Worksheets)
-                        {
-                            List<RegisterStudentRequest> registerStudents = new();
-
-                            for (int row = 2; row <= worksheet.LastRowUsed().RowNumber(); row++)
-                            {
-                                var dateString = worksheet.Cell(row, 7).GetString();
-                                DateTime birthday;
-                                if (!DateTime.TryParseExact(dateString, new[] { "d/M/yyyy", "dd/MM/yyyy", "d/MM/yyyy", "dd/M/yyyy" }, null, System.Globalization.DateTimeStyles.None, out birthday))
-                                {
-                                    throw new ArgumentException($"Invalid date format for {dateString}");
-                                }
-
-                                var student = new RegisterStudentRequest()
-                                {
-                                    Fullname = worksheet.Cell(row, 2).GetString(),
-                                    Address = worksheet.Cell(row, 3).GetString(),
-                                    Email = worksheet.Cell(row, 4).GetString(),
-                                    Phone = worksheet.Cell(row, 5).GetString(),
-                                    Gender = worksheet.Cell(row, 6).GetString(),
-                                    Birthday = birthday,
-                                    Nation = worksheet.Cell(row, 8).GetString(),
-                                    IsMartyrs = worksheet.Cell(row, 9).GetString().ToLower().Trim().Equals("có"),
-                                    Birthplace = worksheet.Cell(row, 10).GetString(),
-                                    HomeTown = worksheet.Cell(row, 11).GetString(),
-                                    FatherFullName = worksheet.Cell(row, 12).GetString(),
-                                    FatherPhone = worksheet.Cell(row, 13).GetString(),
-                                    FatherProfession = worksheet.Cell(row, 14).GetString(),
-                                    MotherFullName = worksheet.Cell(row, 15).GetString(),
-                                    MotherPhone = worksheet.Cell(row, 16).GetString(),
-                                    MotherProfession = worksheet.Cell(row, 17).GetString()
-                                };
-
-                                registerStudents.Add(student);
-                            }
-
-                            foreach(var student in registerStudents)
-                            {
-                                await RegisterStudent(student);
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }

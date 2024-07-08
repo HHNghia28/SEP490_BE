@@ -29,60 +29,81 @@ namespace DataAccess.Repository
         {
             List<DateTime> dates = GetDatesToNextSunday(DateTime.ParseExact(fromDate, "dd/MM/yyyy", CultureInfo.InvariantCulture));
 
-            List<Schedule> schedules = await _context.Schedules
+            var schedules = await _context.Schedules
                 .AsNoTracking()
                 .Include(s => s.Classes)
-                .ThenInclude(s => s.SchoolYear)
+                    .ThenInclude(s => s.SchoolYear)
                 .Include(s => s.Teacher)
                 .Include(s => s.Subject)
-                .ThenInclude(s => s.LessonPlans)
+                    .ThenInclude(s => s.LessonPlans)
                 .Include(s => s.Attendances)
-                .ThenInclude(s => s.AccountStudent)
-                .ThenInclude(s => s.Student)
-                .Where(s => Guid.Equals(s.ClassID, new Guid(classID)) && dates.Contains(s.Date))
+                    .ThenInclude(a => a.AccountStudent)
+                    .ThenInclude(a => a.Student)
+                .Where(s => s.ClassID == new Guid(classID) && dates.Contains(s.Date))
+                .Select(s => new
+                {
+                    s.ID,
+                    s.Date,
+                    s.SubjectID,
+                    s.SlotByDate,
+                    s.Subject,
+                    s.Teacher,
+                    s.SlotByLessonPlans,
+                    s.Note,
+                    s.Rank,
+                    s.Classes,
+                    Attendances = s.Attendances.Where(a => dates.Contains(a.Date)).ToList()
+                })
                 .OrderBy(s => s.Date)
                 .ThenBy(s => s.SlotByDate)
                 .ToListAsync();
 
-            if (schedules.Count == 0) throw new ArgumentException("Không tìm thấy sổ đầu bài"); 
-
-            RegistersBookResponse response = new()
+            if (!schedules.Any())
             {
-                Classname = schedules.ElementAt(0).Classes.Classroom,
-                FromDate = dates.ElementAt(0).ToString("dd/MM/yyyy"),
-                ToDate = dates.ElementAt(dates.Count - 1).ToString("dd/MM/yyyy"),
-                SchoolYear = schedules.ElementAt(0).Classes.SchoolYear.Name,
+                throw new ArgumentException("Không tìm thấy sổ đầu bài");
+            }
+
+            var classInfo = schedules.First().Classes;
+            var response = new RegistersBookResponse
+            {
+                Classname = classInfo.Classroom,
+                FromDate = dates.First().ToString("dd/MM/yyyy"),
+                ToDate = dates.Last().ToString("dd/MM/yyyy"),
+                SchoolYear = classInfo.SchoolYear.Name,
             };
 
-            List<RegistersBookDetailResponse> responseDetails = new();
+            var lessonPlanDict = schedules
+                .SelectMany(s => s.Subject.LessonPlans)
+                .GroupBy(lp => new { lp.SubjectID, lp.Slot })
+                .ToDictionary(g => g.Key, g => g.First().Title);
 
-            foreach (var date in dates)
+            var responseDetails = dates.Select(date =>
             {
-                List<RegistersBookSlotResponse> registersBookSlotResponses = schedules
+                var slots = schedules
                     .Where(s => s.Date == date)
-                    .Select(item => new RegistersBookSlotResponse()
+                    .Select(s => new RegistersBookSlotResponse
                     {
-                        ID = item.ID.ToString(),
-                        Slot = item.SlotByDate,
-                        Subject = item.Subject.Name,
-                        Teacher = item.Teacher.Username,
-                        SlotByLessonPlan = item.SlotByLessonPlans,
-                        NumberOfAbsent = item.Attendances.Where(s => !s.Present).Count(),
-                        NumberAbsent = item.Attendances.Where(s => !s.Present).Select(s => s.AccountStudent.Student.Fullname).ToList(),
-                        Note = item.Note,
-                        Rating = item.Rank,
-                        Title = item.Subject.LessonPlans.FirstOrDefault(l => l.Slot == item.SlotByLessonPlans) != null ? item.Subject.LessonPlans.FirstOrDefault(l => l.Slot == item.SlotByLessonPlans).Title : ""
+                        ID = s.ID.ToString(),
+                        Slot = s.SlotByDate,
+                        Subject = s.Subject.Name,
+                        Teacher = s.Teacher.Username,
+                        SlotByLessonPlan = s.SlotByLessonPlans,
+                        NumberOfAbsent = s.Attendances.Count(a => !a.Present),
+                        NumberAbsent = s.Attendances.Where(a => !a.Present).Select(a => a.AccountStudent.Student.Fullname).ToList(),
+                        Note = s.Note,
+                        Rating = s.Rank,
+                        Title = lessonPlanDict.TryGetValue(new { s.SubjectID, Slot = s.SlotByLessonPlans }, out var title) ? title : string.Empty
                     })
                     .ToList();
 
-                responseDetails.Add(new RegistersBookDetailResponse()
+                return new RegistersBookDetailResponse
                 {
                     ID = Guid.NewGuid().ToString(),
                     Date = date.ToString("dd/MM/yyyy"),
                     WeekDate = GetVietnameseDayOfWeek(date.DayOfWeek),
-                    Slots = registersBookSlotResponses
-                });
-            }
+                    Slots = slots
+                };
+            }).ToList();
 
             response.Details = responseDetails;
 
