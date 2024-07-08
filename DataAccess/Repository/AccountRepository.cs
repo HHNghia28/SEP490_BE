@@ -6,6 +6,7 @@ using BusinessObject.Interfaces;
 using BusinessObject.IServices;
 using ClosedXML.Excel;
 using DataAccess.Context;
+using DocumentFormat.OpenXml.Office2016.Excel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -134,10 +135,12 @@ namespace DataAccess.Repository
                     },
                     Permissions = roleStudents,
                     Roles = new List<string>() { accountStudentExist.Role.Name },
-                    SchoolYears = filteredSchoolYears.Select(s => s.Name).ToList(),
+                    SchoolYears = filteredSchoolYears.Select(s => s.Name).Order().ToList(),
                     Classes = filteredSchoolYears.ToDictionary(
                         item => item.Name,
-                        item => item.Classes.Where(c => c.IsActive).Select(c => new Dictionary<string, string>
+                        item => item.Classes.Where(c => c.IsActive)
+                        .OrderBy(c => c.Classroom)
+                        .Select(c => new Dictionary<string, string>
                         {
                             { "ID", c.ID.ToString() },
                             { "Classroom", c.Classroom }
@@ -197,10 +200,12 @@ namespace DataAccess.Repository
                 },
                 Permissions = roles,
                 Roles = accountExist.AccountRoles.Select(a => a.Role.Name).ToList(),
-                SchoolYears = schoolYears.Select(s => s.Name).ToList(),
+                SchoolYears = schoolYears.Select(s => s.Name).Order().ToList(),
                 Classes = schoolYears.ToDictionary(
                             item => item.Name,
-                            item => item.Classes.Where(c => c.IsActive).Select(c => new Dictionary<string, string>
+                            item => item.Classes.Where(c => c.IsActive)
+                            .OrderBy( c => c.Classroom)
+                            .Select(c => new Dictionary<string, string>
                             {
                                 { "ID", c.ID.ToString() },
                                 { "Classroom", c.Classroom }
@@ -216,10 +221,14 @@ namespace DataAccess.Repository
 
         public async Task<LoginResponse> RefreshToken(string accessToken, string refreshToken)
         {
+            List<SchoolYear> schoolYears = await _context.SchoolYears
+                .Include(s => s.Classes)
+                .OrderBy(s => s.Name)
+                .ToListAsync();
+
             string accountID = GetIdFromExpiredToken(accessToken);
 
             Account accountExist = await _context.Accounts
-                .Include(a => a.User)
                 .Include(a => a.User)
                 .Include(a => a.AccountRoles)
                 .ThenInclude(a => a.Role)
@@ -227,27 +236,99 @@ namespace DataAccess.Repository
                 .ThenInclude(a => a.Permission)
                 .Include(a => a.AccountPermissions)
                 .ThenInclude(a => a.Permission)
+                .FirstOrDefaultAsync(a => a.ID.Equals(accountID) && a.IsActive);
+
+            if (accountExist == null)
+            {
+                AccountStudent accountStudentExist = await _context.AccountStudents
+                .Include(a => a.Student)
+                .Include(a => a.Role)
+                .ThenInclude(a => a.RolePermissions)
+                .ThenInclude(a => a.Permission)
                 .FirstOrDefaultAsync(a => a.ID.Equals(accountID) && a.IsActive)
                 ?? throw new ArgumentException("AccessToken không chính xác");
+
+                schoolYears = await _context.SchoolYears
+                                    .Include(s => s.Classes)
+                                    .ThenInclude(c => c.StudentClasses)
+                                    .Where(s => s.Classes.Any(c => c.StudentClasses.Any(sc => sc.StudentID.ToLower().Equals(accountStudentExist.ID.ToLower()))))
+                                    .ToListAsync();
+
+                var filteredSchoolYears = new List<SchoolYear>();
+
+                foreach (var schoolYear in schoolYears)
+                {
+                    var filteredSchoolYear = new SchoolYear
+                    {
+                        ID = schoolYear.ID,
+                        Name = schoolYear.Name,
+                        Classes = schoolYear.Classes
+                            .Where(c => c.StudentClasses.Any(sc => sc.StudentID.ToLower() == accountStudentExist.ID.ToLower()))
+                            .Select(c => new Classes
+                            {
+                                ID = c.ID,
+                                Classroom = c.Classroom,
+                                IsActive = c.IsActive,
+                                StudentClasses = c.StudentClasses
+                                    .Where(sc => sc.StudentID.ToLower() == accountStudentExist.ID.ToLower())
+                                    .ToList()
+                            })
+                            .ToList()
+                    };
+
+                    filteredSchoolYears.Add(filteredSchoolYear);
+                }
+
+                List<string> roleStudents = new();
+
+                foreach (var item1 in accountStudentExist.Role.RolePermissions)
+                {
+                    roleStudents.Add(item1.Permission.Name);
+                }
+
+                string refreshTokenS = GenerateRefreshToken();
+
+                accountStudentExist.RefreshToken = refreshTokenS;
+                accountStudentExist.RefreshTokenExpires = DateTime.Now.AddDays(30);
+
+                await _context.SaveChangesAsync();
+
+                LoginResponse loginResponseS = new LoginResponse()
+                {
+                    User = new RegisterResponse()
+                    {
+                        Id = accountStudentExist.ID,
+                        Username = accountStudentExist.Username,
+                        Address = accountStudentExist.Student.Address,
+                        Email = accountStudentExist.Student.Email,
+                        Fullname = accountStudentExist.Student.Fullname,
+                        Phone = accountStudentExist.Student.Phone,
+                        Avatar = accountStudentExist.Student.Avatar
+                    },
+                    Permissions = roleStudents,
+                    Roles = new List<string>() { accountStudentExist.Role.Name },
+                    SchoolYears = filteredSchoolYears.Select(s => s.Name).Order().ToList(),
+                    Classes = filteredSchoolYears.ToDictionary(
+                        item => item.Name,
+                        item => item.Classes.Where(c => c.IsActive)
+                        .OrderBy(c => c.Classroom)
+                        .Select(c => new Dictionary<string, string>
+                        {
+                            { "ID", c.ID.ToString() },
+                            { "Classroom", c.Classroom }
+                        }).ToList()
+                )
+                };
+
+                loginResponseS.AccessToken = CreateToken(loginResponseS, 60 * 60 * 24 * 30, roleStudents);
+                loginResponseS.RefreshToken = refreshTokenS;
+
+                return loginResponseS;
+            }
 
             if (accountExist.RefreshToken == null)
             {
                 throw new ArgumentException("RefreshToken quá hạn");
-            }
-
-            List<string> roles = new();
-
-            foreach (var item in accountExist.AccountRoles)
-            {
-                foreach (var item1 in item.Role.RolePermissions)
-                {
-                    roles.Add(item1.Permission.Name);
-                }
-            }
-
-            foreach (var item in accountExist.AccountPermissions)
-            {
-                roles.Add(item.Permission.Name);
             }
 
             string newRefreshToken = GenerateRefreshToken();
@@ -255,6 +336,23 @@ namespace DataAccess.Repository
             TimeSpan? timeSpan = accountExist.RefreshTokenExpires - DateTime.Now;
             if (accountExist.RefreshToken.Equals(refreshToken) && timeSpan.HasValue && timeSpan.Value.TotalDays < 30)
             {
+
+
+                List<string> roles = new();
+
+                foreach (var item in accountExist.AccountRoles)
+                {
+                    foreach (var item1 in item.Role.RolePermissions)
+                    {
+                        roles.Add(item1.Permission.Name);
+                    }
+                }
+
+                foreach (var item in accountExist.AccountPermissions)
+                {
+                    roles.Add(item.Permission.Name);
+                }
+
                 accountExist.RefreshToken = newRefreshToken;
                 accountExist.RefreshTokenExpires = DateTime.Now.AddDays(30);
 
@@ -271,11 +369,24 @@ namespace DataAccess.Repository
                         Fullname = accountExist.User.Fullname,
                         Phone = accountExist.User.Phone,
                         Avatar = accountExist.User.Avatar
-                    }
+                    },
+                    Permissions = roles,
+                    Roles = accountExist.AccountRoles.Select(a => a.Role.Name).ToList(),
+                    SchoolYears = schoolYears.Select(s => s.Name).Order().ToList(),
+                    Classes = schoolYears.ToDictionary(
+                                item => item.Name,
+                                item => item.Classes.Where(c => c.IsActive)
+                                .OrderBy(c => c.Classroom)
+                                .Select(c => new Dictionary<string, string>
+                                {
+                                { "ID", c.ID.ToString() },
+                                { "Classroom", c.Classroom }
+                                }).ToList()
+                            )
                 };
 
-                loginResponse.AccessToken = CreateToken(loginResponse, 60 * 60 * 8, roles);
-                loginResponse.RefreshToken = newRefreshToken;
+                loginResponse.AccessToken = CreateToken(loginResponse, 60 * 60 * 24 * 30, roles);
+                loginResponse.RefreshToken = refreshToken;
 
                 return loginResponse;
             }

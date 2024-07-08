@@ -225,6 +225,7 @@ namespace DataAccess.Repository
                     Teacher = item.Teacher.ID,
                     SchoolYear = item.SchoolYear.Name,
                 })
+                .OrderBy(c => c.Classroom)
                 .ToListAsync();
         }
 
