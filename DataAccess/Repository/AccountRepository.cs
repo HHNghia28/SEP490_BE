@@ -316,7 +316,7 @@ namespace DataAccess.Repository
 
             if (request.Avatar != null)
             {
-                avt = await _imageService.UploadImage(request.Avatar);
+                avt = await _imageService.UploadImage(request.Avatar, "Avatars");
             }
 
             User user = new()
@@ -412,7 +412,7 @@ namespace DataAccess.Repository
 
             if (request.Avatar != null)
             {
-                avt = await _imageService.UploadImage(request.Avatar);
+                avt = await _imageService.UploadImage(request.Avatar, "Avatars");
             }
 
             if (!string.IsNullOrEmpty(request.Password))
@@ -576,7 +576,7 @@ namespace DataAccess.Repository
 
             if (request.Avatar != null)
             {
-                avt = await _imageService.UploadImage(request.Avatar);
+                avt = await _imageService.UploadImage(request.Avatar, "Avatars");
             }
 
             Student student = new()
@@ -708,7 +708,7 @@ namespace DataAccess.Repository
 
             if (request.Avatar != null)
             {
-                avt = await _imageService.UploadImage(request.Avatar);
+                avt = await _imageService.UploadImage(request.Avatar, "Avatars");
             }
 
             if (!string.IsNullOrEmpty(request.Password))

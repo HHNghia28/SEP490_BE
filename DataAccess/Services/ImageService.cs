@@ -19,7 +19,7 @@ namespace DataAccess.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<string> UploadImage(IFormFile file, string folder = "Avatar")
+        public async Task<string> UploadImage(IFormFile file, string folder = "Images", string fileName = null)
         {
             if (file == null || file.Length == 0)
             {
@@ -34,7 +34,7 @@ namespace DataAccess.Services
                 Directory.CreateDirectory(pathToSave);
             }
 
-            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            fileName = (fileName ?? Guid.NewGuid().ToString()) + Path.GetExtension(file.FileName);
             var fullPath = Path.Combine(pathToSave, fileName);
 
             using (var stream = new FileStream(fullPath, FileMode.Create))
@@ -43,9 +43,10 @@ namespace DataAccess.Services
             }
 
             var currentUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}";
-            var imageUrl = Path.Combine(currentUrl, folderName, fileName).Replace("\\", "/").Replace("/wwwroot","");
+            var imageUrl = Path.Combine(currentUrl, folderName, fileName).Replace("\\", "/").Replace("/wwwroot", "");
 
             return imageUrl;
         }
+
     }
 }

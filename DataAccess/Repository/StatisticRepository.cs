@@ -2,6 +2,7 @@
 using BusinessObject.Entities;
 using BusinessObject.Interfaces;
 using DataAccess.Context;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -406,6 +407,39 @@ namespace DataAccess.Repository
                 };
 
             return semesterScores;
+        }
+
+        public async Task<List<ClassScheduleRankStatistics>> GetScheduleRankCountBySchoolYearAsync(string schoolYear, string className = null, int grade = 0)
+        {
+            var query = _context.Schedules
+                .Include(s => s.Classes)
+                .ThenInclude(c => c.SchoolYear)
+                .Where(s => s.Classes.SchoolYear.Name == schoolYear);
+
+            if (!string.IsNullOrEmpty(className))
+            {
+                query = query.Where(s => s.Classes.Classroom == className);
+            }
+
+            if (grade != 0)
+            {
+                query = query.Where(s => s.Classes.Classroom.StartsWith(grade.ToString()));
+            }
+
+            var schedules = await query.ToListAsync();
+
+            var groupedData = schedules
+                .GroupBy(s => s.Classes.Classroom)
+                .Select(g => new ClassScheduleRankStatistics
+                {
+                    ClassName = g.Key,
+                    RankCounts = g.GroupBy(s => s.Rank)
+                                  .ToDictionary(rankGroup => rankGroup.Key, rankGroup => rankGroup.Count())
+                })
+                .OrderBy(x => x.ClassName)
+                .ToList();
+
+            return groupedData;
         }
 
         private ScoreAverageStatisticsResponse CalculateAverageGroupScores(IEnumerable<dynamic> studentScores, string semester, bool isWholeYear = false)

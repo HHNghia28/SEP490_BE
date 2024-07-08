@@ -9,6 +9,6 @@ namespace BusinessObject.IServices
 {
     public interface IImageService
     {
-        public Task<string> UploadImage(IFormFile file, string folder = "Avatar");
+        public Task<string> UploadImage(IFormFile file, string folder = "Images", string fileName = null);
     }
 }
