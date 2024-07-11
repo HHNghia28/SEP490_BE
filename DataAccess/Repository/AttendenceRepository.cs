@@ -45,9 +45,10 @@ namespace DataAccess.Repository
                     StudentName = item.AccountStudent.Student.Fullname,
                     Avatar = item.AccountStudent.Student.Avatar,
                     Present = item.Present,
+                    Confirmed = item.Confirmed,
                     Date = item.Schedule.Date.ToString("dd/MM/yyyy"),
                     Subject = item.Schedule.Subject.Name,
-                    Status = item.Schedule.Date > DateTime.Now ? "Chưa bắt đầu" : item.Present ? "Có mặt" : "Vắng",
+                    Status = item.Schedule.Date > DateTime.Now ? "Chưa bắt đầu" : item.Present ? "Có mặt" : item.Confirmed ? "Vắng có phép" : "Vắng không phép",
                     Teacher = item.Schedule.Teacher.Username,
                     Slot = item.Schedule.SlotByLessonPlans
                 })
@@ -80,9 +81,10 @@ namespace DataAccess.Repository
                     StudentName = item.AccountStudent.Student.Fullname,
                     Avatar = item.AccountStudent.Student.Avatar,
                     Present = item.Present,
+                    Confirmed = item.Confirmed,
                     Date = item.Schedule.Date.ToString("dd/MM/yyyy"),
                     Subject = item.Schedule.Subject.Name,
-                    Status = item.Schedule.Date > DateTime.Now ? "Chưa bắt đầu" : item.Present ? "Có mặt" : "Vắng",
+                    Status = item.Schedule.Date > DateTime.Now ? "Chưa bắt đầu" : item.Present ? "Có mặt" : item.Confirmed ? "Vắng có phép" : "Vắng không phép",
                     Teacher = item.Schedule.Teacher.Username,
                     Slot = item.Schedule.SlotByLessonPlans
                 })
@@ -133,6 +135,7 @@ namespace DataAccess.Repository
                     .ToListAsync();
 
                 int daysPresent = 0;
+                int daysComfirmed = 0;
                 int daysAbsent = 0;
                 int daysNotStarted = 0;
                 DateTime? startDate = null;
@@ -154,6 +157,10 @@ namespace DataAccess.Repository
                     {
                         daysPresent++;
                     }
+                    else if (attendance.Confirmed)
+                    {
+                        daysComfirmed++;
+                    }
                     else
                     {
                         daysAbsent++;
@@ -163,7 +170,8 @@ namespace DataAccess.Repository
                 response.Add(subject.Name, new Dictionary<string, object>
                 {
                     { "Có mặt", daysPresent },
-                    { "Vắng", daysAbsent },
+                    { "Vắng không phép", daysAbsent },
+                    { "Vắng có phép", daysComfirmed },
                     { "Chưa bắt đầu", daysNotStarted },
                     { "Ngày bắt đầu", startDate?.ToString("dd/MM/yyyy") },
                     { "Ngày kết thúc", endDate?.ToString("dd/MM/yyyy") }
@@ -197,6 +205,7 @@ namespace DataAccess.Repository
                 if (request == null) continue;
 
                 item.Present = request.Present;
+                item.Confirmed = request.Confirmed;
             }
 
             await _context.SaveChangesAsync();

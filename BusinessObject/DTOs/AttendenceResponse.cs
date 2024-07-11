@@ -17,6 +17,7 @@ namespace BusinessObject.DTOs
         public string Date {  get; set; }
         public string Subject { get; set; }
         public string Status { get; set; }
+        public bool Confirmed { get; set; }
         public string Teacher { get; set; }
         public int Slot { get; set; }
     }

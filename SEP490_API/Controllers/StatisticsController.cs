@@ -209,7 +209,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("Schedule")]
-        public async Task<IActionResult> GetStatisticSchedule(string schoolYear, string className = null, int grade = 0)
+        public async Task<IActionResult> GetStatisticSchedule(string schoolYear, string className = null, string fromDate = null, string toDate = null, int grade = 0)
         {
             try
             {
@@ -237,7 +237,7 @@ namespace SEP490_API.Controllers
                     return BadRequest(errors);
                 }
 
-                return Ok(await _statisticRepository.GetScheduleRankCountBySchoolYearAsync(schoolYear, className, grade));
+                return Ok(await _statisticRepository.GetScheduleRankCountBySchoolYearAsync(schoolYear, className, fromDate, toDate, grade));
             }
             catch (NotFoundException ex)
             {

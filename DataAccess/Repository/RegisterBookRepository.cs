@@ -25,37 +25,87 @@ namespace DataAccess.Repository
             _activityLogRepository = activityLogRepository;
         }
 
+        public async Task<RegistersBookSlotResponse> GetRegisterBookForSlot(string scheduleID)
+        {
+            var scheduleGuid = new Guid(scheduleID);
+
+            var schedule = await _context.Schedules
+                .AsNoTracking()
+                .Where(s => s.ID == scheduleGuid)
+                .Select(s => new
+                {
+                    s.ID,
+                    s.Date,
+                    s.SlotByDate,
+                    s.SlotByLessonPlans,
+                    s.SubjectID,
+                    s.Subject.Name,
+                    s.Teacher.Username,
+                    s.Note,
+                    s.Rank,
+                    LessonPlans = s.Subject.LessonPlans,
+                    NumberOfAbsent = s.Attendances.Count(a => !a.Present && !a.Confirmed),
+                    NumberOfConfirmed = s.Attendances.Count(a => !a.Present && a.Confirmed),
+                    NumberAbsent = s.Attendances.Select(a => a.AccountStudent.Student.Fullname + (a.Confirmed ? " (Vắng có phép)" : " (Vắng không phép)")).ToList(),
+                })
+                .FirstOrDefaultAsync();
+
+            if (schedule == null)
+            {
+                throw new ArgumentException("Không tìm thấy thông tin cho slot này");
+            }
+
+            var lessonPlanDict = schedule.LessonPlans
+                .GroupBy(lp => new { lp.SubjectID, lp.Slot })
+                .ToDictionary(g => g.Key, g => g.First().Title);
+
+            var response = new RegistersBookSlotResponse
+            {
+                ID = schedule.ID.ToString(),
+                Slot = schedule.SlotByDate,
+                Subject = schedule.Name,
+                Teacher = schedule.Username,
+                SlotByLessonPlan = schedule.SlotByLessonPlans,
+                NumberOfAbsent = schedule.NumberOfAbsent,
+                NumberOfConfirmed = schedule.NumberOfConfirmed,
+                Note = schedule.Note,
+                Rating = schedule.Rank,
+                NumberAbsent = schedule.NumberAbsent,
+                Title = lessonPlanDict.TryGetValue(new { schedule.SubjectID, Slot = schedule.SlotByLessonPlans }, out var title) ? title : string.Empty
+            };
+
+            return response;
+        }
+
         public async Task<RegistersBookResponse> GetRegistersBook(string classID, string fromDate)
         {
             List<DateTime> dates = GetDatesToNextSunday(DateTime.ParseExact(fromDate, "dd/MM/yyyy", CultureInfo.InvariantCulture));
 
             var schedules = await _context.Schedules
                 .AsNoTracking()
-                .Include(s => s.Classes)
-                    .ThenInclude(s => s.SchoolYear)
-                .Include(s => s.Teacher)
-                .Include(s => s.Subject)
-                    .ThenInclude(s => s.LessonPlans)
-                .Include(s => s.Attendances)
-                    .ThenInclude(a => a.AccountStudent)
-                    .ThenInclude(a => a.Student)
                 .Where(s => s.ClassID == new Guid(classID) && dates.Contains(s.Date))
+                .OrderBy(s => s.Date)
+                .ThenBy(s => s.SlotByDate)
                 .Select(s => new
                 {
                     s.ID,
                     s.Date,
-                    s.SubjectID,
                     s.SlotByDate,
-                    s.Subject,
-                    s.Teacher,
                     s.SlotByLessonPlans,
+                    s.SubjectID,
+                    s.Subject.Name,
+                    s.Teacher.Username,
                     s.Note,
                     s.Rank,
-                    s.Classes,
-                    Attendances = s.Attendances.Where(a => dates.Contains(a.Date)).ToList()
+                    ClassInfo = new
+                    {
+                        s.Classes.Classroom,
+                        s.Classes.SchoolYear.Name
+                    },
+                    LessonPlans = s.Subject.LessonPlans,
+                    NumberOfAbsent = s.Attendances.Count(a => !a.Present && !a.Confirmed),
+                    NumberOfConfirmed = s.Attendances.Count(a => !a.Present && a.Confirmed)
                 })
-                .OrderBy(s => s.Date)
-                .ThenBy(s => s.SlotByDate)
                 .ToListAsync();
 
             if (!schedules.Any())
@@ -63,17 +113,17 @@ namespace DataAccess.Repository
                 throw new ArgumentException("Không tìm thấy sổ đầu bài");
             }
 
-            var classInfo = schedules.First().Classes;
+            var firstSchedule = schedules.First();
             var response = new RegistersBookResponse
             {
-                Classname = classInfo.Classroom,
+                Classname = firstSchedule.ClassInfo.Classroom,
                 FromDate = dates.First().ToString("dd/MM/yyyy"),
                 ToDate = dates.Last().ToString("dd/MM/yyyy"),
-                SchoolYear = classInfo.SchoolYear.Name,
+                SchoolYear = firstSchedule.ClassInfo.Name,
             };
 
             var lessonPlanDict = schedules
-                .SelectMany(s => s.Subject.LessonPlans)
+                .SelectMany(s => s.LessonPlans)
                 .GroupBy(lp => new { lp.SubjectID, lp.Slot })
                 .ToDictionary(g => g.Key, g => g.First().Title);
 
@@ -85,11 +135,11 @@ namespace DataAccess.Repository
                     {
                         ID = s.ID.ToString(),
                         Slot = s.SlotByDate,
-                        Subject = s.Subject.Name,
-                        Teacher = s.Teacher.Username,
+                        Subject = s.Name,
+                        Teacher = s.Username,
                         SlotByLessonPlan = s.SlotByLessonPlans,
-                        NumberOfAbsent = s.Attendances.Count(a => !a.Present),
-                        NumberAbsent = s.Attendances.Where(a => !a.Present).Select(a => a.AccountStudent.Student.Fullname).ToList(),
+                        NumberOfAbsent = s.NumberOfAbsent,
+                        NumberOfConfirmed = s.NumberOfConfirmed,
                         Note = s.Note,
                         Rating = s.Rank,
                         Title = lessonPlanDict.TryGetValue(new { s.SubjectID, Slot = s.SlotByLessonPlans }, out var title) ? title : string.Empty

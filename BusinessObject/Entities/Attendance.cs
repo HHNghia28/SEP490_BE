@@ -19,6 +19,7 @@ namespace BusinessObject.Entities
         public string StudentID { get; set; }
 
         public bool Present { get; set; } = false;
+        public bool Confirmed { get; set; } = true;
 
         [Required]
         public DateTime Date { get; set; } = DateTime.Now;

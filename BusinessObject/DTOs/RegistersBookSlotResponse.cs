@@ -14,6 +14,7 @@ namespace BusinessObject.DTOs
         public int SlotByLessonPlan { get; set; }
         public int Slot {  get; set; }
         public int NumberOfAbsent {  get; set; }
+        public int NumberOfConfirmed { get; set; }
         public List<string> NumberAbsent { get; set; }
         public string Title { get; set; }
         public string Note { get; set; }

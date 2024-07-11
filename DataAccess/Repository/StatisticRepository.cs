@@ -409,8 +409,21 @@ namespace DataAccess.Repository
             return semesterScores;
         }
 
-        public async Task<List<ClassScheduleRankStatistics>> GetScheduleRankCountBySchoolYearAsync(string schoolYear, string className = null, int grade = 0)
+        public async Task<List<ClassScheduleRankStatistics>> GetScheduleRankCountBySchoolYearAsync(string schoolYear, string className = null, string fromDate = null, string toDate = null, int grade = 0)
         {
+            DateTime? parsedFromDate = null;
+            DateTime? parsedToDate = null;
+
+            if (DateTime.TryParseExact(fromDate, new[] { "dd/MM/yyyy", "d/M/yyyy" }, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedFrom))
+            {
+                parsedFromDate = parsedFrom;
+            }
+
+            if (DateTime.TryParseExact(toDate, new[] { "dd/MM/yyyy", "d/M/yyyy" }, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedTo))
+            {
+                parsedToDate = parsedTo;
+            }
+
             var query = _context.Schedules
                 .Include(s => s.Classes)
                 .ThenInclude(c => c.SchoolYear)
@@ -424,6 +437,16 @@ namespace DataAccess.Repository
             if (grade != 0)
             {
                 query = query.Where(s => s.Classes.Classroom.StartsWith(grade.ToString()));
+            }
+
+            if(parsedFromDate != null)
+            {
+                query = query.Where(s => s.Date >= parsedFromDate);
+            }
+
+            if (parsedToDate != null)
+            {
+                query = query.Where(s => s.Date <= parsedToDate);
             }
 
             var schedules = await query.ToListAsync();

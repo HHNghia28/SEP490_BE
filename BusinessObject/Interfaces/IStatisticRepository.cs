@@ -13,6 +13,6 @@ namespace BusinessObject.Interfaces
         public Task<IEnumerable<ScoreStatisticsResponse>> GetScoreStatistics(string schoolYear, string className = null, int grade = 0, string subject = null);
         public Task<IEnumerable<ScoreAverageStatisticsResponse>> GetScoreAverageStatistics(string schoolYear, string className = null, int grade = 0);
         public Task<IEnumerable<ScoreAverageStatisticsResponse>> GetGroupScoreAverageStatistics(string schoolYear, string className = null, int grade = 0);
-        public Task<List<ClassScheduleRankStatistics>> GetScheduleRankCountBySchoolYearAsync(string schoolYear, string className = null, int grade = 0);
+        public Task<List<ClassScheduleRankStatistics>> GetScheduleRankCountBySchoolYearAsync(string schoolYear, string className = null, string fromDate = null, string toDate = null, int grade = 0);
     }
 }
