@@ -30,10 +30,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add(new TypeFilterAttribute(typeof(ApiResponseAttribute)));
-});
+builder.Services.AddControllers();
+//builder.Services.AddControllers(options =>
+//{
+//    options.Filters.Add(new TypeFilterAttribute(typeof(ApiResponseAttribute)));
+//});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(opt =>
@@ -162,9 +163,9 @@ app.UseResponseCaching();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseMiddleware<CustomExceptionMiddleware>();
-app.UseMiddleware<RequestLoggingMiddleware>();
-app.UseMiddleware<AuthorizationMiddleware>();
+//app.UseMiddleware<CustomExceptionMiddleware>();
+//app.UseMiddleware<RequestLoggingMiddleware>();
+//app.UseMiddleware<AuthorizationMiddleware>();
 
 app.MapControllers();
 
