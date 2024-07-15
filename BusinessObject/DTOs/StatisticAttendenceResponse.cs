@@ -14,6 +14,7 @@ namespace BusinessObject.DTOs
         public int NumberOfStudent {  get; set; }
         public int NumberOfPresent {  get; set; }
         public int NumberOfAbsent {  get; set; }
+        public int NumberOfConfirmed { get; set; }
         public int NumberOfNotYet {  get; set; }
     }
 }

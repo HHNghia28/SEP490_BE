@@ -85,7 +85,8 @@ namespace DataAccess.Repository
                     a.ScheduleID,
                     a.Present,
                     a.Date,
-                    a.StudentID
+                    a.StudentID,
+                    a.Confirmed
                 })
                 .ToListAsync();
 
@@ -103,7 +104,8 @@ namespace DataAccess.Repository
                     Teacher = g.Key.TeacherName,
                     NumberOfStudent = attendances.Where(a => filteredSchedules.Where(fs => fs.Classroom == g.Key.Classroom).Select(fs => fs.ID).Contains(a.ScheduleID)).Select(a => a.StudentID).Distinct().Count(),
                     NumberOfPresent = attendances.Where(a => filteredSchedules.Where(fs => fs.Classroom == g.Key.Classroom).Select(fs => fs.ID).Contains(a.ScheduleID) && a.Date <= currentDate && a.Present).Count(),
-                    NumberOfAbsent = attendances.Where(a => filteredSchedules.Where(fs => fs.Classroom == g.Key.Classroom).Select(fs => fs.ID).Contains(a.ScheduleID) && a.Date <= currentDate && !a.Present).Count(),
+                    NumberOfAbsent = attendances.Where(a => filteredSchedules.Where(fs => fs.Classroom == g.Key.Classroom).Select(fs => fs.ID).Contains(a.ScheduleID) && a.Date <= currentDate && !a.Present && !a.Confirmed).Count(),
+                    NumberOfConfirmed = attendances.Where(a => filteredSchedules.Where(fs => fs.Classroom == g.Key.Classroom).Select(fs => fs.ID).Contains(a.ScheduleID) && a.Date <= currentDate && !a.Present && a.Confirmed).Count(),
                     NumberOfNotYet = attendances.Where(a => filteredSchedules.Where(fs => fs.Classroom == g.Key.Classroom).Select(fs => fs.ID).Contains(a.ScheduleID) && a.Date > currentDate).Count()
                 })
                 .OrderBy(g => g.ClassName)
