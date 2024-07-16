@@ -1,5 +1,6 @@
 ﻿using BusinessObject.DTOs;
 using BusinessObject.Entities;
+using BusinessObject.Exceptions;
 using BusinessObject.Interfaces;
 using DataAccess.Context;
 using DocumentFormat.OpenXml.InkML;
@@ -466,6 +467,127 @@ namespace DataAccess.Repository
 
             return groupedData;
         }
+
+        public async Task<Dictionary<string, int>> GetStatisticAcademy(string schoolYear, string className = null, string semester = null, int grade = 0)
+        {
+            var query = _context.Classes
+                .Include(c => c.StudentClasses)
+                .ThenInclude(sc => sc.AccountStudent)
+                .ThenInclude(a => a.Student)
+                .Include(c => c.SchoolYear)
+                .Where(c => c.SchoolYear.Name.ToLower() == schoolYear.ToLower()
+                && c.IsActive);
+
+            if (!string.IsNullOrEmpty(className))
+            {
+                query = query.Where(c => c.Classroom.ToLower() == className.ToLower());
+            }
+
+            if (grade > 0)
+            {
+                query = query.Where(c => c.Classroom.StartsWith(grade.ToString()));
+            }
+
+            var classes = await query.ToListAsync();
+            var studentIDs = classes.SelectMany(c => c.StudentClasses.Select(sc => sc.StudentID)).ToList();
+
+            var studentScoresQuery = _context.StudentScores
+                .Include(ss => ss.SchoolYear)
+                .Where(ss => studentIDs.Contains(ss.StudentID.ToLower()) && ss.SchoolYear.Name.ToLower() == schoolYear.ToLower());
+
+            if (!string.IsNullOrEmpty(semester))
+            {
+                studentScoresQuery = studentScoresQuery.Where(ss => ss.Semester.ToLower() == semester.ToLower());
+            }
+
+            var studentScores = await studentScoresQuery.ToListAsync();
+
+            var studentScoresDict = studentScores.GroupBy(ss => ss.StudentID.ToLower())
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var subjectScores = studentScores.Select(s => s.Subject).Distinct().ToList();
+
+            var performanceStats = new Dictionary<string, int>
+                {
+                    { "Yếu", 0 },
+                    { "Trung bình", 0 },
+                    { "Khá", 0 },
+                    { "Giỏi", 0 }
+                };
+
+            foreach (var studentID in studentIDs)
+            {
+                if (!studentScoresDict.TryGetValue(studentID.ToLower(), out var scores))
+                {
+                    continue;
+                }
+
+                var subjectAverages = new List<double>();
+
+                foreach (var subject in subjectScores)
+                {
+                    var subjectScoresList = scores.Where(ss => ss.Subject.ToLower() == subject.ToLower()).ToList();
+                    var yearAverage = CalculateYearAverage(subjectScoresList);
+
+                    if (double.TryParse(yearAverage, out double numericAverage))
+                    {
+                        subjectAverages.Add(numericAverage);
+                    }
+                }
+
+                if (subjectAverages.Count > 0)
+                {
+                    var overallAverage = subjectAverages.Average();
+                    var academicPerformance = CalculateAcademicPerformance(overallAverage, subjectAverages);
+
+                    performanceStats[academicPerformance]++;
+                }
+            }
+
+            return performanceStats;
+        }
+
+        private string CalculateAcademicPerformance(double overallAverage, List<double> subjectAverages)
+        {
+            if (subjectAverages.Any(s => s < 5))
+                return "Yếu";
+            if (overallAverage < 5)
+                return "Yếu";
+            if (overallAverage < 6.5)
+                return "Trung bình";
+            if (overallAverage >= 8 && subjectAverages.All(s => s >= 6.5))
+                return "Giỏi";
+            if (overallAverage >= 6.5 && subjectAverages.All(s => s >= 5))
+                return "Khá";
+
+            return "Trung bình";
+        }
+
+        private string CalculateYearAverage(List<StudentScores> scores)
+        {
+            if (scores.All(ss => ss.Score.Equals("Đ", StringComparison.OrdinalIgnoreCase)))
+                return "Đ";
+            else if (scores.Any(ss => ss.Score.Equals("CĐ", StringComparison.OrdinalIgnoreCase)))
+                return "CĐ";
+
+            double sum = 0;
+            decimal count = 0;
+
+            foreach (var score in scores)
+            {
+                if (double.TryParse(score.Score, out double numericScore))
+                {
+                    sum += numericScore * (double)score.ScoreFactor;
+                    count += score.ScoreFactor;
+                }
+            }
+
+            if (count == 0)
+                return "CĐ";
+            else
+                return Math.Round(sum / (double)count, 2).ToString();
+        }
+
 
         private ScoreAverageStatisticsResponse CalculateAverageGroupScores(IEnumerable<dynamic> studentScores, string semester, bool isWholeYear = false)
         {

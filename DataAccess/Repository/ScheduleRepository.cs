@@ -127,7 +127,8 @@ namespace DataAccess.Repository
                                                     case 0:
                                                         count++;
                                                         subject = await _context.Subjects
-                                                            .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(str.ToLower())) ?? throw new NotFoundException("Không tìm thấy môn học " + str);
+                                                            .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(str.ToLower()) && (s.Grade.ToLower().Equals("môn chung") 
+                                                            ? true : classes.Substring(0, 2) == s.Grade)) ?? throw new NotFoundException("Không tìm thấy môn học " + str);
                                                         scheduleSubject.SubjectID = subject.ID;
                                                         scheduleSubject.Subject = subject.Name;
                                                         break;
@@ -515,7 +516,8 @@ namespace DataAccess.Repository
                                                     case 0:
                                                         count++;
                                                         subject = await _context.Subjects
-                                                            .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(str.ToLower())) ?? throw new NotFoundException("Không tìm thấy môn học " + str);
+                                                            .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(str.ToLower()) && (s.Grade.ToLower().Equals("môn chung")
+                                                            ? true : classes.Substring(0, 2) == s.Grade)) ?? throw new NotFoundException("Không tìm thấy môn học " + str);
                                                         scheduleSubject.SubjectID = subject.ID;
                                                         scheduleSubject.Subject = subject.Name;
                                                         break;

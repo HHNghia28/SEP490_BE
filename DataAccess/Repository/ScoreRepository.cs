@@ -820,31 +820,6 @@ namespace DataAccess.Repository
             return scoreSubjects;
         }
 
-        private string CalculateYearAverage(List<StudentScores> scores)
-        {
-            if (scores.All(ss => ss.Score.Equals("Đ", StringComparison.OrdinalIgnoreCase)))
-                return "Đ";
-            else if (scores.Any(ss => ss.Score.Equals("CĐ", StringComparison.OrdinalIgnoreCase)))
-                return "CĐ";
-
-            double sum = 0;
-            decimal count = 0;
-
-            foreach (var score in scores)
-            {
-                if (double.TryParse(score.Score, out double numericScore))
-                {
-                    sum += numericScore * (double)score.ScoreFactor;
-                    count += score.ScoreFactor;
-                }
-            }
-
-            if (count == 0)
-                return "CĐ";
-            else
-                return Math.Round(sum / (double)count, 2).ToString();
-        }
-
         public async Task UpdateScoreByExcel(string accountID, ExcelRequest request)
         {
             Account account = await _context.Accounts
@@ -1002,6 +977,47 @@ namespace DataAccess.Repository
                     }
                 }
             }
+        }
+
+        private string CalculateYearAverage(List<StudentScores> scores)
+        {
+            if (scores.All(ss => ss.Score.Equals("Đ", StringComparison.OrdinalIgnoreCase)))
+                return "Đ";
+            else if (scores.Any(ss => ss.Score.Equals("CĐ", StringComparison.OrdinalIgnoreCase)))
+                return "CĐ";
+
+            double sum = 0;
+            decimal count = 0;
+
+            foreach (var score in scores)
+            {
+                if (double.TryParse(score.Score, out double numericScore))
+                {
+                    sum += numericScore * (double)score.ScoreFactor;
+                    count += score.ScoreFactor;
+                }
+            }
+
+            if (count == 0)
+                return "CĐ";
+            else
+                return Math.Round(sum / (double)count, 2).ToString();
+        }
+
+        private string CalculateAcademicPerformance(double overallAverage, List<double> subjectAverages)
+        {
+            if (subjectAverages.Any(s => s < 5))
+                return "Yếu";
+            if (overallAverage < 5)
+                return "Yếu";
+            if (overallAverage < 6.5)
+                return "Trung bình";
+            if (overallAverage >= 8 && subjectAverages.All(s => s >= 6.5))
+                return "Giỏi";
+            if (overallAverage >= 6.5 && subjectAverages.All(s => s >= 5))
+                return "Khá";
+
+            return "Trung bình";
         }
     }
 }

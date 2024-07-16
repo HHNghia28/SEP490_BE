@@ -14,5 +14,6 @@ namespace BusinessObject.Interfaces
         public Task<IEnumerable<ScoreAverageStatisticsResponse>> GetScoreAverageStatistics(string schoolYear, string className = null, int grade = 0);
         public Task<IEnumerable<ScoreAverageStatisticsResponse>> GetGroupScoreAverageStatistics(string schoolYear, string className = null, int grade = 0);
         public Task<List<ClassScheduleRankStatistics>> GetScheduleRankCountBySchoolYearAsync(string schoolYear, string className = null, string fromDate = null, string toDate = null, int grade = 0);
+        public Task<Dictionary<string, int>> GetStatisticAcademy(string schoolYear, string className = null, string semester = null, int grade = 0);
     }
 }
