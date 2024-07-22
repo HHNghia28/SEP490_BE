@@ -164,6 +164,54 @@ namespace SEP490_API.Controllers
             }
         }
 
+        [HttpGet("GetAttendanceByTeacher")]
+        public async Task<IActionResult> GetAttendanceByTeacher(string teacherID, string schoolYear)
+        {
+            try
+            {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Attendance")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Any())
+                        .ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+                    return BadRequest(errors);
+                }
+
+                return Ok(await _attendanceRepository.GetAttendanceTeacherResponses(teacherID, schoolYear));
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(ex.Message)
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
         [HttpPut]
         public async Task<IActionResult> UpdateAttendance(List<AttendenceRequest> requests)
         {

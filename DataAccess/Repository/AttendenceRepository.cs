@@ -218,5 +218,37 @@ namespace DataAccess.Repository
                 Type = LogName.CREATE.ToString(),
             });
         }
+
+        public async Task<IEnumerable<AttendanceTeacherResponse>> GetAttendanceTeacherResponses(string teacherID, string schoolYear)
+        {
+            var teacherAccount = await _context.Accounts
+                .Include(a => a.User)
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(teacherID.ToLower()))
+                ?? throw new ArgumentException("Teacher account does not exist");
+
+            var schedules = await _context.Schedules
+                .Include(s => s.Subject)
+                .Include(s => s.Classes)
+                .ThenInclude( s=> s.SchoolYear)
+                .Where(s => s.Classes.SchoolYear.Name == schoolYear && s.TeacherID.ToLower().Equals(teacherAccount.ID.ToLower()))
+                .OrderBy(s => s.Date)
+                .ThenBy(s => s.SlotByDate)
+                .Select(s => new AttendanceTeacherResponse
+                {
+                    ScheduleID = s.ID.ToString(),
+                    TeacherID = teacherAccount.ID,
+                    TeacherName = teacherAccount.User.Fullname,
+                    Avatar = teacherAccount.User.Avatar,
+                    Classname = s.Classes.Classroom,
+                    Present = !s.Rank.Equals(""),
+                    Date = s.Date.ToString("dd/MM/yyyy"),
+                    Subject = s.Subject.Name,
+                    Status = !s.Rank.Equals("") ? "Có mặt" : "Vắng", 
+                    Slot = s.SlotByDate
+                })
+                .ToListAsync();
+
+            return schedules;
+        }
     }
 }
