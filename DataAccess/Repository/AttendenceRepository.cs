@@ -221,6 +221,8 @@ namespace DataAccess.Repository
 
         public async Task<IEnumerable<AttendanceTeacherResponse>> GetAttendanceTeacherResponses(string teacherID, string schoolYear)
         {
+            DateTime now = DateTime.Now;
+
             var teacherAccount = await _context.Accounts
                 .Include(a => a.User)
                 .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(teacherID.ToLower()))
@@ -243,7 +245,7 @@ namespace DataAccess.Repository
                     Present = !s.Rank.Equals(""),
                     Date = s.Date.ToString("dd/MM/yyyy"),
                     Subject = s.Subject.Name,
-                    Status = !s.Rank.Equals("") ? "Có mặt" : "Vắng", 
+                    Status = s.Date > now ? "Chưa bắt đầu" : !s.Rank.Equals("") ? "Có mặt" : "Vắng", 
                     Slot = s.SlotByDate
                 })
                 .ToListAsync();
