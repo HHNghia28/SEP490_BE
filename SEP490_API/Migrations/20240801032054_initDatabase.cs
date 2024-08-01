@@ -476,6 +476,7 @@ namespace SEP490_API.Migrations
                     ScheduleID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StudentID = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Present = table.Column<bool>(type: "bit", nullable: false),
+                    Confirmed = table.Column<bool>(type: "bit", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -558,10 +559,10 @@ namespace SEP490_API.Migrations
                 columns: new[] { "ID", "Address", "Avatar", "Birthday", "Email", "Fullname", "Gender", "IsBachelor", "IsDoctor", "IsMaster", "IsProfessor", "Nation", "Phone" },
                 values: new object[,]
                 {
-                    { new Guid("0d47dd9d-dab2-4446-8720-bf1fd314e59c"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 6, 10, 12, 30, 45, 266, DateTimeKind.Local).AddTicks(2942), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" },
-                    { new Guid("1047a241-b9ca-4aa6-88ec-4881f80bf02d"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 6, 10, 12, 30, 45, 470, DateTimeKind.Local).AddTicks(7456), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" },
-                    { new Guid("2df7d2e5-f44a-4dd3-b563-1a1d1af7729e"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 6, 10, 12, 30, 45, 57, DateTimeKind.Local).AddTicks(4922), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" },
-                    { new Guid("e98d5636-45da-4a62-9913-9dba149db37e"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 6, 10, 12, 30, 44, 852, DateTimeKind.Local).AddTicks(8440), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" }
+                    { new Guid("33216b3f-40c2-40ec-ac83-6c3de67fbfc6"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 8, 1, 10, 20, 53, 47, DateTimeKind.Local).AddTicks(5432), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" },
+                    { new Guid("64316dda-14ed-4466-8cb3-8f38c7228f5b"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 8, 1, 10, 20, 53, 607, DateTimeKind.Local).AddTicks(5813), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" },
+                    { new Guid("f6efbde8-520c-4b5a-8c9a-5ac4f352e5a0"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 8, 1, 10, 20, 53, 420, DateTimeKind.Local).AddTicks(2753), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" },
+                    { new Guid("f86a8850-6c97-4ce4-8c73-b9233dc8a097"), "600 Nguyễn Văn Cừ", "https://cantho.fpt.edu.vn/Data/Sites/1/media/logo-moi.png", new DateTime(2024, 8, 1, 10, 20, 53, 233, DateTimeKind.Local).AddTicks(4112), "admin@fpt.edu.vn", "Lê Văn Admin", "Nam", false, false, false, false, "Kinh", "0987654321" }
                 });
 
             migrationBuilder.InsertData(
@@ -569,10 +570,10 @@ namespace SEP490_API.Migrations
                 columns: new[] { "ID", "IsActive", "Password", "RefreshToken", "RefreshTokenExpires", "UserID", "Username" },
                 values: new object[,]
                 {
-                    { "GV0001", true, "$2a$11$mRIyx7RHAUzYk49z2gjIgeKSr4We5qlT3Cxjjla8gyKk1HnkIeB7y", "", new DateTime(2024, 6, 10, 12, 30, 45, 57, DateTimeKind.Local).AddTicks(4643), new Guid("e98d5636-45da-4a62-9913-9dba149db37e"), "Admin" },
-                    { "GV0002", true, "$2a$11$Me2a3rsIluMj1V3bQAjhvunW3qXq//zm.Dw.1N2PKw.79CxyDz0rW", "", new DateTime(2024, 6, 10, 12, 30, 45, 266, DateTimeKind.Local).AddTicks(2783), new Guid("2df7d2e5-f44a-4dd3-b563-1a1d1af7729e"), "HomeroomTeacher" },
-                    { "GV0003", true, "$2a$11$bm0MeMO4rzKwyPSXCWWuM.VnUQg2oyCza6byNtaA1d.MfOqS4iIFW", "", new DateTime(2024, 6, 10, 12, 30, 45, 470, DateTimeKind.Local).AddTicks(7259), new Guid("0d47dd9d-dab2-4446-8720-bf1fd314e59c"), "SubjectTeacher" },
-                    { "GV0004", true, "$2a$11$aGilLMuqOREBEaGpptUiJuSdhD.8ZUFgsFS3L14NI9wcMhwGZEcDG", "", new DateTime(2024, 6, 10, 12, 30, 45, 683, DateTimeKind.Local).AddTicks(1213), new Guid("1047a241-b9ca-4aa6-88ec-4881f80bf02d"), "Supervisor" }
+                    { "GV0001", true, "$2a$11$xNuGEyKc9hY2ybsBp9AAweiTvBN506yLZbwsaMVjN0jLUQv1YKIgm", "", new DateTime(2024, 8, 1, 10, 20, 53, 233, DateTimeKind.Local).AddTicks(3943), new Guid("33216b3f-40c2-40ec-ac83-6c3de67fbfc6"), "Admin" },
+                    { "GV0002", true, "$2a$11$n5tuO4clpkeZLlgqwP092eDCk90lWPDWEhvd0JPk4SLj/scxGlZyS", "", new DateTime(2024, 8, 1, 10, 20, 53, 420, DateTimeKind.Local).AddTicks(2640), new Guid("f86a8850-6c97-4ce4-8c73-b9233dc8a097"), "HomeroomTeacher" },
+                    { "GV0003", true, "$2a$11$jXmZuZOSNQId4ZlgpiZfMOsZ1yA9HTUCFoVvXByiMsVlK.IOX9V2i", "", new DateTime(2024, 8, 1, 10, 20, 53, 607, DateTimeKind.Local).AddTicks(5660), new Guid("f6efbde8-520c-4b5a-8c9a-5ac4f352e5a0"), "SubjectTeacher" },
+                    { "GV0004", true, "$2a$11$pH3ir.dar.9hBo1bIR3q9O85e9OwWxE/hVzxfZfW6uyT9A/3.0GIK", "", new DateTime(2024, 8, 1, 10, 20, 53, 795, DateTimeKind.Local).AddTicks(8513), new Guid("64316dda-14ed-4466-8cb3-8f38c7228f5b"), "Supervisor" }
                 });
 
             migrationBuilder.InsertData(

@@ -292,8 +292,6 @@ namespace DataAccess.Repository
 
             List<ScoreResponse> scores = new List<ScoreResponse>();
 
-            Dictionary<double, int> ranks = new();
-
             foreach (var studentClass in classes.StudentClasses)
             {
                 var studentScoresBySubject = studentScores
@@ -316,79 +314,37 @@ namespace DataAccess.Repository
                 double sumSemester1 = 0, sumSemester2 = 0, totalSum = 0;
                 decimal countSemester1 = 0, countSemester2 = 0, totalCount = 0;
 
-                bool allPassSemester1 = true, allPassSemester2 = true, allPassYear = true;
-                bool hasNegativeOneScore_Sem1 = false, hasNegativeOneScore_Sem2 = false, hasNegativeOneScore_Year = false;
+                bool hasNegativeOneScore = false;
 
                 foreach (var score in studentScoresBySubject)
                 {
-                    if (score.Score.Equals("Đ", StringComparison.OrdinalIgnoreCase) || score.Score.Equals("CĐ", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (score.Semester == "Học kỳ I")
-                        {
-                            if (score.Score != "Đ")
-                            {
-                                allPassSemester1 = false;
-                            }
-                        }
-                        else if (score.Semester == "Học kỳ II")
-                        {
-                            if (score.Score != "Đ")
-                            {
-                                allPassSemester2 = false;
-                            }
-                        }
-
-                        if (score.Score != "Đ")
-                        {
-                            allPassYear = false;
-                        }
-                    }
-                    else if (double.TryParse(score.Score, out double scoreValue))
+                    if (double.TryParse(score.Score, out double scoreValue))
                     {
                         if (scoreValue == -1)
                         {
-                            hasNegativeOneScore_Year = true;
-                            if (score.Semester == "Học kỳ I")
-                            {
-                                hasNegativeOneScore_Sem1 = true;
-                            }
-                            else if (score.Semester == "Học kỳ II")
-                            {
-                                hasNegativeOneScore_Sem2 = true;
-                            }
+                            hasNegativeOneScore = true;
+                            break;
                         }
 
                         if (score.Semester == "Học kỳ I")
                         {
                             sumSemester1 += scoreValue * (double)score.ScoreFactor;
                             countSemester1 += score.ScoreFactor;
-                            allPassSemester1 = false;
                         }
                         else if (score.Semester == "Học kỳ II")
                         {
                             sumSemester2 += scoreValue * (double)score.ScoreFactor;
                             countSemester2 += score.ScoreFactor;
-                            allPassSemester2 = false;
                         }
 
                         totalSum += scoreValue * (double)score.ScoreFactor;
                         totalCount += score.ScoreFactor;
-                        allPassYear = false;
                     }
                 }
 
-                double averageSemester1 = countSemester1 > 0 ? (double)Math.Round(sumSemester1 / (double)countSemester1, 2) : 0;
-                double averageSemester2 = countSemester2 > 0 ? (double)Math.Round(sumSemester2 / (double)countSemester2, 2) : 0;
-                double averageYear = totalCount > 0 ? (double)Math.Round(totalSum / (double)totalCount, 2) : 0;
-
-                string averageSemester1Str = hasNegativeOneScore_Sem1 ? "0" : (allPassSemester1 ? "Đ" : (countSemester1 == 0 ? "CĐ" : averageSemester1.ToString("F2")));
-                string averageSemester2Str = hasNegativeOneScore_Sem2 ? "0" : (allPassSemester2 ? "Đ" : (countSemester2 == 0 ? "CĐ" : averageSemester2.ToString("F2")));
-                string averageYearStr = hasNegativeOneScore_Year ? "0" : (allPassYear ? "Đ" : (totalCount == 0 ? "CĐ" : averageYear.ToString("F2")));
-
-                if (!ranks.ContainsKey(averageYear))
-                {
-                    ranks[averageYear] = 0;
-                }
+                string averageSemester1Str = hasNegativeOneScore ? "0" : (countSemester1 == 0 ? "CĐ" : ((double)Math.Round(sumSemester1 / (double)countSemester1, 2)).ToString("F2"));
+                string averageSemester2Str = hasNegativeOneScore ? "0" : (countSemester2 == 0 ? "CĐ" : ((double)Math.Round(sumSemester2 / (double)countSemester2, 2)).ToString("F2"));
+                string averageYearStr = hasNegativeOneScore ? "0" : (totalCount == 0 ? "CĐ" : ((double)Math.Round(totalSum / (double)totalCount, 2)).ToString("F2"));
 
                 scores.Add(new ScoreResponse
                 {
@@ -397,8 +353,30 @@ namespace DataAccess.Repository
                     AverageSemester1 = averageSemester1Str,
                     AverageSemester2 = averageSemester2Str,
                     AverageYear = averageYearStr,
-                    Scores = scoreDetails
+                    Scores = scoreDetails,
+                    Rank = hasNegativeOneScore ? 1 : 0 // Set rank 1 if any score is -1
                 });
+            }
+
+            if (scores.All(s => s.Rank == 1))
+            {
+                return new ScoresResponse
+                {
+                    Class = classes.Classroom,
+                    SchoolYear = schoolYear,
+                    Subject = subject.Name,
+                    TeacherName = classes.Teacher.User.Fullname,
+                    Score = scores
+                };
+            }
+
+            Dictionary<double, int> ranks = new();
+            foreach (var score in scores)
+            {
+                if (!ranks.ContainsKey(double.Parse(score.AverageYear)))
+                {
+                    ranks[double.Parse(score.AverageYear)] = 0;
+                }
             }
 
             Dictionary<double, int> uniqueDict = ranks.OrderByDescending(kvp => kvp.Key).Select((kvp, index) => new { kvp.Key, Rank = index + 1 }).ToDictionary(x => x.Key, x => x.Rank);
@@ -408,14 +386,6 @@ namespace DataAccess.Repository
                 if (double.TryParse(score.AverageYear, out double avgYear))
                 {
                     score.Rank = uniqueDict[avgYear];
-                }
-                else if (score.AverageYear == "Đ")
-                {
-                    score.Rank = 1; // Assuming rank 1 for all "Đ"
-                }
-                else
-                {
-                    score.Rank = uniqueDict.Values.Max() + 1; // Rank "CĐ" lowest
                 }
             }
 
@@ -903,7 +873,7 @@ namespace DataAccess.Repository
 
                                                 string lowerScore = score.ToLower();
 
-                                                if (int.TryParse(score, out int s))
+                                                if (double.TryParse(score, out double s))
                                                 {
                                                     if (s < 0 || s > 10)
                                                     {
