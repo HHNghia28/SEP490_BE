@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTOs;
+﻿using Azure;
+using BusinessObject.DTOs;
 using BusinessObject.Entities;
 using BusinessObject.Exceptions;
 using BusinessObject.Interfaces;
@@ -50,7 +51,8 @@ namespace DataAccess.Repository
                     Subject = item.Schedule.Subject.Name,
                     Status = item.Schedule.Date > DateTime.Now ? "Chưa bắt đầu" : item.Present ? "Có mặt" : item.Confirmed ? "Vắng có phép" : "Vắng không phép",
                     Teacher = item.Schedule.Teacher.Username,
-                    Slot = item.Schedule.SlotByLessonPlans
+                    Slot = item.Schedule.SlotByLessonPlans,
+                    Note = item.Note
                 })
                 .ToListAsync();
 
@@ -86,7 +88,8 @@ namespace DataAccess.Repository
                     Subject = item.Schedule.Subject.Name,
                     Status = item.Schedule.Date > DateTime.Now ? "Chưa bắt đầu" : item.Present ? "Có mặt" : item.Confirmed ? "Vắng có phép" : "Vắng không phép",
                     Teacher = item.Schedule.Teacher.Username,
-                    Slot = item.Schedule.SlotByLessonPlans
+                    Slot = item.Schedule.SlotByLessonPlans,
+                    Note = item.Note
                 })
                 .ToListAsync();
         }
@@ -181,6 +184,92 @@ namespace DataAccess.Repository
             return response;
         }
 
+        public async Task<List<AttendanceCountResponse>> GetAttendanceStudentAllSubject(string classroom, string schoolYear, string subjectName)
+        {
+            // Fetch the class based on the classroom name and school year
+            Classes classes = await _context.Classes
+                .Include(c => c.StudentClasses)
+                .ThenInclude(sc => sc.AccountStudent)
+                .ThenInclude(a => a.Student)
+                .Include(c => c.SchoolYear)
+                .Include(c => c.Teacher)
+                .ThenInclude(t => t.User)
+                .FirstOrDefaultAsync(c => c.Classroom.ToLower().Equals(classroom.ToLower())
+                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
+
+            // Determine the grade from the first two letters of the classroom name
+            string grade = classroom.Substring(0, 2);
+
+            // Fetch the subject based on the provided name and grade
+            Subject subject = await _context.Subjects
+                .Include(s => s.ComponentScores)
+                .Include(s => s.Schedules)
+                .FirstOrDefaultAsync(s => s.Name.ToLower().Equals(subjectName.ToLower())
+                    && s.Grade.ToLower().Equals(grade.ToLower())) ?? throw new NotFoundException("Môn học không tồn tại");
+
+            List<AttendanceCountResponse> response = new();
+
+            // Iterate through all students in the class
+            foreach (var studentClass in classes.StudentClasses)
+            {
+                var studentID = studentClass.StudentID.ToLower();
+
+                var attendances = await _context.Attendances
+                    .AsNoTracking()
+                    .Include(a => a.AccountStudent)
+                    .ThenInclude(a => a.Student)
+                    .Include(a => a.Schedule)
+                    .ThenInclude(a => a.Classes)
+                    .ThenInclude(a => a.SchoolYear)
+                    .Include(a => a.Schedule)
+                    .ThenInclude(a => a.Subject)
+                    .Where(a => a.AccountStudent.ID.ToLower().Equals(studentID)
+                        && a.Schedule.Subject.Name.ToLower().Equals(subjectName.ToLower())
+                        && a.Schedule.Classes.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower()))
+                    .OrderBy(a => a.Schedule.Date)
+                    .ToListAsync();
+
+                int daysPresent = 0;
+                int daysConfirmed = 0;
+                int daysAbsent = 0;
+                int daysNotStarted = 0;
+
+                foreach (var attendance in attendances)
+                {
+                    if (attendance.Schedule.Date > DateTime.Now)
+                    {
+                        daysNotStarted++;
+                    }
+                    else if (attendance.Present)
+                    {
+                        daysPresent++;
+                    }
+                    else if (attendance.Confirmed)
+                    {
+                        daysConfirmed++;
+                    }
+                    else
+                    {
+                        daysAbsent++;
+                    }
+                }
+
+                response.Add(new AttendanceCountResponse
+                {
+                    StudentId = studentClass.AccountStudent.ID,
+                    Username = studentClass.AccountStudent.Username,
+                    FullName = studentClass.AccountStudent.Student.Fullname,
+                    Avatar = studentClass.AccountStudent.Student.Avatar,
+                    NumberOfSlot = attendances.Count,
+                    NumberOfPresent = daysPresent,
+                    NumberOfAbsent = daysAbsent,
+                    NumberOfConfirm = daysConfirmed
+                });
+            }
+
+            return response;
+        }
+
         public async Task UpdateAttendence(string accountID, List<AttendenceRequest> requests)
         {
             Account account = await _context.Accounts
@@ -206,6 +295,7 @@ namespace DataAccess.Repository
 
                 item.Present = request.Present;
                 item.Confirmed = request.Confirmed;
+                item.Note = request.Note ?? "";
             }
 
             await _context.SaveChangesAsync();

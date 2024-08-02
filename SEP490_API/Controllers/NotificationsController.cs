@@ -23,29 +23,6 @@ namespace SEP490_API.Controllers
         {
             try
             {
-                if (!User.Identity.IsAuthenticated)
-                {
-                    return Unauthorized("");
-                }
-
-                if (!(User.IsInRole("Admin") || User.IsInRole("Get Notification")))
-                {
-                    return new ObjectResult("")
-                    {
-                        StatusCode = StatusCodes.Status403Forbidden
-                    };
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    var errors = ModelState
-                        .Where(x => x.Value.Errors.Any())
-                        .ToDictionary(
-                            kvp => kvp.Key,
-                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
-                    );
-                    return BadRequest(errors);
-                }
 
                 return Ok(await _notificationRepository.GetAllNotifications());
             }
@@ -71,29 +48,6 @@ namespace SEP490_API.Controllers
         {
             try
             {
-                if (!User.Identity.IsAuthenticated)
-                {
-                    return Unauthorized("");
-                }
-
-                if (!(User.IsInRole("Admin") || User.IsInRole("Get Notification")))
-                {
-                    return new ObjectResult("")
-                    {
-                        StatusCode = StatusCodes.Status403Forbidden
-                    };
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    var errors = ModelState
-                        .Where(x => x.Value.Errors.Any())
-                        .ToDictionary(
-                            kvp => kvp.Key,
-                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
-                    );
-                    return BadRequest(errors);
-                }
 
                 return Ok(await _notificationRepository.GetNotification(notiID));
             }

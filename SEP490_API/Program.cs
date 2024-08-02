@@ -13,6 +13,8 @@ using Serilog;
 using System.Text;
 using BusinessObject.IServices;
 using DataAccess.Services;
+using DataAccess.MailHandle;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -65,6 +67,8 @@ builder.Services.AddSwaggerGen(opt =>
     });
 });
 
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+
 builder.Services.AddTransient<IAccountRepository, AccountRepository>();
 builder.Services.AddTransient<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddTransient<ISubjectRepository, SubjectRepository>();
@@ -76,6 +80,7 @@ builder.Services.AddTransient<IScoreRepository, ScoreRepository>();
 builder.Services.AddTransient<INotificationRepository, NotificationRepository>();
 builder.Services.AddTransient<ISettingRepository, SettingRepository>();
 builder.Services.AddTransient<IStatisticRepository, StatisticRepository>();
+builder.Services.AddTransient<IEmailSender, SendMailService>();
 
 builder.Services.AddTransient<IImageService, ImageService>();
 

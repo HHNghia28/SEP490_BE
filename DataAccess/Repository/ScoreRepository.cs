@@ -4,7 +4,9 @@ using BusinessObject.Exceptions;
 using BusinessObject.Interfaces;
 using ClosedXML.Excel;
 using DataAccess.Context;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -18,11 +20,14 @@ namespace DataAccess.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly IActivityLogRepository _activityLogRepository;
+        private readonly IEmailSender _emailSender;
 
-        public ScoreRepository(ApplicationDbContext context, IActivityLogRepository activityLogRepository)
+        public ScoreRepository(ApplicationDbContext context, IActivityLogRepository activityLogRepository,
+            IEmailSender emailSender)
         {
             _context = context;
             _activityLogRepository = activityLogRepository;
+            _emailSender = emailSender;
         }
 
         public async Task AddScoreByExcel(string accountID, ExcelRequest request)
@@ -315,10 +320,25 @@ namespace DataAccess.Repository
                 decimal countSemester1 = 0, countSemester2 = 0, totalCount = 0;
 
                 bool hasNegativeOneScore = false;
+                bool hasCDScoreSemester1 = false;
+                bool hasCDScoreSemester2 = false;
+                bool allDScoresSemester1 = true;
+                bool allDScoresSemester2 = true;
 
                 foreach (var score in studentScoresBySubject)
                 {
-                    if (double.TryParse(score.Score, out double scoreValue))
+                    if (score.Score == "CĐ")
+                    {
+                        if (score.Semester == "Học kỳ I")
+                        {
+                            hasCDScoreSemester1 = true;
+                        }
+                        else if (score.Semester == "Học kỳ II")
+                        {
+                            hasCDScoreSemester2 = true;
+                        }
+                    }
+                    else if (double.TryParse(score.Score, out double scoreValue))
                     {
                         if (scoreValue == -1)
                         {
@@ -330,21 +350,34 @@ namespace DataAccess.Repository
                         {
                             sumSemester1 += scoreValue * (double)score.ScoreFactor;
                             countSemester1 += score.ScoreFactor;
+                            allDScoresSemester1 = false;
                         }
                         else if (score.Semester == "Học kỳ II")
                         {
                             sumSemester2 += scoreValue * (double)score.ScoreFactor;
                             countSemester2 += score.ScoreFactor;
+                            allDScoresSemester2 = false;
                         }
 
                         totalSum += scoreValue * (double)score.ScoreFactor;
                         totalCount += score.ScoreFactor;
                     }
+                    else if (score.Score != "Đ")
+                    {
+                        if (score.Semester == "Học kỳ I")
+                        {
+                            allDScoresSemester1 = false;
+                        }
+                        else if (score.Semester == "Học kỳ II")
+                        {
+                            allDScoresSemester2 = false;
+                        }
+                    }
                 }
 
-                string averageSemester1Str = hasNegativeOneScore ? "0" : (countSemester1 == 0 ? "CĐ" : ((double)Math.Round(sumSemester1 / (double)countSemester1, 2)).ToString("F2"));
-                string averageSemester2Str = hasNegativeOneScore ? "0" : (countSemester2 == 0 ? "CĐ" : ((double)Math.Round(sumSemester2 / (double)countSemester2, 2)).ToString("F2"));
-                string averageYearStr = hasNegativeOneScore ? "0" : (totalCount == 0 ? "CĐ" : ((double)Math.Round(totalSum / (double)totalCount, 2)).ToString("F2"));
+                string averageSemester1Str = hasNegativeOneScore ? "0" : (hasCDScoreSemester1 ? "CĐ" : (allDScoresSemester1 ? "Đ" : ((double)Math.Round(sumSemester1 / (double)countSemester1, 2)).ToString("F2")));
+                string averageSemester2Str = hasNegativeOneScore ? "0" : (hasCDScoreSemester2 ? "CĐ" : (allDScoresSemester2 ? "Đ" : ((double)Math.Round(sumSemester2 / (double)countSemester2, 2)).ToString("F2")));
+                string averageYearStr = hasNegativeOneScore ? "0" : (hasCDScoreSemester1 || hasCDScoreSemester2 ? "CĐ" : (allDScoresSemester1 && allDScoresSemester2 ? "Đ" : ((double)Math.Round(totalSum / (double)totalCount, 2)).ToString("F2")));
 
                 scores.Add(new ScoreResponse
                 {
@@ -373,9 +406,12 @@ namespace DataAccess.Repository
             Dictionary<double, int> ranks = new();
             foreach (var score in scores)
             {
-                if (!ranks.ContainsKey(double.Parse(score.AverageYear)))
+                if (double.TryParse(score.AverageYear, out double avgYear))
                 {
-                    ranks[double.Parse(score.AverageYear)] = 0;
+                    if (!ranks.ContainsKey(avgYear))
+                    {
+                        ranks[avgYear] = 0;
+                    }
                 }
             }
 
@@ -398,6 +434,7 @@ namespace DataAccess.Repository
                 Score = scores
             };
         }
+
 
         public async Task<ScoreStudentResponse> GetScoresByStudentAllSubject(string studentID, string schoolYear)
         {
@@ -937,12 +974,21 @@ namespace DataAccess.Repository
 
                             await _context.SaveChangesAsync();
 
+                            string log = "Người dùng " + account.Username + " vừa thực hiện cập nhật điểm " + strScore.ToLower() + " lần thứ " + indexCol + " môn " + subject.Name + " của lớp " + classes.Classroom + " năm học " + classes.SchoolYear.Name;
+
                             await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
                             {
                                 AccountID = accountID,
-                                Note = "Người dùng " + account.Username + " vừa thực hiện cập nhật điểm " + strScore.ToLower() + " lần thứ " + indexCol + " của lớp " + classes.Classroom,
+                                Note = log,
                                 Type = LogName.UPDATE.ToString(),
                             });
+
+                            Account accountAdmin = await _context.Accounts
+                                .Include(a => a.User)
+                                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals("GV0001".ToLower())) ?? throw new NotFoundException("Tài khoản của admin không tồn tại");
+
+                            await _emailSender.SendEmailAsync(accountAdmin.User.Email, "Thông báo cập nhật điểm",
+                                log);
                         }
                     }
                 }

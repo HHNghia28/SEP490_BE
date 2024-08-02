@@ -14,5 +14,6 @@ namespace BusinessObject.DTOs
         public string AttendenceID { get; set; }
         public bool Present { get; set; } = true;
         public bool Confirmed { get; set; } = true;
+        public string? Note { get; set; } = "";
     }
 }

@@ -14,5 +14,6 @@ namespace BusinessObject.Interfaces
         public Task<IEnumerable<AttendanceTeacherResponse>> GetAttendanceTeacherResponses(string teacherID, string schoolYear);
         public Task<Dictionary<string, Dictionary<string, object>>> GetAttendenceStudentAllSubject(string studentID, string schoolYear);
         public Task UpdateAttendence(string accountID, List<AttendenceRequest> requests);
+        public Task<List<AttendanceCountResponse>> GetAttendanceStudentAllSubject(string classroom, string schoolYear, string subjectName);
     }
 }

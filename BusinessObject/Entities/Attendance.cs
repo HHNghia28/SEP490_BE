@@ -20,6 +20,7 @@ namespace BusinessObject.Entities
 
         public bool Present { get; set; } = false;
         public bool Confirmed { get; set; } = true;
+        public string Note { get; set; } = "";
 
         [Required]
         public DateTime Date { get; set; } = DateTime.Now;
