@@ -209,7 +209,7 @@ namespace SEP490_API.Controllers
         }
 
         [HttpGet("GroupScore")]
-        public async Task<IActionResult> GetStatisticGroupScore(string schoolYear, string className = null, int grade = 0)
+        public async Task<IActionResult> GetStatisticGroupScore(string schoolYear, string schoolClass = null, string schoolSubject = null, int schoolGrade = 0)
         {
             try
             {
@@ -237,7 +237,7 @@ namespace SEP490_API.Controllers
                     return BadRequest(errors);
                 }
 
-                return Ok(await _statisticRepository.GetGroupScoreAverageStatistics(schoolYear, className, grade));
+                return Ok(await _statisticRepository.GetGroupScoreAverageStatistics(schoolYear, schoolClass, schoolSubject, schoolGrade));
             }
             catch (NotFoundException ex)
             {

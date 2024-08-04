@@ -24,10 +24,10 @@ namespace DataAccess.Repository
         {
             return await _context.ActivityLogs
                 .OrderByDescending(item => item.Date)
-                .Select(item => new  ActivityLogResponse()
+                .Select(item => new ActivityLogResponse()
                 {
                     ID = item.ID,
-                    Date = item.Date.ToString("dd/MM/yyyy"),
+                    Date = item.Date.ToString("HH:mm dd/MM/yyyy"), 
                     Note = item.Note,
                     Type = item.Type
                 })

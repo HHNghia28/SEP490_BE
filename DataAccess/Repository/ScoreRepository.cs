@@ -830,6 +830,8 @@ namespace DataAccess.Repository
         public async Task UpdateScoreByExcel(string accountID, ExcelRequest request)
         {
             Account account = await _context.Accounts
+                .Include(a => a.AccountRoles)
+                .ThenInclude(a => a.Role)
                 .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(accountID.ToLower())) ?? throw new NotFoundException("Tài khoản của bạn không tồn tại");
 
             IFormFile file = request.File;
@@ -946,6 +948,13 @@ namespace DataAccess.Repository
                                 .FirstOrDefaultAsync(s => s.IsActive && s.Name.ToLower().Equals(strSubject.ToLower())
                                 && s.Grade.Equals(strClass.Substring(0, 2))) ?? throw new NotFoundException("Môn học không tồn tại");
 
+                            if (!account.AccountRoles.Any(ar => ar.Role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                Schedule checkPer = await _context.Schedules
+                                    .FirstOrDefaultAsync(s => s.TeacherID.ToLower().Equals(account.ID) && Guid.Equals(s.SubjectID, subject.ID) && Guid.Equals(s.ClassID, classes.ID))
+                                    ?? throw new NotFoundException(account.Username + " không có quyền nhập điểm môn " + subject.Name + " của lớp " + classes.Classroom + " năm học " + classes.SchoolYear.Name);
+                            }
+
                             ComponentScore componentScore = await _context.ComponentScores
                                 .Include(c => c.Subject)
                                 .FirstOrDefaultAsync(c => c.Name.ToLower().Equals(strScore.ToLower())
@@ -983,12 +992,13 @@ namespace DataAccess.Repository
                                 Type = LogName.UPDATE.ToString(),
                             });
 
-                            Account accountAdmin = await _context.Accounts
-                                .Include(a => a.User)
-                                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals("GV0001".ToLower())) ?? throw new NotFoundException("Tài khoản của admin không tồn tại");
+                            SchoolSetting school = await _context.SchoolSettings.FirstOrDefaultAsync();
 
-                            await _emailSender.SendEmailAsync(accountAdmin.User.Email, "Thông báo cập nhật điểm",
-                                log);
+                            if (school != null)
+                            {
+                                await _emailSender.SendEmailAsync(school.SchoolEmail, "Thông báo cập nhật điểm",
+                                    log);
+                            }
                         }
                     }
                 }

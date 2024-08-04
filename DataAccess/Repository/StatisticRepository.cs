@@ -365,7 +365,7 @@ namespace DataAccess.Repository
             };
         }
 
-        public async Task<IEnumerable<ScoreAverageStatisticsResponse>> GetGroupScoreAverageStatistics(string schoolYear, string className = null, int grade = 0)
+        public async Task<IEnumerable<ScoreAverageStatisticsResponse>> GetGroupScoreAverageStatistics(string schoolYear, string className = null, string subject = null, int grade = 0)
         {
             var classesQuery = _context.Classes
                 .AsNoTracking()
@@ -392,13 +392,15 @@ namespace DataAccess.Repository
                 .Select(s => new
                 {
                     s.AccountStudent,
-                    Scores = s.Scores.Select(score => new
-                    {
-                        score.Score,
-                        score.ScoreFactor,
-                        score.Semester,
-                        IsNumeric = double.TryParse(score.Score, out var _)
-                    }).ToList()
+                    Scores = s.Scores
+                        .Where(score => subject == null || score.Subject.ToLower().Equals(subject.ToLower())) 
+                        .Select(score => new
+                        {
+                            score.Score,
+                            score.ScoreFactor,
+                            score.Semester,
+                            IsNumeric = double.TryParse(score.Score, out var _)
+                        }).ToList()
                 })
                 .ToList();
 
@@ -592,6 +594,7 @@ namespace DataAccess.Repository
         private ScoreAverageStatisticsResponse CalculateAverageGroupScores(IEnumerable<dynamic> studentScores, string semester, bool isWholeYear = false)
         {
             var averageScores = studentScores
+                .Where(s => s.Scores.Count > 0)
                 .Select(s => new
                 {
                     s.AccountStudent,
