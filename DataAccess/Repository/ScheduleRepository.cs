@@ -861,7 +861,8 @@ namespace DataAccess.Repository
                                     {
                                         ID = Guid.NewGuid(),
                                         StudentID = item1.AccountStudent.ID,
-                                        ScheduleID = item.ID
+                                        ScheduleID = item.ID,
+                                        Date = item.Date
                                     });
                                 }
                             }
