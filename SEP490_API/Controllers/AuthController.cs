@@ -52,6 +52,48 @@ namespace SEP490_API.Controllers
             }
         }
 
+        [HttpPost("Logout")]
+        public async Task<IActionResult> Logout()
+        {
+            try
+            {
+
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized("");
+                }
+
+                if (!(User.IsInRole("Admin") || User.IsInRole("Add Class")))
+                {
+                    return new ObjectResult("")
+                    {
+                        StatusCode = StatusCodes.Status403Forbidden
+                    };
+                }
+
+                string accountId = User.Claims.FirstOrDefault(c => c.Type == "ID")?.Value;
+
+                await _accountRepository.Logout(accountId);
+
+                return Ok();
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(ex.Message)
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
         [HttpGet("RefreshToken")]
         public async Task<IActionResult> RefreshToken(string accessToken, string refreshToken)
         {

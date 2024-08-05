@@ -11,6 +11,7 @@ namespace BusinessObject.Interfaces
     public interface IAccountRepository
     {
         Task<LoginResponse> Login(LoginRequest request);
+        Task Logout(string accountID);
         Task<LoginResponse> RefreshToken(string accessToken, string refreshToken);
         Task RegisterTeacher(RegisterTeacherRequest request);
         Task UpdateTeacher(string accountID, UpdateTeacherRequest request);

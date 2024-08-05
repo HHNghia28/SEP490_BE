@@ -1131,5 +1131,26 @@ namespace DataAccess.Repository
             return username;
         }
 
+        public async Task Logout(string accountID)
+        {
+            Account account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(accountID.ToLower()));
+
+            if (account != null)
+            {
+                account.RefreshToken = "";
+            } else
+            {
+                AccountStudent student = await _context.AccountStudents
+                    .FirstOrDefaultAsync(a => a.ID.ToLower().Equals(accountID.ToLower()));
+
+                if (student != null)
+                {
+                    student.RefreshToken = "";
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }
