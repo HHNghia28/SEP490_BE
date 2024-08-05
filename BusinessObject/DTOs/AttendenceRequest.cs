@@ -12,8 +12,8 @@ namespace BusinessObject.DTOs
         [Required(ErrorMessage = "Mã điểm danh là bắt buộc")]
         [StringLength(50, ErrorMessage = "Mã điểm danh không được vượt quá 50 ký tự")]
         public string AttendenceID { get; set; }
-        public bool Present { get; set; } = true;
-        public bool Confirmed { get; set; } = true;
+        public bool Present { get; set; } = false;
+        public bool Confirmed { get; set; } = false;
         public string? Note { get; set; } = "";
     }
 }

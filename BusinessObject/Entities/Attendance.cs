@@ -19,7 +19,7 @@ namespace BusinessObject.Entities
         public string StudentID { get; set; }
 
         public bool Present { get; set; } = false;
-        public bool Confirmed { get; set; } = true;
+        public bool Confirmed { get; set; } = false;
         public string Note { get; set; } = "";
 
         [Required]
