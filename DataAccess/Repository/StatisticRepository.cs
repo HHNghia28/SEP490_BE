@@ -603,6 +603,7 @@ namespace DataAccess.Repository
                         : ((Func<IEnumerable<dynamic>>)(() => ((IEnumerable<dynamic>)s.Scores).Where(score => score.Semester == semester)))()
                     )
                 })
+                .Where(s => s.AverageScore != "-1")
                 .GroupBy(s => CategorizeAverageScore(s.AverageScore))
                 .Select(g => new ScoreGradeStatisticsResponse
                 {
@@ -621,6 +622,11 @@ namespace DataAccess.Repository
 
         private string CalculateAverageScore(IEnumerable<dynamic> scores)
         {
+            if (scores.Any(s => s.Score == "-1"))
+            {
+                return "-1";
+            }
+
             if (scores.Any(s => s.Score == "CĐ"))
             {
                 return "CĐ";
