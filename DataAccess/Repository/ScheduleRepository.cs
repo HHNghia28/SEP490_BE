@@ -873,7 +873,7 @@ namespace DataAccess.Repository
 
                             List<Subject> subjects = await _context.Subjects
                                 .Include(s => s.ComponentScores)
-                                .Where(s => scheduleSubjectsS2.Select(s2 => s2.SubjectID).Contains(s.ID)).ToListAsync();
+                                .Where(s => scheduleSubjectsS1.Select(s2 => s2.SubjectID).Contains(s.ID) || scheduleSubjectsS2.Select(s2 => s2.SubjectID).Contains(s.ID)).ToListAsync();
 
                             List<StudentScores> scoreExits = await _context.StudentScores
                                 .Where(s => Guid.Equals(schoolYearID, s.SchoolYearID) 
