@@ -681,16 +681,16 @@ namespace DataAccess.Repository
 
             if (double.TryParse(averageScore, out var score))
             {
-                if (score >= 0 && score < 1) return "0-1";
-                if (score >= 1 && score < 2) return "1-2";
-                if (score >= 2 && score < 3) return "2-3";
-                if (score >= 3 && score < 4) return "3-4";
-                if (score >= 4 && score < 5) return "4-5";
-                if (score >= 5 && score < 6) return "5-6";
-                if (score >= 6 && score < 7) return "6-7";
-                if (score >= 7 && score < 8) return "7-8";
-                if (score >= 8 && score < 9) return "8-9";
-                if (score >= 9 && score < 10) return "9-10";
+                if (score >= 0 && score < 1) return ">0 && <=1";
+                if (score >= 1 && score < 2) return ">1 && <=2";
+                if (score >= 2 && score < 3) return ">2 && <=3";
+                if (score >= 3 && score < 4) return ">3 && <=4";
+                if (score >= 4 && score < 5) return ">4 && <=5";
+                if (score >= 5 && score < 6) return ">5 && <=6";
+                if (score >= 6 && score < 7) return ">6 && <=7";
+                if (score >= 7 && score < 8) return ">7 && <=8";
+                if (score >= 8 && score < 9) return ">8 && <=9";
+                if (score >= 9 && score < 10) return ">9 && <=10";
             }
 
             return "N/A";
@@ -701,16 +701,16 @@ namespace DataAccess.Repository
             if (scoreKey == "Đ") return 1000;
             if (scoreKey == "CĐ") return 1001;
             if (scoreKey == "N/A") return 1002;
-            if (scoreKey == "0-1") return 0;
-            if (scoreKey == "1-2") return 1;
-            if (scoreKey == "2-3") return 2;
-            if (scoreKey == "3-4") return 3;
-            if (scoreKey == "4-5") return 4;
-            if (scoreKey == "5-6") return 5;
-            if (scoreKey == "6-7") return 6;
-            if (scoreKey == "7-8") return 7;
-            if (scoreKey == "8-9") return 8;
-            if (scoreKey == "9-10") return 9;
+            if (scoreKey == ">0 && <=1") return 0;
+            if (scoreKey == ">1 && <=2") return 1;
+            if (scoreKey == ">2 && <=3") return 2;
+            if (scoreKey == ">3 && <=4") return 3;
+            if (scoreKey == ">4 && <=5") return 4;
+            if (scoreKey == ">5 && <=6") return 5;
+            if (scoreKey == ">6 && <=7") return 6;
+            if (scoreKey == ">7 && <=8") return 7;
+            if (scoreKey == ">8 && <=9") return 8;
+            if (scoreKey == ">9 && <=10") return 9;
 
             if (double.TryParse(scoreKey, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
             {

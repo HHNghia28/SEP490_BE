@@ -304,6 +304,7 @@ namespace DataAccess.Repository
                     .ToList();
 
                 var scoreDetails = studentScoresBySubject
+                    .OrderBy(s => s.ScoreFactor)
                     .Select(s => new ScoreDetailResponse
                     {
                         Key = s.Name,
@@ -566,6 +567,7 @@ namespace DataAccess.Repository
                     .ToListAsync();
 
                 List<ScoreDetailResponse> scoreDetails = studentScores
+                    .OrderBy(s => s.ScoreFactor)
                     .Select(item1 => new ScoreDetailResponse()
                     {
                         Key = item1.Name,
@@ -623,16 +625,19 @@ namespace DataAccess.Repository
 
         public async Task<AverageScoresResponse> GetAverageScoresByClass(string className, string schoolYear)
         {
+            // Fetch class information
             Classes classes = await _context.Classes
-                                .Include(c => c.StudentClasses)
-                                .ThenInclude(c => c.AccountStudent)
-                                .ThenInclude(c => c.Student)
-                                .Include(c => c.SchoolYear)
-                                .Include(c => c.Teacher)
-                                .ThenInclude(c => c.User)
-                                .FirstOrDefaultAsync(c => c.Classroom.ToLower().Equals(className.ToLower())
-                                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
+                .Include(c => c.StudentClasses)
+                .ThenInclude(c => c.AccountStudent)
+                .ThenInclude(c => c.Student)
+                .Include(c => c.SchoolYear)
+                .Include(c => c.Teacher)
+                .ThenInclude(c => c.User)
+                .FirstOrDefaultAsync(c => c.Classroom.ToLower().Equals(className.ToLower())
+                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower()))
+                ?? throw new NotFoundException("Lớp học không tồn tại");
 
+            // Fetch subjects and student scores
             List<Subject> subjects = await _context.Subjects
                 .Include(s => s.ComponentScores)
                 .Include(s => s.Schedules)
@@ -648,6 +653,7 @@ namespace DataAccess.Repository
 
             List<AverageScoreResponse> averages = new List<AverageScoreResponse>();
 
+            // Calculate averages for each student
             foreach (var studentClass in classes.StudentClasses)
             {
                 var studentSubjectScores = studentScores
@@ -655,6 +661,20 @@ namespace DataAccess.Repository
                     .GroupBy(s => s.Subject);
 
                 List<SubjectAverageResponse> subjectAverages = new List<SubjectAverageResponse>();
+
+                double totalSumWholeYear = 0;
+                decimal totalCountWholeYear = 0;
+                double totalSumSemester1 = 0;
+                decimal totalCountSemester1 = 0;
+                double totalSumSemester2 = 0;
+                decimal totalCountSemester2 = 0;
+
+                bool allSubjectsAbove65WholeYear = true;
+                bool allSubjectsAbove5WholeYear = true;
+                bool allSubjectsAbove65Semester1 = true;
+                bool allSubjectsAbove5Semester1 = true;
+                bool allSubjectsAbove65Semester2 = true;
+                bool allSubjectsAbove5Semester2 = true;
 
                 foreach (var subjectGroup in studentSubjectScores)
                 {
@@ -703,14 +723,20 @@ namespace DataAccess.Repository
                                 subjectSumSemester1 += numericScore * (double)scoreItem.ScoreFactor;
                                 subjectCountSemester1 += scoreItem.ScoreFactor;
                                 allScoresAreD_Sem1 = false;
+                                if (numericScore < 6.5) allSubjectsAbove65Semester1 = false;
+                                if (numericScore < 5) allSubjectsAbove5Semester1 = false;
                             }
                             else if (scoreItem.Semester.Equals("Học kỳ II", StringComparison.OrdinalIgnoreCase))
                             {
                                 subjectSumSemester2 += numericScore * (double)scoreItem.ScoreFactor;
                                 subjectCountSemester2 += scoreItem.ScoreFactor;
                                 allScoresAreD_Sem2 = false;
+                                if (numericScore < 6.5) allSubjectsAbove65Semester2 = false;
+                                if (numericScore < 5) allSubjectsAbove5Semester2 = false;
                             }
                             allScoresAreD = false;
+                            if (numericScore < 6.5) allSubjectsAbove65WholeYear = false;
+                            if (numericScore < 5) allSubjectsAbove5WholeYear = false;
                         }
                         else
                         {
@@ -756,14 +782,100 @@ namespace DataAccess.Repository
                         AverageSemester1 = averageSemester1,
                         AverageSemester2 = averageSemester2
                     });
+
+                    // Add to total sums
+                    if (double.TryParse(averageWholeYear, out double avgWholeYear))
+                    {
+                        totalSumWholeYear += avgWholeYear;
+                        totalCountWholeYear++;
+                    }
+                    if (double.TryParse(averageSemester1, out double avgSemester1))
+                    {
+                        totalSumSemester1 += avgSemester1;
+                        totalCountSemester1++;
+                    }
+                    if (double.TryParse(averageSemester2, out double avgSemester2))
+                    {
+                        totalSumSemester2 += avgSemester2;
+                        totalCountSemester2++;
+                    }
                 }
+
+                string totalAverageWholeYear = totalCountWholeYear == 0 ? "CĐ" : (Math.Round(totalSumWholeYear / (double)totalCountWholeYear, 2)).ToString();
+                string totalAverageSemester1 = totalCountSemester1 == 0 ? "CĐ" : (Math.Round(totalSumSemester1 / (double)totalCountSemester1, 2)).ToString();
+                string totalAverageSemester2 = totalCountSemester2 == 0 ? "CĐ" : (Math.Round(totalSumSemester2 / (double)totalCountSemester2, 2)).ToString();
+
+                // Determine academic performance
+                string performanceWholeYear = GetAcademicPerformance(totalSumWholeYear / (double)totalCountWholeYear, allSubjectsAbove65WholeYear, allSubjectsAbove5WholeYear);
+                string performanceSemester1 = GetAcademicPerformance(totalSumSemester1 / (double)totalCountSemester1, allSubjectsAbove65Semester1, allSubjectsAbove5Semester1);
+                string performanceSemester2 = GetAcademicPerformance(totalSumSemester2 / (double)totalCountSemester2, allSubjectsAbove65Semester2, allSubjectsAbove5Semester2);
 
                 averages.Add(new AverageScoreResponse()
                 {
                     ID = studentClass.StudentID,
                     FullName = studentClass.AccountStudent.Student.Fullname,
-                    SubjectAverages = subjectAverages
+                    SubjectAverages = subjectAverages,
+                    TotalAverageWholeYear = totalAverageWholeYear,
+                    TotalAverageSemester1 = totalAverageSemester1,
+                    TotalAverageSemester2 = totalAverageSemester2,
+                    PerformanceWholeYear = performanceWholeYear,
+                    PerformanceSemester1 = performanceSemester1,
+                    PerformanceSemester2 = performanceSemester2
                 });
+            }
+
+            // Rank the students
+            var rankedAverages = averages.OrderByDescending(a => double.TryParse(a.TotalAverageWholeYear, out double avgWholeYear) ? avgWholeYear : 0)
+                                         .ThenByDescending(a => double.TryParse(a.TotalAverageSemester1, out double avgSem1) ? avgSem1 : 0)
+                                         .ThenByDescending(a => double.TryParse(a.TotalAverageSemester2, out double avgSem2) ? avgSem2 : 0)
+                                         .ToList();
+
+            // Assign ranks
+            int rankWholeYear = 1;
+            int rankSemester1 = 1;
+            int rankSemester2 = 1;
+            foreach (var student in rankedAverages)
+            {
+                var sameRankWholeYear = rankedAverages
+                    .Where(a => double.TryParse(a.TotalAverageWholeYear, out double avgWholeYear) &&
+                                double.TryParse(student.TotalAverageWholeYear, out double studentAvgWholeYear) &&
+                                avgWholeYear == studentAvgWholeYear)
+                    .Select(a => a.ID);
+
+                var sameRankSemester1 = rankedAverages
+                    .Where(a => double.TryParse(a.TotalAverageSemester1, out double avgSem1) &&
+                                double.TryParse(student.TotalAverageSemester1, out double studentAvgSem1) &&
+                                avgSem1 == studentAvgSem1)
+                    .Select(a => a.ID);
+
+                var sameRankSemester2 = rankedAverages
+                    .Where(a => double.TryParse(a.TotalAverageSemester2, out double avgSem2) &&
+                                double.TryParse(student.TotalAverageSemester2, out double studentAvgSem2) &&
+                                avgSem2 == studentAvgSem2)
+                    .Select(a => a.ID);
+
+                foreach (var studentInRank in sameRankWholeYear)
+                {
+                    var average = averages.First(a => a.ID == studentInRank);
+                    average.RankWholeYear = rankWholeYear;
+                }
+
+                foreach (var studentInRank in sameRankSemester1)
+                {
+                    var average = averages.First(a => a.ID == studentInRank);
+                    average.RankSemester1 = rankSemester1;
+                }
+
+                foreach (var studentInRank in sameRankSemester2)
+                {
+                    var average = averages.First(a => a.ID == studentInRank);
+                    average.RankSemester2 = rankSemester2;
+                }
+
+                // Update rank values
+                rankWholeYear += sameRankWholeYear.Count();
+                rankSemester1 += sameRankSemester1.Count();
+                rankSemester2 += sameRankSemester2.Count();
             }
 
             return new AverageScoresResponse()
@@ -774,6 +886,27 @@ namespace DataAccess.Repository
                 Averages = averages
             };
         }
+
+        private string GetAcademicPerformance(double averageScore, bool allSubjectsAbove65, bool allSubjectsAbove5)
+        {
+            if (averageScore >= 8 && allSubjectsAbove65)
+            {
+                return "Giỏi";
+            }
+            else if (averageScore >= 6.5 && allSubjectsAbove5)
+            {
+                return "Khá";
+            }
+            else if (averageScore >= 5 && allSubjectsAbove5)
+            {
+                return "Trung Bình";
+            }
+            else
+            {
+                return "Yếu";
+            }
+        }
+
 
         public async Task<List<ScoreSubjectWithSemesterResponse>> GetScoresByStudentWithSemesters(string studentID, string schoolYear)
         {

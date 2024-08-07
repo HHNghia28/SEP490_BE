@@ -782,7 +782,7 @@ namespace DataAccess.Repository
             return await _context.AccountStudents
                 .AsNoTracking()
                 .Include(a => a.Student)
-                .Where(a => a.IsActive)
+                .Where(a => a.IsActive && !a.ID.StartsWith("PH"))
                 .Select(item => new RegisterResponse()
                 {
                     Id = item.ID,

@@ -54,6 +54,7 @@ namespace DataAccess.Repository
                     Slot = item.Schedule.SlotByLessonPlans,
                     Note = item.Note
                 })
+                .OrderBy(a => a.StudentID)
                 .ToListAsync();
 
         }
@@ -112,10 +113,9 @@ namespace DataAccess.Repository
                     && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
 
             List<Subject> subjects = await _context.Subjects
-                .Include(s => s.ComponentScores)
                 .Include(s => s.Schedules)
                 .Where(s => s.Schedules.Select(s => s.ClassID.ToString().ToLower()).Contains(classes.ID.ToString().ToLower())
-                    && s.ComponentScores.Count > 0)
+                    && ( classes.Classroom.StartsWith(s.Grade) || s.Grade.ToLower().Equals("môn chung")))
                 .ToListAsync();
 
             Dictionary<string, Dictionary<string, object>> response = new();
