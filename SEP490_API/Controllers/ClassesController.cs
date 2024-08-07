@@ -4,6 +4,7 @@ using BusinessObject.Interfaces;
 using DataAccess.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel;
 
 namespace SEP490_API.Controllers
 {
@@ -96,6 +97,43 @@ namespace SEP490_API.Controllers
                 }
 
                 return Ok(await _classesRepository.GetClass(className, schoolYear));
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(ex.Message)
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
+        [HttpGet("GetExcel")]
+        public async Task<IActionResult> GetExcel(string className, string schoolYear)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Any())
+                        .ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+                    return BadRequest(errors);
+                }
+
+                var fileContent = await _classesRepository.GenerateExcelFile(className, schoolYear);
+                return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", className.ToLower() + ".xlsx");
             }
             catch (NotFoundException ex)
             {

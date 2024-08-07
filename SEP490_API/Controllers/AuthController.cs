@@ -63,14 +63,6 @@ namespace SEP490_API.Controllers
                     return Unauthorized("");
                 }
 
-                if (!(User.IsInRole("Admin") || User.IsInRole("Add Class")))
-                {
-                    return new ObjectResult("")
-                    {
-                        StatusCode = StatusCodes.Status403Forbidden
-                    };
-                }
-
                 string accountId = User.Claims.FirstOrDefault(c => c.Type == "ID")?.Value;
 
                 await _accountRepository.Logout(accountId);

@@ -6,6 +6,7 @@ using BusinessObject.Interfaces;
 using ClosedXML.Excel;
 using DataAccess.Context;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -298,6 +299,59 @@ namespace DataAccess.Repository
                 Note = "Người dùng " + account.Username + " vừa thực hiện chỉnh sửa lớp học " + classes.Classroom,
                 Type = LogName.UPDATE.ToString(),
             });
+        }
+
+        public async Task<byte[]> GenerateExcelFile(string className, string schoolYear)
+        {
+            Classes classes = await _context.Classes
+                .Include(c => c.SchoolYear)
+                .Include(c => c.Teacher)
+                .Include(c => c.StudentClasses)
+                .ThenInclude(c => c.AccountStudent)
+                .ThenInclude(c => c.Student)
+                .FirstOrDefaultAsync(c => c.Classroom.ToLower().Equals(className.ToLower())
+                                    && c.SchoolYear.Name.ToLower().Equals(schoolYear.ToLower())) ?? throw new NotFoundException("Lớp học không tồn tại");
+
+            if (classes == null)
+            {
+                throw new NotFoundException("Không tìm thấy lớp");
+            }
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Students");
+
+                worksheet.Cell(1, 1).Value = "ID";
+                worksheet.Cell(1, 2).Value = "Họ và tên";
+                worksheet.Cell(1, 3).Value = "Giới tính";
+                worksheet.Cell(1, 4).Value = "Địa chỉ";
+                worksheet.Cell(1, 5).Value = "Tên đăng nhập";
+                worksheet.Cell(1, 6).Value = "Tên đăng nhập phụ huynh";
+                worksheet.Cell(1, 7).Value = "Mật khẩu (Lưu ý đây là mật khẩu mặc định vui lòng đổi mật khẩu khác)";
+
+                int row = 2;
+                foreach (var item in classes.StudentClasses)
+                {
+                    var student = item.AccountStudent.Student;
+                    var accountStudent = item.AccountStudent;
+                    worksheet.Cell(row, 1).Value = accountStudent.ID;
+                    worksheet.Cell(row, 2).Value = student.Fullname;
+                    worksheet.Cell(row, 3).Value = student.Gender;
+                    worksheet.Cell(row, 4).Value = student.Address;
+                    worksheet.Cell(row, 5).Value = accountStudent.Username;
+                    worksheet.Cell(row, 6).Value = accountStudent.Username;
+                    worksheet.Cell(row, 7).Value = "aA@123";
+                    row++;
+                }
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+
+                    return stream.ToArray();
+                }
+            }
         }
     }
 }

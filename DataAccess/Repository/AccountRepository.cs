@@ -66,13 +66,25 @@ namespace DataAccess.Repository
                 .Equals(request.Username.ToLower()) && a.IsActive)
                 ?? throw new ArgumentException("Tên đăng nhập hoặc tài khoản không chính xác");
 
-                schoolYears = await _context.SchoolYears
-                                    .Include(s => s.Classes)
-                                    .ThenInclude(c => c.StudentClasses)
-                                    .Where(s => s.Classes.Any(c => c.StudentClasses.Any(sc => sc.StudentID.ToLower().Equals(accountStudentExist.ID.ToLower()))))
-                                    .ToListAsync();
+                if (accountStudentExist.RoleID == 6)
+                {
+                    schoolYears = await _context.SchoolYears
+                                        .Include(s => s.Classes)
+                                        .ThenInclude(c => c.StudentClasses)
+                                        .Where(s => s.Classes.Any(c => c.StudentClasses.Any(sc => sc.StudentID.ToLower().Equals(accountStudentExist.ID.Substring(2).ToLower()))))
+                                        .ToListAsync();
+                } 
+                else
+                {
+                    schoolYears = await _context.SchoolYears
+                                        .Include(s => s.Classes)
+                                        .ThenInclude(c => c.StudentClasses)
+                                        .Where(s => s.Classes.Any(c => c.StudentClasses.Any(sc => sc.StudentID.ToLower().Equals(accountStudentExist.ID.ToLower()))))
+                                        .ToListAsync();
+                }
 
                 var filteredSchoolYears = new List<SchoolYear>();
+                string idFilter = accountStudentExist.RoleID == 6 ? accountStudentExist.ID.Substring(2).ToLower() : accountStudentExist.ID.ToLower();
 
                 foreach (var schoolYear in schoolYears)
                 {
@@ -81,14 +93,14 @@ namespace DataAccess.Repository
                         ID = schoolYear.ID,
                         Name = schoolYear.Name,
                         Classes = schoolYear.Classes
-                            .Where(c => c.StudentClasses.Any(sc => sc.StudentID.ToLower() == accountStudentExist.ID.ToLower()))
+                            .Where(c => c.StudentClasses.Any(sc => sc.StudentID.ToLower() == idFilter))
                             .Select(c => new Classes
                             {
                                 ID = c.ID,
                                 Classroom = c.Classroom,
                                 IsActive = c.IsActive,
                                 StudentClasses = c.StudentClasses
-                                    .Where(sc => sc.StudentID.ToLower() == accountStudentExist.ID.ToLower())
+                                    .Where(sc => sc.StudentID.ToLower() == idFilter)
                                     .ToList()
                             })
                             .ToList()
@@ -121,9 +133,11 @@ namespace DataAccess.Repository
 
                 await _context.SaveChangesAsync();
 
-                LoginResponse loginResponseS = new LoginResponse()
+                RegisterResponse user = new();
+
+                if (accountStudentExist.RoleID == 6)
                 {
-                    User = new RegisterResponse()
+                    user = new RegisterResponse()
                     {
                         Id = accountStudentExist.ID,
                         Username = accountStudentExist.Username,
@@ -132,7 +146,25 @@ namespace DataAccess.Repository
                         Fullname = accountStudentExist.Student.Fullname,
                         Phone = accountStudentExist.Student.Phone,
                         Avatar = accountStudentExist.Student.Avatar
-                    },
+                    };
+                }
+                else
+                {
+                    user = new RegisterResponse()
+                    {
+                        Id = accountStudentExist.ID,
+                        Username = accountStudentExist.Username,
+                        Address = accountStudentExist.Student.Address,
+                        Email = accountStudentExist.Student.Email,
+                        Fullname = accountStudentExist.Student.Fullname,
+                        Phone = accountStudentExist.Student.Phone,
+                        Avatar = accountStudentExist.Student.Avatar
+                    };
+                }
+
+                LoginResponse loginResponseS = new LoginResponse()
+                {
+                    User = user,
                     Permissions = roleStudents,
                     Roles = new List<string>() { accountStudentExist.Role.Name },
                     SchoolYears = filteredSchoolYears.Select(s => s.Name).Order().ToList(),
@@ -714,7 +746,7 @@ namespace DataAccess.Repository
 
             await _context.Students.AddAsync(student);
 
-            AccountStudent account = new()
+            AccountStudent studentAccount = new()
             {
                 ID = newID,
                 IsActive = true,
@@ -726,7 +758,22 @@ namespace DataAccess.Repository
                 Username = newUsername,
             };
 
-            await _context.AccountStudents.AddAsync(account);
+            await _context.AccountStudents.AddAsync(studentAccount);
+
+            AccountStudent parentAccount = new()
+            {
+                ID = "PH" + newID,
+                IsActive = true,
+                Password = BCrypt.Net.BCrypt.HashPassword("aA@123"),
+                RefreshToken = "",
+                RefreshTokenExpires = DateTime.Now,
+                RoleID = 2,
+                UserID = userID,
+                Username = "PH" + newUsername,
+            };
+
+            await _context.AccountStudents.AddAsync(parentAccount);
+
             await _context.SaveChangesAsync();
         }
 
@@ -973,7 +1020,7 @@ namespace DataAccess.Repository
 
         private string CreateNewAccountId()
         {
-            var maxId = _context.AccountStudents.Max(a => a.ID);
+            var maxId = _context.AccountStudents.Where(a => a.ID.StartsWith("HS")).Max(a => a.ID);
 
             if (!string.IsNullOrEmpty(maxId))
             {

@@ -15,5 +15,6 @@ namespace BusinessObject.Interfaces
         public Task AddClassesByExcel(string accountID, ExcelRequest request);
         public Task UpdateClasses(string accountID, string classID, ClassesRequest request);
         public Task DeleteClasses(string accountID, string classID);
+        public Task<byte[]> GenerateExcelFile(string className, string schoolYear);
     }
 }

@@ -299,6 +299,11 @@ namespace DataAccess.Context
                     {
                         ID = 5,
                         Name = "Supervisor"
+                    },
+                    new Role()
+                    {
+                        ID = 6,
+                        Name = "Parent"
                     }
                 );
 
@@ -407,6 +412,16 @@ namespace DataAccess.Context
                     },
                     new RolePermission()
                     {
+                        RoleID = 3,
+                        PermissionID = 29
+                    },
+                    new RolePermission()
+                    {
+                        RoleID = 3,
+                        PermissionID = 37
+                    },
+                    new RolePermission()
+                    {
                         RoleID = 4,
                         PermissionID = 3
                     },
@@ -499,6 +514,11 @@ namespace DataAccess.Context
                     {
                         RoleID = 4,
                         PermissionID = 33
+                    },
+                    new RolePermission()
+                    {
+                        RoleID = 4,
+                        PermissionID = 37
                     },
                     new RolePermission()
                     {
@@ -674,6 +694,56 @@ namespace DataAccess.Context
                     {
                         RoleID = 5,
                         PermissionID = 39
+                    },
+                    new RolePermission()
+                    {
+                        RoleID = 6,
+                        PermissionID = 5
+                    },
+                    new RolePermission()
+                    {
+                        RoleID = 6,
+                        PermissionID = 7
+                    },
+                    new RolePermission()
+                    {
+                        RoleID = 6,
+                        PermissionID = 9
+                    },
+                    new RolePermission()
+                    {
+                        RoleID = 6,
+                        PermissionID = 13
+                    },
+                    new RolePermission()
+                    {
+                        RoleID = 6,
+                        PermissionID = 17
+                    },
+                    new RolePermission()
+                    {
+                        RoleID = 6,
+                        PermissionID = 21
+                    },
+                    new RolePermission()
+                    {
+                        RoleID = 6,
+                        PermissionID = 25
+                    },
+                    new RolePermission()
+                    {
+                        RoleID = 6,
+                        PermissionID = 29
+                    },
+                    new RolePermission()
+                    {
+                        RoleID = 6,
+                        PermissionID = 33
+                    },
+                    new RolePermission()
+                    {
+                        RoleID = 6,
+                        PermissionID = 37
                     }
                 );
 
