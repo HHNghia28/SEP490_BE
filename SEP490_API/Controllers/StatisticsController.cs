@@ -26,7 +26,7 @@ namespace SEP490_API.Controllers
                     return Unauthorized("");
                 }
 
-                if (!(User.IsInRole("Admin") || User.IsInRole("Get Attendence")))
+                if (!(User.IsInRole("Admin") || User.IsInRole("Get Attendance")))
                 {
                     return new ObjectResult("")
                     {
