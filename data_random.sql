@@ -35,10 +35,10 @@ SET [Present] = 0, [Confirmed] = 1;
 UPDATE [orbapicl_db_v2].[orbapicl_admin].[StudentScores]
 SET [Score] = 
     CASE 
-        WHEN RAND(CHECKSUM(NEWID())) <= 0.1 THEN ROUND(3 + RAND(), 2)
-        WHEN RAND(CHECKSUM(NEWID())) <= 0.2 THEN ROUND(4 + RAND(), 2)
-        WHEN RAND(CHECKSUM(NEWID())) <= 0.3 THEN ROUND(5 + RAND(), 2)
-        ELSE ROUND(6 + (10 - 6) * RAND(CHECKSUM(NEWID())), 2)
+        WHEN RAND(CHECKSUM(NEWID())) <= 0.1 THEN ROUND(3 + RAND(), 1)
+        WHEN RAND(CHECKSUM(NEWID())) <= 0.2 THEN ROUND(4 + RAND(), 1)
+        WHEN RAND(CHECKSUM(NEWID())) <= 0.3 THEN ROUND(5 + RAND(), 1)
+        ELSE ROUND(6 + (10 - 6) * RAND(CHECKSUM(NEWID())), 1)
     END
 WHERE [Subject] != N'Thể dục';
 

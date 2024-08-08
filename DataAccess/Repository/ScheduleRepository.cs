@@ -1312,11 +1312,14 @@ namespace DataAccess.Repository
                 .FirstOrDefaultAsync(c => Guid.Equals(c.ID, request.ClassID)) ?? throw new NotFoundException("Lớp học không tồn tại");
 
             Schedule scheduleExist = await _context.Schedules
-                .FirstOrDefaultAsync(s => s.TeacherID.ToLower().Equals(request.TeacherID.ToLower())
-                && Guid.Equals(s.ClassID, request.ClassID)
-                && s.SlotByDate == request.SlotByDate);
+                .FirstOrDefaultAsync(s => (s.TeacherID.ToLower().Equals(request.TeacherID.ToLower())
+                && s.SlotByDate == request.SlotByDate
+                && s.Date == request.Date)
+                || (Guid.Equals(s.ClassID, request.ClassID)
+                && s.SlotByDate == request.SlotByDate 
+                && s.Date == request.Date));
 
-            if (scheduleExist != null)
+            if (scheduleExist != null && !Guid.Equals(scheduleExist.ID, new Guid(scheduleID)))
             {
                 throw new ArgumentException("Tiết học đã tồn tại");
             }

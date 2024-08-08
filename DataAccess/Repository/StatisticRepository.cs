@@ -511,6 +511,7 @@ namespace DataAccess.Repository
 
             var performanceStats = new Dictionary<string, int>
                 {
+                    { "Kém", 0 },
                     { "Yếu", 0 },
                     { "Trung bình", 0 },
                     { "Khá", 0 },
@@ -551,6 +552,8 @@ namespace DataAccess.Repository
 
         private string CalculateAcademicPerformance(double overallAverage, List<double> subjectAverages)
         {
+            if (overallAverage < 3.5)
+                return "Kém";
             if (subjectAverages.Any(s => s < 5))
                 return "Yếu";
             if (overallAverage < 5)
