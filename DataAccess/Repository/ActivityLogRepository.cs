@@ -38,7 +38,7 @@ namespace DataAccess.Repository
         {
             ActivityLog activityLog = new()
             {
-                ID = Guid.NewGuid(),
+                ID = request.ID,
                 AccountID = request.AccountID,
                 Date = DateTime.Now,
                 Note = request.Note,

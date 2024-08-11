@@ -10,6 +10,7 @@ namespace BusinessObject.DTOs
 {
     public class ActivityLogRequest
     {
+        public Guid ID { get; set; }    
         [ForeignKey("Account")]
         public string AccountID { get; set; }
 

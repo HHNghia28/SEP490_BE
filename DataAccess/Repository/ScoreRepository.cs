@@ -1105,21 +1105,105 @@ namespace DataAccess.Repository
 
                             await _context.SaveChangesAsync();
 
-                            string log = "Người dùng " + account.Username + " vừa thực hiện cập nhật điểm " + strScore.ToLower() + " lần thứ " + indexCol + " môn " + subject.Name + " của lớp " + classes.Classroom + " năm học " + classes.SchoolYear.Name;
+                            Guid idLog = Guid.NewGuid();
+
+                            SchoolSetting school = await _context.SchoolSettings.FirstOrDefaultAsync();
+
+                            string log = "Người dùng " + account.Username + " vừa thực hiện cập nhật điểm " 
+                                + strScore.ToLower() + " lần thứ " + indexCol + " " + componentScore.Semester + " môn " + subject.Name + " của lớp " 
+                                + classes.Classroom + " năm học " + classes.SchoolYear.Name + ". Mã log là: " + idLog;
+
+                            string emailContent = @"
+                                <!DOCTYPE html>
+                                <html lang='en'>
+                                <head>
+                                    <meta charset='UTF-8'>
+                                    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                                    <title>Thông báo cập nhật điểm</title>
+                                    <style>
+                                        body {
+                                            font-family: Arial, sans-serif;
+                                            margin: 0;
+                                            padding: 0;
+                                            background-color: #f4f4f4;
+                                        }
+                                        .email-container {
+                                            max-width: 600px;
+                                            margin: 20px auto;
+                                            background-color: #ffffff;
+                                            padding: 20px;
+                                            border-radius: 8px;
+                                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                                        }
+                                        .header {
+                                            text-align: center;
+                                            background-color: #4CAF50;
+                                            padding: 10px;
+                                            border-radius: 8px 8px 0 0;
+                                            color: #ffffff;
+                                        }
+                                        .content {
+                                            margin: 20px 0;
+                                            font-size: 16px;
+                                            line-height: 1.6;
+                                            color: #333333;
+                                        }
+                                        .footer {
+                                            text-align: center;
+                                            padding: 10px;
+                                            font-size: 12px;
+                                            color: #777777;
+                                        }
+                                        .log-message {
+                                            background-color: #f9f9f9;
+                                            padding: 15px;
+                                            border-left: 5px solid #4CAF50;
+                                            margin-bottom: 20px;
+                                            border-radius: 5px;
+                                            font-family: 'Courier New', Courier, monospace;
+                                        }
+                                    </style>
+                                </head>
+                                <body>
+
+                                <div class='email-container'>
+                                    <div class='header'>
+                                        <h2>Thông báo cập nhật điểm</h2>
+                                    </div>
+
+                                    <div class='content'>
+                                        <p>Kính gửi Ban giám hiệu " + school.SchoolName + @",</p>
+                                        <p>Hệ thống vừa ghi nhận có sự thay đổi về điểm số:</p>
+                                        <div class='log-message'>
+                                            Người dùng <strong>" + account.Username + @"</strong> vừa thực hiện cập nhật điểm <strong>" + strScore.ToLower() + @"</strong> 
+                                            lần thứ <strong>" + indexCol + " " + componentScore.Semester + @"</strong> môn <strong>" + subject.Name + @"</strong> của lớp 
+                                            <strong>" + classes.Classroom + @"</strong> năm học <strong>" + classes.SchoolYear.Name + @"</strong>. 
+                                            <br>Mã log là: <strong><a href='https://online-register-notebook.netlify.app/logHistory?id=" + idLog + @"'>" + idLog + @"</a></strong>.
+                                        </div>
+                                        <p>Nếu có sai sót về điểm số, vui lòng phản hồi với GVBM để cập nhật lại kịp thời.</p>
+                                    </div>
+
+                                    <div class='footer'>
+                                        <p>&copy; 2024 " + school.SchoolName + @". Tất cả các quyền được bảo lưu.</p>
+                                    </div>
+                                </div>
+
+                                </body>
+                                </html>
+                                ";
 
                             await _activityLogRepository.WriteLogAsync(new ActivityLogRequest()
                             {
+                                ID = idLog,
                                 AccountID = accountID,
                                 Note = log,
                                 Type = LogName.UPDATE.ToString(),
                             });
 
-                            SchoolSetting school = await _context.SchoolSettings.FirstOrDefaultAsync();
-
                             if (school != null)
                             {
                                 await _emailSender.SendEmailAsync(school.SchoolEmail, "Thông báo cập nhật điểm",
-                                    log);
+                                    emailContent);
                             }
                         }
                     }
